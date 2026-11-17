@@ -112,6 +112,7 @@ namespace XerahS.UI.Views
 #endif
 
             BuildNavigationNodes();
+            XerahS.Common.Localization.CultureChanged += OnLocalizationCultureChanged;
 
             var navigationTree = this.FindControl<TreeView>("NavigationTree");
             if (navigationTree != null)
@@ -180,8 +181,23 @@ namespace XerahS.UI.Views
                 Dispatcher.UIThread.Post(() => _ = PreWarmSettingsSearchIndexAsync(), DispatcherPriority.Background));
         }
 
+        /// <summary>
+        /// Re-reads the sidebar captions in place. Rebuilding the tree would reset the selection and
+        /// throw the user back to the default page in the middle of a language switch.
+        /// </summary>
+        private void OnLocalizationCultureChanged()
+        {
+            foreach (NavigationNode node in NavigationNodes)
+            {
+                node.RefreshLocalization();
+            }
+
+            QueueNavigationFilterUpdate();
+        }
+
         protected override void OnClosed(EventArgs e)
         {
+            XerahS.Common.Localization.CultureChanged -= OnLocalizationCultureChanged;
             DataContextChanged -= OnMainWindowDataContextChanged;
 
             if (this.FindControl<ContentControl>("ContentFrame") is ContentControl contentFrame)

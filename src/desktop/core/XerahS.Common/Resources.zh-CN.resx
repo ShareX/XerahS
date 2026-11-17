@@ -1645,6 +1645,150 @@
   <data name="MainWindow_NavigationSearchWatermark" xml:space="preserve">
     <value>搜索</value>
   </data>
+  <data name="Nav_Capture" xml:space="preserve">
+    <value>捕获</value>
+  </data>
+  <data name="Nav_Recording" xml:space="preserve">
+    <value>录制</value>
+  </data>
+  <data name="Nav_Editor" xml:space="preserve">
+    <value>编辑器</value>
+  </data>
+  <data name="Nav_History" xml:space="preserve">
+    <value>历史记录</value>
+  </data>
+  <data name="Nav_Statistics" xml:space="preserve">
+    <value>统计</value>
+  </data>
+  <data name="Nav_Workflows" xml:space="preserve">
+    <value>工作流</value>
+  </data>
+  <data name="Nav_Upload" xml:space="preserve">
+    <value>上传</value>
+  </data>
+  <data name="Nav_UploadFile" xml:space="preserve">
+    <value>上传文件...</value>
+  </data>
+  <data name="Nav_UploadContent" xml:space="preserve">
+    <value>上传内容...</value>
+  </data>
+  <data name="Nav_Tools" xml:space="preserve">
+    <value>工具</value>
+  </data>
+  <data name="Nav_ColorPicker" xml:space="preserve">
+    <value>取色器...</value>
+  </data>
+  <data name="Nav_Ruler" xml:space="preserve">
+    <value>标尺</value>
+  </data>
+  <data name="Nav_IndexFolder" xml:space="preserve">
+    <value>索引文件夹...</value>
+  </data>
+  <data name="Nav_QrCode" xml:space="preserve">
+    <value>二维码</value>
+  </data>
+  <data name="Nav_QrGenerator" xml:space="preserve">
+    <value>生成器...</value>
+  </data>
+  <data name="Nav_QrScanScreen" xml:space="preserve">
+    <value>从屏幕扫描</value>
+  </data>
+  <data name="Nav_QrScanRegion" xml:space="preserve">
+    <value>从区域扫描</value>
+  </data>
+  <data name="Nav_ImageCombiner" xml:space="preserve">
+    <value>图像合并...</value>
+  </data>
+  <data name="Nav_ImageSplitter" xml:space="preserve">
+    <value>图像分割...</value>
+  </data>
+  <data name="Nav_ImageThumbnailer" xml:space="preserve">
+    <value>图像缩略图...</value>
+  </data>
+  <data name="Nav_ImageResizer" xml:space="preserve">
+    <value>图像缩放...</value>
+  </data>
+  <data name="Nav_ImageConverter" xml:space="preserve">
+    <value>图像转换...</value>
+  </data>
+  <data name="Nav_ImageWatermark" xml:space="preserve">
+    <value>图像水印...</value>
+  </data>
+  <data name="Nav_AnimatedGifMaker" xml:space="preserve">
+    <value>动图生成...</value>
+  </data>
+  <data name="Nav_VideoEditor" xml:space="preserve">
+    <value>视频编辑器...</value>
+  </data>
+  <data name="Nav_VideoConverter" xml:space="preserve">
+    <value>视频转换...</value>
+  </data>
+  <data name="Nav_VideoTrimmer" xml:space="preserve">
+    <value>视频裁剪...</value>
+  </data>
+  <data name="Nav_VideoThumbnailer" xml:space="preserve">
+    <value>视频缩略图...</value>
+  </data>
+  <data name="Nav_AnalyzeImage" xml:space="preserve">
+    <value>分析图像...</value>
+  </data>
+  <data name="Nav_MonitorTest" xml:space="preserve">
+    <value>显示器测试</value>
+  </data>
+  <data name="Nav_NetworkMonitor" xml:space="preserve">
+    <value>网络监视器...</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="Nav_ApplicationSettings" xml:space="preserve">
+    <value>应用程序设置</value>
+  </data>
+  <data name="Nav_DestinationSettings" xml:space="preserve">
+    <value>目标设置</value>
+  </data>
+  <data name="Nav_Debug" xml:space="preserve">
+    <value>调试</value>
+  </data>
+  <data name="Nav_About" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="Workflows_Add" xml:space="preserve">
+    <value>添加工作流</value>
+  </data>
+  <data name="Workflows_NavLabel" xml:space="preserve">
+    <value>导航</value>
+  </data>
+  <data name="Workflows_TrayLabel" xml:space="preserve">
+    <value>托盘</value>
+  </data>
+  <data name="Workflows_ResetButton" xml:space="preserve">
+    <value>重置工作流…</value>
+  </data>
+  <data name="Workflows_Options" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="Workflows_Duplicate" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="Workflows_MoveUp" xml:space="preserve">
+    <value>上移</value>
+  </data>
+  <data name="Workflows_MoveDown" xml:space="preserve">
+    <value>下移</value>
+  </data>
+  <data name="Workflows_Remove" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Workflows_Retry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Workflows_EmptyTitle" xml:space="preserve">
+    <value>尚无工作流</value>
+  </data>
+  <data name="Workflows_EmptyHint" xml:space="preserve">
+    <value>添加工作流以选择其任务、快捷键和设置。</value>
+  </data>
   <data name="History_SearchPlaceholder" xml:space="preserve">
     <value>搜索历史</value>
   </data>
@@ -3307,6 +3451,9 @@
   <data name="HdrToneMappingMode_TonemapBt2446C" xml:space="preserve">
     <value>BT.2446 C</value>
   </data>
+  <data name="HdrToneMappingMode_TonemapHable" xml:space="preserve">
+    <value>Hable（推荐）</value>
+  </data>
   <data name="PNGBitDepth_Default" xml:space="preserve">
     <value>SDR</value>
   </data>
@@ -3327,5 +3474,59 @@
   </data>
   <data name="TaskSettings_HdrClipboard" xml:space="preserve">
     <value>剪贴板：</value>
+  </data>
+  <data name="TaskSettings_PngDepthHelp" xml:space="preserve">
+    <value>SDR = 8 位 PNG；HDR 截图会使用“保存到文件”的曲线转换为 SDR。SDR+HDR = 16 位 PNG：渐变更平滑，但超过白色的值会被裁剪，且文件曲线不生效。</value>
+  </data>
+  <data name="TaskSettings_HdrSaveDisabledHint" xml:space="preserve">
+    <value>16 位深度时忽略：16 位 PNG 以显示器参考（sRGB）写入，不使用色调曲线。</value>
+  </data>
+  <data name="TaskSettings_HdrLegend" xml:space="preserve">
+    <value>曲线仅作用于比参考白更亮的内容，因此普通 SDR 桌面会原样保存。None = 不转换，高光在白色处裁剪；Reinhard = 柔和衰减，保留高光细节；ACES = 胶片风格，对比更强；BT.2446 C = 广播级 HDR→SDR 标准（ITU-R）；Hable = 胶片风格，针对照片调校（推荐）。</value>
+  </data>
+  <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
+    <value>在真实 HDR 照片上预览</value>
+  </data>
+  <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
+    <value>同一张公有领域照片（Polyhaven《The Sky is on Fire》，CC0）分别用每种曲线渲染。真实照片能看出各曲线如何处理高光和肤色，灰色色块无法体现这一点。</value>
+  </data>
+  <data name="Auto_Changes_save_automatically" xml:space="preserve">
+    <value>更改会自动保存</value>
+  </data>
+  <data name="Auto_Saving_changes" xml:space="preserve">
+    <value>正在保存更改…</value>
+  </data>
+  <data name="Auto_Changes_could_not_be_saved_Retry" xml:space="preserve">
+    <value>无法保存更改。请重试。</value>
+  </data>
+  <data name="Auto_All_changes_saved" xml:space="preserve">
+    <value>所有更改已保存</value>
+  </data>
+  <data name="Auto_New_workflow" xml:space="preserve">
+    <value>新建工作流</value>
+  </data>
+  <data name="Auto_Signed_in_with_ChatGPT_Requests_use_your" xml:space="preserve">
+    <value>已登录 ChatGPT。请求将使用您的 ChatGPT 套餐。API 密钥为可选项。</value>
+  </data>
+  <data name="Auto_Not_signed_in_Continue_with_ChatGPT_or_s" xml:space="preserve">
+    <value>未登录。请继续使用 ChatGPT，或保存 API 密钥。</value>
+  </data>
+  <data name="Auto_Sign_in_with_ChatGPT_or_save_an_API_key_" xml:space="preserve">
+    <value>验证此提供商前，请先登录 ChatGPT 或保存 API 密钥。</value>
+  </data>
+  <data name="Auto_Waiting_for_ChatGPT_in_the_browser" xml:space="preserve">
+    <value>正在浏览器中等待 ChatGPT...</value>
+  </data>
+  <data name="Auto_Signed_in_with_ChatGPT" xml:space="preserve">
+    <value>已登录 ChatGPT。</value>
+  </data>
+  <data name="Auto_ChatGPT_sign_in_failed" xml:space="preserve">
+    <value>ChatGPT 登录失败。</value>
+  </data>
+  <data name="Auto_Signed_out_of_ChatGPT" xml:space="preserve">
+    <value>已退出 ChatGPT。</value>
+  </data>
+  <data name="Auto_Pin_to_Screen" xml:space="preserve">
+    <value>固定到屏幕</value>
   </data>
 </root>

@@ -38,17 +38,31 @@ public enum NavigationNodeKind
 public partial class NavigationNode : ObservableObject
 {
     private string _searchText;
+    private readonly string? _searchKeywords;
+    private string _text;
 
-    public NavigationNode(string text, string? tag, string? glyph, NavigationNodeKind kind, string? searchText = null)
+    public NavigationNode(string text, string? tag, string? glyph, NavigationNodeKind kind, string? searchText = null, string? localizationKey = null)
     {
-        Text = text;
+        _text = text;
         Tag = tag;
         Glyph = glyph;
         Kind = kind;
+        LocalizationKey = localizationKey;
+        _searchKeywords = searchText;
         _searchText = string.Join(' ', text, searchText ?? string.Empty);
     }
 
-    public string Text { get; }
+    public string Text
+    {
+        get => _text;
+        private set => SetProperty(ref _text, value);
+    }
+
+    /// <summary>
+    /// Resource key the caption was built from, so a language switch can re-read it in place
+    /// instead of rebuilding the tree (which would move the selection).
+    /// </summary>
+    public string? LocalizationKey { get; }
 
     public string? Tag { get; }
 
@@ -108,6 +122,21 @@ public partial class NavigationNode : ObservableObject
         }
 
         SearchText = string.Join(' ', SearchText, extra);
+    }
+
+    /// <summary>Re-reads the localized caption for this node and its children.</summary>
+    public void RefreshLocalization()
+    {
+        if (!string.IsNullOrEmpty(LocalizationKey))
+        {
+            Text = XerahS.Common.Resources.GetString(LocalizationKey);
+            UpdateSearchText(_searchKeywords);
+        }
+
+        foreach (NavigationNode child in Children)
+        {
+            child.RefreshLocalization();
+        }
     }
 
     /// <summary>

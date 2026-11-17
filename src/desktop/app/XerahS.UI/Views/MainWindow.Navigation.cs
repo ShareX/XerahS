@@ -290,18 +290,18 @@ namespace XerahS.UI.Views
         {
             NavigationNodes.Clear();
 
-            _captureNavigationNode = CreateNode("Capture", "Capture", HostIcons.NavigationCapture, NavigationNodeKind.Group, isExpanded: true);
+            _captureNavigationNode = CreateNode("Nav_Capture", "Capture", HostIcons.NavigationCapture, NavigationNodeKind.Group, isExpanded: true);
             NavigationNodes.Add(_captureNavigationNode);
-            NavigationNodes.Add(CreateNode("Recording", "Recording", HostIcons.NavigationRecording, NavigationNodeKind.Page));
-            NavigationNodes.Add(CreateNode("Editor", "Editor", HostIcons.NavigationEditor, NavigationNodeKind.Page));
-            NavigationNodes.Add(CreateNode("History", "History", HostIcons.NavigationHistory, NavigationNodeKind.Page));
-            NavigationNodes.Add(CreateNode("Statistics", "Statistics", HostIcons.NavigationStatistics, NavigationNodeKind.Page));
-            NavigationNodes.Add(CreateNode("Workflows", "Workflows", HostIcons.NavigationWorkflows, NavigationNodeKind.Page));
+            NavigationNodes.Add(CreateNode("Nav_Recording", "Recording", HostIcons.NavigationRecording, NavigationNodeKind.Page));
+            NavigationNodes.Add(CreateNode("Nav_Editor", "Editor", HostIcons.NavigationEditor, NavigationNodeKind.Page));
+            NavigationNodes.Add(CreateNode("Nav_History", "History", HostIcons.NavigationHistory, NavigationNodeKind.Page));
+            NavigationNodes.Add(CreateNode("Nav_Statistics", "Statistics", HostIcons.NavigationStatistics, NavigationNodeKind.Page));
+            NavigationNodes.Add(CreateNode("Nav_Workflows", "Workflows", HostIcons.NavigationWorkflows, NavigationNodeKind.Page));
             NavigationNodes.Add(CreateUploadNode());
             NavigationNodes.Add(CreateToolsNode());
             NavigationNodes.Add(CreateSettingsNode());
-            NavigationNodes.Add(CreateNode("Debug", "Debug", HostIcons.NavigationDebug, NavigationNodeKind.Page));
-            NavigationNodes.Add(CreateNode("About", "About", HostIcons.NavigationAbout, NavigationNodeKind.Page));
+            NavigationNodes.Add(CreateNode("Nav_Debug", "Debug", HostIcons.NavigationDebug, NavigationNodeKind.Page));
+            NavigationNodes.Add(CreateNode("Nav_About", "About", HostIcons.NavigationAbout, NavigationNodeKind.Page));
 
             UpdateNavigationItems();
             QueueNavigationFilterUpdate();
@@ -506,9 +506,11 @@ namespace XerahS.UI.Views
             QueueNavigationFilterUpdate();
         }
 
-        private static NavigationNode CreateNode(string text, string? tag, string? glyph, NavigationNodeKind kind, bool isExpanded = false)
+        private static NavigationNode CreateNode(string localizationKey, string? tag, string? glyph, NavigationNodeKind kind, bool isExpanded = false)
         {
-            return new NavigationNode(text, tag, glyph, kind, NavigationSearchKeywords.ForTag(tag))
+            return new NavigationNode(
+                XerahS.Common.Resources.GetString(localizationKey), tag, glyph, kind,
+                NavigationSearchKeywords.ForTag(tag), localizationKey)
             {
                 IsExpanded = isExpanded
             };
@@ -516,50 +518,50 @@ namespace XerahS.UI.Views
 
         private static NavigationNode CreateUploadNode()
         {
-            NavigationNode uploadNode = CreateNode("Upload", "Upload", HostIcons.NavigationUpload, NavigationNodeKind.Group);
-            uploadNode.AddChild(CreateNode("Upload File...", "Upload_FileUpload", null, NavigationNodeKind.Action));
-            uploadNode.AddChild(CreateNode("Upload Content...", "Upload_ClipboardUploadWithContentViewer", null, NavigationNodeKind.Action));
+            NavigationNode uploadNode = CreateNode("Nav_Upload", "Upload", HostIcons.NavigationUpload, NavigationNodeKind.Group);
+            uploadNode.AddChild(CreateNode("Nav_UploadFile", "Upload_FileUpload", null, NavigationNodeKind.Action));
+            uploadNode.AddChild(CreateNode("Nav_UploadContent", "Upload_ClipboardUploadWithContentViewer", null, NavigationNodeKind.Action));
             return uploadNode;
         }
 
         private static NavigationNode CreateToolsNode()
         {
-            NavigationNode toolsNode = CreateNode("Tools", "Tools", HostIcons.NavigationTools, NavigationNodeKind.Page);
-            toolsNode.AddChild(CreateNode("Color Picker...", "Tools_ColorPicker", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Ruler", "Tools_Ruler", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Index Folder...", "Tools_IndexFolder", null, NavigationNodeKind.Action));
+            NavigationNode toolsNode = CreateNode("Nav_Tools", "Tools", HostIcons.NavigationTools, NavigationNodeKind.Page);
+            toolsNode.AddChild(CreateNode("Nav_ColorPicker", "Tools_ColorPicker", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_Ruler", "Tools_Ruler", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_IndexFolder", "Tools_IndexFolder", null, NavigationNodeKind.Action));
 
-            NavigationNode qrCodeNode = CreateNode("QR Code", null, null, NavigationNodeKind.Group);
-            qrCodeNode.AddChild(CreateNode("Generator...", "Tools_QrGenerator", null, NavigationNodeKind.Action));
-            qrCodeNode.AddChild(CreateNode("Scan from screen", "Tools_QrScanScreen", null, NavigationNodeKind.Action));
-            qrCodeNode.AddChild(CreateNode("Scan from region", "Tools_QrScanRegion", null, NavigationNodeKind.Action));
+            NavigationNode qrCodeNode = CreateNode("Nav_QrCode", null, null, NavigationNodeKind.Group);
+            qrCodeNode.AddChild(CreateNode("Nav_QrGenerator", "Tools_QrGenerator", null, NavigationNodeKind.Action));
+            qrCodeNode.AddChild(CreateNode("Nav_QrScanScreen", "Tools_QrScanScreen", null, NavigationNodeKind.Action));
+            qrCodeNode.AddChild(CreateNode("Nav_QrScanRegion", "Tools_QrScanRegion", null, NavigationNodeKind.Action));
             toolsNode.AddChild(qrCodeNode);
 
-            toolsNode.AddChild(CreateNode("Image Combiner...", "Tools_ImageCombiner", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Image Splitter...", "Tools_ImageSplitter", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Image Thumbnailer...", "Tools_ImageThumbnailer", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Image Resizer...", "Tools_ImageResizer", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Image Converter...", "Tools_ImageConverter", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Image Watermark...", "Tools_ImageWatermark", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Animated GIF Maker...", "Tools_AnimatedGifMaker", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_ImageCombiner", "Tools_ImageCombiner", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_ImageSplitter", "Tools_ImageSplitter", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_ImageThumbnailer", "Tools_ImageThumbnailer", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_ImageResizer", "Tools_ImageResizer", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_ImageConverter", "Tools_ImageConverter", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_ImageWatermark", "Tools_ImageWatermark", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_AnimatedGifMaker", "Tools_AnimatedGifMaker", null, NavigationNodeKind.Action));
 #if DEBUG
-            toolsNode.AddChild(CreateNode("Video Editor...", "Tools_VideoEditor", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_VideoEditor", "Tools_VideoEditor", null, NavigationNodeKind.Action));
 #endif
-            toolsNode.AddChild(CreateNode("Video Converter...", "Tools_VideoConverter", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Video Trimmer...", "Tools_VideoTrimmer", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Video Thumbnailer...", "Tools_VideoThumbnailer", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Analyze Image...", "Tools_AnalyzeImage", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Monitor Test", "Tools_MonitorTest", null, NavigationNodeKind.Action));
-            toolsNode.AddChild(CreateNode("Network Monitor...", "Tools_NetworkMonitor", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_VideoConverter", "Tools_VideoConverter", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_VideoTrimmer", "Tools_VideoTrimmer", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_VideoThumbnailer", "Tools_VideoThumbnailer", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_AnalyzeImage", "Tools_AnalyzeImage", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_MonitorTest", "Tools_MonitorTest", null, NavigationNodeKind.Action));
+            toolsNode.AddChild(CreateNode("Nav_NetworkMonitor", "Tools_NetworkMonitor", null, NavigationNodeKind.Action));
 
             return toolsNode;
         }
 
         private static NavigationNode CreateSettingsNode()
         {
-            NavigationNode settingsNode = CreateNode("Settings", "Settings", HostIcons.NavigationSettings, NavigationNodeKind.Group, isExpanded: true);
-            settingsNode.AddChild(CreateNode("Application Settings", "Settings_App", null, NavigationNodeKind.Page));
-            settingsNode.AddChild(CreateNode("Destination Settings", "Settings_Dest", null, NavigationNodeKind.Page));
+            NavigationNode settingsNode = CreateNode("Nav_Settings", "Settings", HostIcons.NavigationSettings, NavigationNodeKind.Group, isExpanded: true);
+            settingsNode.AddChild(CreateNode("Nav_ApplicationSettings", "Settings_App", null, NavigationNodeKind.Page));
+            settingsNode.AddChild(CreateNode("Nav_DestinationSettings", "Settings_Dest", null, NavigationNodeKind.Page));
             return settingsNode;
         }
     }

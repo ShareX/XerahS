@@ -4,6 +4,7 @@
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:views="using:XerahS.UI.Views"
                 xmlns:vm="using:XerahS.UI.ViewModels"
+                xmlns:local="using:XerahS.UI.Markup"
                 mc:Ignorable="d" d:DesignWidth="1126" d:DesignHeight="700"
                 x:Class="XerahS.UI.Views.WorkflowsView"
                 x:DataType="vm:WorkflowsViewModel">
@@ -12,8 +13,8 @@
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,0,1,0" Padding="16">
             <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="16">
-                <TextBlock Text="Workflows" FontWeight="SemiBold"/>
-                <Button Grid.Row="1" Content="Add workflow" Command="{Binding AddWorkflowCommand}"
+                <TextBlock Text="{local:Localize Nav_Workflows}" FontWeight="SemiBold"/>
+                <Button Grid.Row="1" Content="{local:Localize Workflows_Add}" Command="{Binding AddWorkflowCommand}"
                         AutomationProperties.Name="Add New Workflow"/>
                 <ListBox x:Name="WorkflowList" Grid.Row="2" Background="Transparent"
                          ItemsSource="{Binding Workflows}" SelectedItem="{Binding SelectedWorkflow}"
@@ -30,14 +31,14 @@
                                     <TextBlock Text="{Binding KeyString}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="Navigation" FontSize="11" IsVisible="{Binding NavLabelVisible}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <TextBlock Text="Tray" FontSize="11" IsVisible="{Binding TrayLabelVisible}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{local:Localize Workflows_NavLabel}" FontSize="11" IsVisible="{Binding NavLabelVisible}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{local:Localize Workflows_TrayLabel}" FontSize="11" IsVisible="{Binding TrayLabelVisible}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-                <Button Grid.Row="3" Content="Reset workflows…" Command="{Binding ResetCommand}"
+                <Button Grid.Row="3" Content="{local:Localize Workflows_ResetButton}" Command="{Binding ResetCommand}"
                         AutomationProperties.Name="Reset Workflows"/>
             </Grid>
         </Border>
@@ -45,24 +46,24 @@
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                 <TextBlock Text="{Binding SelectedWorkflow.Description}" FontSize="26" FontWeight="SemiBold"
                            TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-                <Button Grid.Column="1" Content="Options" AutomationProperties.Name="Workflow Options"
+                <Button Grid.Column="1" Content="{local:Localize Workflows_Options}" AutomationProperties.Name="Workflow Options"
                         IsEnabled="{Binding SelectedWorkflow, Converter={x:Static ObjectConverters.IsNotNull}}">
                     <Button.Flyout>
                         <MenuFlyout>
-                            <MenuItem Header="Duplicate" Command="{Binding DuplicateCommand}"/>
+                            <MenuItem Header="{local:Localize Workflows_Duplicate}" Command="{Binding DuplicateCommand}"/>
                             <MenuItem Header="{Binding PinButtonText}" Command="{Binding TogglePinCommand}"/>
                             <Separator/>
-                            <MenuItem Header="Move up" Command="{Binding MoveUpCommand}"/>
-                            <MenuItem Header="Move down" Command="{Binding MoveDownCommand}"/>
+                            <MenuItem Header="{local:Localize Workflows_MoveUp}" Command="{Binding MoveUpCommand}"/>
+                            <MenuItem Header="{local:Localize Workflows_MoveDown}" Command="{Binding MoveDownCommand}"/>
                             <Separator/>
-                            <MenuItem Header="Remove" Command="{Binding RemoveWorkflowCommand}"/>
+                            <MenuItem Header="{local:Localize Workflows_Remove}" Command="{Binding RemoveWorkflowCommand}"/>
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>
             </Grid>
             <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
                 <TextBlock Text="{Binding SaveStatus}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                <Button Content="Retry" Command="{Binding RetrySaveCommand}" IsVisible="{Binding HasSaveError}"
+                <Button Content="{local:Localize Workflows_Retry}" Command="{Binding RetrySaveCommand}" IsVisible="{Binding HasSaveError}"
                         AutomationProperties.Name="Retry Saving Workflow"/>
             </StackPanel>
             <Border Grid.Row="2" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
@@ -72,8 +73,8 @@
             </Border>
             <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12"
                         IsVisible="{Binding SelectedEditor, Converter={x:Static ObjectConverters.IsNull}}">
-                <TextBlock Text="No workflows yet" FontSize="20" FontWeight="SemiBold"/>
-                <TextBlock Text="Add a workflow to choose its task, hotkey and settings." TextWrapping="Wrap"/>
+                <TextBlock Text="{local:Localize Workflows_EmptyTitle}" FontSize="20" FontWeight="SemiBold"/>
+                <TextBlock Text="{local:Localize Workflows_EmptyHint}" TextWrapping="Wrap"/>
             </StackPanel>
         </Grid>
     </Grid>

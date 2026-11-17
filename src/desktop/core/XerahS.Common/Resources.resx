@@ -1645,6 +1645,150 @@ This will permanently remove the file from the remote storage. This cannot be un
   <data name="MainWindow_NavigationSearchWatermark" xml:space="preserve">
     <value>Search</value>
   </data>
+  <data name="Nav_Capture" xml:space="preserve">
+    <value>Capture</value>
+  </data>
+  <data name="Nav_Recording" xml:space="preserve">
+    <value>Recording</value>
+  </data>
+  <data name="Nav_Editor" xml:space="preserve">
+    <value>Editor</value>
+  </data>
+  <data name="Nav_History" xml:space="preserve">
+    <value>History</value>
+  </data>
+  <data name="Nav_Statistics" xml:space="preserve">
+    <value>Statistics</value>
+  </data>
+  <data name="Nav_Workflows" xml:space="preserve">
+    <value>Workflows</value>
+  </data>
+  <data name="Nav_Upload" xml:space="preserve">
+    <value>Upload</value>
+  </data>
+  <data name="Nav_UploadFile" xml:space="preserve">
+    <value>Upload File...</value>
+  </data>
+  <data name="Nav_UploadContent" xml:space="preserve">
+    <value>Upload Content...</value>
+  </data>
+  <data name="Nav_Tools" xml:space="preserve">
+    <value>Tools</value>
+  </data>
+  <data name="Nav_ColorPicker" xml:space="preserve">
+    <value>Color Picker...</value>
+  </data>
+  <data name="Nav_Ruler" xml:space="preserve">
+    <value>Ruler</value>
+  </data>
+  <data name="Nav_IndexFolder" xml:space="preserve">
+    <value>Index Folder...</value>
+  </data>
+  <data name="Nav_QrCode" xml:space="preserve">
+    <value>QR Code</value>
+  </data>
+  <data name="Nav_QrGenerator" xml:space="preserve">
+    <value>Generator...</value>
+  </data>
+  <data name="Nav_QrScanScreen" xml:space="preserve">
+    <value>Scan from screen</value>
+  </data>
+  <data name="Nav_QrScanRegion" xml:space="preserve">
+    <value>Scan from region</value>
+  </data>
+  <data name="Nav_ImageCombiner" xml:space="preserve">
+    <value>Image Combiner...</value>
+  </data>
+  <data name="Nav_ImageSplitter" xml:space="preserve">
+    <value>Image Splitter...</value>
+  </data>
+  <data name="Nav_ImageThumbnailer" xml:space="preserve">
+    <value>Image Thumbnailer...</value>
+  </data>
+  <data name="Nav_ImageResizer" xml:space="preserve">
+    <value>Image Resizer...</value>
+  </data>
+  <data name="Nav_ImageConverter" xml:space="preserve">
+    <value>Image Converter...</value>
+  </data>
+  <data name="Nav_ImageWatermark" xml:space="preserve">
+    <value>Image Watermark...</value>
+  </data>
+  <data name="Nav_AnimatedGifMaker" xml:space="preserve">
+    <value>Animated GIF Maker...</value>
+  </data>
+  <data name="Nav_VideoEditor" xml:space="preserve">
+    <value>Video Editor...</value>
+  </data>
+  <data name="Nav_VideoConverter" xml:space="preserve">
+    <value>Video Converter...</value>
+  </data>
+  <data name="Nav_VideoTrimmer" xml:space="preserve">
+    <value>Video Trimmer...</value>
+  </data>
+  <data name="Nav_VideoThumbnailer" xml:space="preserve">
+    <value>Video Thumbnailer...</value>
+  </data>
+  <data name="Nav_AnalyzeImage" xml:space="preserve">
+    <value>Analyze Image...</value>
+  </data>
+  <data name="Nav_MonitorTest" xml:space="preserve">
+    <value>Monitor Test</value>
+  </data>
+  <data name="Nav_NetworkMonitor" xml:space="preserve">
+    <value>Network Monitor...</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Nav_ApplicationSettings" xml:space="preserve">
+    <value>Application Settings</value>
+  </data>
+  <data name="Nav_DestinationSettings" xml:space="preserve">
+    <value>Destination Settings</value>
+  </data>
+  <data name="Nav_Debug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="Nav_About" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="Workflows_Add" xml:space="preserve">
+    <value>Add workflow</value>
+  </data>
+  <data name="Workflows_NavLabel" xml:space="preserve">
+    <value>Navigation</value>
+  </data>
+  <data name="Workflows_TrayLabel" xml:space="preserve">
+    <value>Tray</value>
+  </data>
+  <data name="Workflows_ResetButton" xml:space="preserve">
+    <value>Reset workflows…</value>
+  </data>
+  <data name="Workflows_Options" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="Workflows_Duplicate" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="Workflows_MoveUp" xml:space="preserve">
+    <value>Move up</value>
+  </data>
+  <data name="Workflows_MoveDown" xml:space="preserve">
+    <value>Move down</value>
+  </data>
+  <data name="Workflows_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Workflows_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Workflows_EmptyTitle" xml:space="preserve">
+    <value>No workflows yet</value>
+  </data>
+  <data name="Workflows_EmptyHint" xml:space="preserve">
+    <value>Add a workflow to choose its task, hotkey and settings.</value>
+  </data>
   <data name="History_SearchPlaceholder" xml:space="preserve">
     <value>Search history</value>
   </data>
@@ -3339,6 +3483,12 @@ This will permanently remove the file from the remote storage. This cannot be un
   </data>
   <data name="TaskSettings_HdrLegend" xml:space="preserve">
     <value>Curves only act on content brighter than display white, so an ordinary SDR desktop is saved unchanged. None = no conversion, highlights clip at white; Reinhard = soft roll-off that keeps highlight detail; ACES = filmic, stronger contrast; BT.2446 C = broadcast HDR-to-SDR standard (ITU-R); Hable = filmic, tuned for photos (recommended).</value>
+  </data>
+  <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
+    <value>Preview on a real HDR photo</value>
+  </data>
+  <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
+    <value>The same public-domain photo (Polyhaven "The Sky is on Fire", CC0) rendered with every curve. A photograph shows how each curve treats real highlights and skin tones, which flat grey bars cannot.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Changes save automatically</value>
