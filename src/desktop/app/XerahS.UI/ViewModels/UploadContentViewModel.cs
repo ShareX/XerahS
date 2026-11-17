@@ -199,6 +199,7 @@ public partial class UploadContentViewModel : ViewModelBase, IDisposable
         }
 
         settings.SetDestinationInstanceId(settings.Job, destinationInstanceId);
+        settings.DestinationChosenForThisUpload = true;
     }
 
     [ObservableProperty]

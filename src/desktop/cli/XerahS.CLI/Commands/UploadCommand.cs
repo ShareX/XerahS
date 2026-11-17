@@ -33,6 +33,7 @@ using XerahS.Core;
 using XerahS.Core.Tasks;
 using XerahS.Core.Tasks.Processors;
 using XerahS.CLI.Services;
+using XerahS.Uploaders.PluginSystem;
 using System.Collections.Generic;
 
 namespace XerahS.CLI.Commands;
@@ -227,8 +228,9 @@ public static class UploadCommand
                 // Append random suffix to avoid CDN caching, matching UI's %ra{10} behavior.
                 if (randomize)
                 {
-                    var ext = Path.GetExtension(displayName);
-                    var baseName = Path.GetFileNameWithoutExtension(displayName);
+                    displayName = displayName.Trim();
+                    var ext = InstanceManager.Instance.GetExtensionToKeep(displayName);
+                    var baseName = displayName[..^ext.Length];
                     var randomSuffix = RandomGenerator.GetRandomAlphanumericString(10);
                     displayName = $"{baseName}-{randomSuffix}{ext}";
 

@@ -10,6 +10,19 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
+## v0.35.0
+
+### Features
+
+- **File type overrides**: Destinations has a new "File type overrides" page. Choose an extension and an uploader, for example `md` and KovaForge Docs, and every file with that extension goes there, whether it is uploaded as text or as a file, from the app, the CLI, watch folders or OmaXerahs. Overrides come before the workflow's destination and each uploader's own file type settings; an uploader you pick for one upload in Upload Content still wins. If the chosen uploader fails, the upload fails instead of going somewhere else. Multi-part extensions such as `tar.gz` work and survive the upload naming pattern. With privacy review on, the review names and confirms the override's uploader.
+- **`xerahscli route`**: `route list`, `route set <extension> <uploader>`, `route remove <extension>` and `route explain <file> [--as-file]`, which shows which uploader a file would go to and which rule decided it, without uploading. `doctor uploaders` lists the overrides.
+
+### Fixes
+
+- **Text file exceptions doubled on every save**: An uploader's "Except these types" list (html, htm, xhtml, xht) was written twice into `uploader-instances.json` each time settings were saved, because a computed copy of the list was saved and read back into it. The computed copy is no longer saved, and existing duplicates are removed on load.
+
+---
+
 ## v0.34.1
 
 ### Features

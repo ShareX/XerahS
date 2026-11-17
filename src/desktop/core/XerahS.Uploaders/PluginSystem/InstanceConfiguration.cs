@@ -39,4 +39,21 @@ public class InstanceConfiguration
     /// Default instance IDs per category
     /// </summary>
     public Dictionary<UploaderCategory, string> DefaultInstances { get; set; } = new();
+
+    /// <summary>
+    /// Destinations chosen by file extension, whatever the upload's category: a file whose extension is
+    /// listed always goes to that instance (for example every .md to a docs host). Checked before the
+    /// task's destination and the per-instance file type routing; only a destination picked for one
+    /// upload overrides it.
+    /// </summary>
+    public List<FileTypeOverride> FileTypeOverrides { get; set; } = new();
+}
+
+/// <summary>One extension and the instance every file with that extension is uploaded to.</summary>
+public class FileTypeOverride
+{
+    /// <summary>Lower case, without the leading dot, e.g. "md" or "tar.gz".</summary>
+    public string Extension { get; set; } = string.Empty;
+
+    public string InstanceId { get; set; } = string.Empty;
 }

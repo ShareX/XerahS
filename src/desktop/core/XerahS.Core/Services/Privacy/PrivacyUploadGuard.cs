@@ -182,6 +182,11 @@ public static class PrivacyUploadGuard
     private static UploaderInstance? ResolveInitialDestination(TaskInfo info)
     {
         var manager = InstanceManager.Instance;
+        // A file type override decides where the image goes, so the review names and confirms that destination.
+        // The approved upload is always a flattened PNG (private-<guid>.png), so match the override that
+        // upload will meet, not the source's extension.
+        var overridden = XerahS.Core.Tasks.Processors.UploadJobProcessor.ResolveFileTypeOverride(manager, info, "private.png");
+        if (overridden != null) return overridden;
         string? id = info.TaskSettings.GetDestinationInstanceIdForDataType(EDataType.Image);
         var instance = !string.IsNullOrWhiteSpace(id) ? manager.GetInstance(id) :
             manager.GetDefaultInstance(UploaderCategory.Image) ?? manager.GetDefaultInstance(UploaderCategory.File);

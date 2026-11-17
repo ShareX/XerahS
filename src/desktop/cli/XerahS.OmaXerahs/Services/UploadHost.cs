@@ -128,8 +128,15 @@ internal static class UploadHost
 
         int pluginsLoaded = ProviderCatalog.GetAllPluginMetadata().Count;
 
-        // Prefer Image destinations; a File destination must explicitly route the image type.
-        var preferred = PreferDefault(GetUsableImageInstances(), UploaderCategory.Image)
+        // A file type override for the image's extension wins; then Image destinations; a File destination
+        // must explicitly route the image type.
+        var overridden = string.IsNullOrWhiteSpace(imagePath) ? null : InstanceManager.Instance.GetFileTypeOverrideInstance(imagePath);
+        if (overridden != null && !GetUsableImageUploadInstances().Any(i => i.InstanceId == overridden.InstanceId))
+        {
+            overridden = null;
+        }
+
+        var preferred = overridden ?? PreferDefault(GetUsableImageInstances(), UploaderCategory.Image)
             ?? PreferDefault(GetUsableFileInstances().Where(i => RoutesImages(i.FileTypeRouting, imagePath)).ToList(), UploaderCategory.File);
 
         return new ImageDestinationInspection

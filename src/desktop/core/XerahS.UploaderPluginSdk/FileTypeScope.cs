@@ -42,6 +42,13 @@ public class FileTypeScope
 
     public IReadOnlyList<string> EffectiveTextFileExceptions => TextFileExceptions ?? DefaultTextFileExceptions;
 
+    /// <summary>
+    /// Keeps <see cref="EffectiveTextFileExceptions"/> out of saved settings (Newtonsoft's ShouldSerialize
+    /// convention). It returns <see cref="TextFileExceptions"/> itself, so reading it back appended its
+    /// items to that list and every save doubled the exceptions.
+    /// </summary>
+    public bool ShouldSerializeEffectiveTextFileExceptions() => false;
+
     /// <summary>True when <see cref="TextFiles"/> is on and claims this extension (a text type that is not an exception).</summary>
     public bool ClaimsAsTextFile(string? extension)
     {

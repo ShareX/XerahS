@@ -84,6 +84,13 @@ public class TaskSettings
     [JsonIgnore]
     public bool AllowCrossCategoryFallback { get; set; } = true;
 
+    /// <summary>
+    /// True when the user picked the destination for this one upload (the Upload Content chooser). It then
+    /// wins over file type overrides; a workflow's configured destination does not. Not persisted.
+    /// </summary>
+    [JsonIgnore]
+    public bool DestinationChosenForThisUpload { get; set; }
+
     /// <summary>A single explicitly routed File destination allowed to receive this image.</summary>
     [JsonIgnore]
     public string? RoutedImageFileDestinationId { get; set; }
