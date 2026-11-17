@@ -3488,10 +3488,19 @@ Esto eliminará permanentemente el archivo del almacenamiento remoto. Esta acci�
     <value>Las curvas solo actúan sobre contenido más brillante que el blanco de referencia, por lo que un escritorio SDR normal se guarda sin cambios. None = sin conversión, las luces se recortan en el blanco; Reinhard = caída suave que conserva el detalle de las luces; ACES = fílmica, más contraste; BT.2446 C = estándar de radiodifusión HDR→SDR (ITU-R); Hable = fílmica, ajustada para fotos (recomendada).</value>
   </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
-    <value>Vista previa con una foto HDR real</value>
+    <value>Comparación con una foto HDR real</value>
+  </data>
+  <data name="TaskSettings_HdrCompareButton" xml:space="preserve">
+    <value>Comparación visual de los métodos HDR → SDR</value>
+  </data>
+  <data name="HdrComparison_Title" xml:space="preserve">
+    <value>Comparación HDR → SDR</value>
+  </data>
+  <data name="HdrComparison_HdrWindowTitle" xml:space="preserve">
+    <value>XerahS HDR preview</value>
   </data>
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
-    <value>La misma foto de dominio público (Polyhaven «The Sky is on Fire», CC0) a 640 px. La variante recomendada queda fija arriba; los demás métodos se desplazan debajo para compararlos a tamaño completo.</value>
+    <value>La foto de dominio público (Polyhaven «The Sky is on Fire», CC0) procesada con cada método HDR → SDR. Elija un método a la derecha; por defecto se muestra la curva Hable recomendada.</value>
   </data>
   <data name="TaskImage_TabSettings" xml:space="preserve">
     <value>Configuración</value>
@@ -3555,9 +3564,6 @@ Esto eliminará permanentemente el archivo del almacenamiento remoto. Esta acci�
   </data>
   <data name="TaskSettings_HdrOpenPreviewHint" xml:space="preserve">
     <value>La ventana de vista previa es SDR. En Windows la foto se abre en una ventana HDR aparte; en otros sistemas la app guarda un archivo Ultra HDR y lo abre.</value>
-  </data>
-  <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
-    <value>Izquierda: todo el contenido HDR con la curva recomendada: el detalle de las luces se conserva. Derecha: los demás métodos; desplace para comparar.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Los cambios se guardan automáticamente</value>

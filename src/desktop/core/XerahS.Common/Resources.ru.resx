@@ -3488,10 +3488,19 @@
     <value>Кривые работают только с содержимым ярче белого точка, поэтому обычный SDR-рабочий стол сохраняется без изменений. None = без конвертации, блики обрезаются по белому; Reinhard = мягкий спад, сохраняет детали в светах; ACES = кинематографическая, сильнее контраст; BT.2446 C = вещательный стандарт HDR→SDR (ITU-R); Hable = кинематографическая, настроена под фото (рекомендуется).</value>
   </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
-    <value>Предпросмотр на реальном HDR-фото</value>
+    <value>Сравнение на реальном HDR-фото</value>
+  </data>
+  <data name="TaskSettings_HdrCompareButton" xml:space="preserve">
+    <value>Визуальное сравнение методов HDR → SDR</value>
+  </data>
+  <data name="HdrComparison_Title" xml:space="preserve">
+    <value>Сравнение HDR → SDR</value>
+  </data>
+  <data name="HdrComparison_HdrWindowTitle" xml:space="preserve">
+    <value>XerahS HDR preview</value>
   </data>
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
-    <value>Одно и то же фото в общественном достоянии (Polyhaven «The Sky is on Fire», CC0) шириной 640 px. Рекомендуемый вариант закреплён сверху; остальные методы прокручиваются ниже, чтобы каждый можно было сравнить в полном размере.</value>
+    <value>Фото в общественном достоянии (Polyhaven «The Sky is on Fire», CC0), обработанное каждым методом HDR → SDR. Выберите метод справа; по умолчанию показан рекомендуемый Hable.</value>
   </data>
   <data name="TaskImage_TabSettings" xml:space="preserve">
     <value>Настройки</value>
@@ -3555,9 +3564,6 @@
   </data>
   <data name="TaskSettings_HdrOpenPreviewHint" xml:space="preserve">
     <value>Само окно предпросмотра — SDR. В Windows фото открывается в отдельном HDR-окне; на других системах приложение сохраняет файл Ultra HDR и открывает его.</value>
-  </data>
-  <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
-    <value>Слева: полноценный HDR-контент с рекомендуемой кривой — детали в светах сохраняются, а не обрезаются. Справа: остальные методы, прокрутите для сравнения.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Изменения сохраняются автоматически</value>

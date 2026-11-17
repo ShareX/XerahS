@@ -3488,10 +3488,19 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
     <value>Die Kurven wirken nur auf Inhalte heller als Referenzweiß, ein normaler SDR-Desktop bleibt daher unverändert. None = keine Umwandlung, Lichter werden auf Weiß abgeschnitten; Reinhard = weicher Abfall, der Details in Lichtern erhält; ACES = filmisch, stärkerer Kontrast; BT.2446 C = Broadcast-Standard HDR→SDR (ITU-R); Hable = filmisch, auf Fotos abgestimmt (empfohlen).</value>
   </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
-    <value>Vorschau an einem echten HDR-Foto</value>
+    <value>Vergleich an einem echten HDR-Foto</value>
+  </data>
+  <data name="TaskSettings_HdrCompareButton" xml:space="preserve">
+    <value>Visueller Vergleich der HDR→SDR-Methoden</value>
+  </data>
+  <data name="HdrComparison_Title" xml:space="preserve">
+    <value>HDR→SDR-Vergleich</value>
+  </data>
+  <data name="HdrComparison_HdrWindowTitle" xml:space="preserve">
+    <value>XerahS HDR preview</value>
   </data>
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
-    <value>Dasselbe gemeinfreie Foto (Polyhaven „The Sky is on Fire“, CC0) mit 640 px. Die empfohlene Variante bleibt oben fixiert; die übrigen Methoden scrollen darunter, sodass jede in voller Größe vergleichbar ist.</value>
+    <value>Das gemeinfreie Foto (Polyhaven „The Sky is on Fire“, CC0), gerendert mit jeder HDR→SDR-Methode. Methode rechts wählen; standardmäßig ist die empfohlene Hable-Kurve aktiv.</value>
   </data>
   <data name="TaskImage_TabSettings" xml:space="preserve">
     <value>Einstellungen</value>
@@ -3555,9 +3564,6 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   </data>
   <data name="TaskSettings_HdrOpenPreviewHint" xml:space="preserve">
     <value>Das Vorschaufenster selbst ist SDR. Unter Windows öffnet sich das Foto in einem eigenen HDR-Fenster; anderswo speichert die App eine Ultra-HDR-Datei und öffnet sie.</value>
-  </data>
-  <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
-    <value>Links: der volle HDR-Inhalt mit der empfohlenen Kurve – Details in den Lichtern bleiben erhalten. Rechts: die übrigen Methoden, zum Vergleichen scrollen.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Änderungen werden automatisch gespeichert</value>

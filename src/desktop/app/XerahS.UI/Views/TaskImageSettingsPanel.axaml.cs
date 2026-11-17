@@ -23,6 +23,7 @@
 
 #endregion License Information (GPL v3)
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using XerahS.UI.Controls;
 using XerahS.UI.ViewModels;
 
@@ -30,6 +31,8 @@ namespace XerahS.UI.Views;
 
 public partial class TaskImageSettingsPanel : UserControl
 {
+    private HdrComparisonWindow? _hdrComparisonWindow;
+
     public TaskImageSettingsPanel()
     {
         InitializeComponent();
@@ -45,6 +48,29 @@ public partial class TaskImageSettingsPanel : UserControl
                     vm.ImageEffects.NotifyEffectSettingsChanged();
                 }
             };
+        }
+    }
+
+    /// <summary>
+    /// The comparison needs more room than the settings panel has, so it lives in its own window;
+    /// pressing the button again raises the existing one instead of stacking windows.
+    /// </summary>
+    private void OnOpenHdrComparison(object? sender, RoutedEventArgs e)
+    {
+        if (_hdrComparisonWindow is { IsVisible: true })
+        {
+            _hdrComparisonWindow.Activate();
+            return;
+        }
+
+        _hdrComparisonWindow = new HdrComparisonWindow();
+        if (TopLevel.GetTopLevel(this) is Window owner)
+        {
+            _hdrComparisonWindow.Show(owner);
+        }
+        else
+        {
+            _hdrComparisonWindow.Show();
         }
     }
 }

@@ -1,0 +1,62 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:XerahS.UI.ViewModels"
+        xmlns:local="using:XerahS.UI.Markup"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="760"
+        x:Class="XerahS.UI.Views.HdrComparisonWindow"
+        x:DataType="vm:HdrComparisonViewModel"
+        Title="{local:Localize HdrComparison_Title}"
+        Width="1280" Height="760"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="16" RowDefinitions="Auto,12,*,12,Auto">
+        <TextBlock Grid.Row="0"
+                   Text="{Binding Legend}"
+                   Opacity="0.8" TextWrapping="Wrap"/>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,16,320">
+            <Border Grid.Column="0"
+                    Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="4">
+                <Image Source="{Binding SelectedImage}" Stretch="Uniform"
+                       AutomationProperties.Name="Selected HDR to SDR rendering"/>
+            </Border>
+
+            <ListBox Grid.Column="2"
+                     ItemsSource="{Binding Entries}"
+                     SelectedItem="{Binding Selected, Mode=TwoWay}"
+                     Background="Transparent"
+                     AutomationProperties.Name="HDR to SDR methods">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:HdrComparisonEntry">
+                        <Grid ColumnDefinitions="112,12,*" Margin="0,4">
+                            <Border Grid.Column="0"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1" CornerRadius="4" ClipToBounds="True">
+                                <Image Source="{Binding Image}" Width="110" Height="55" Stretch="UniformToFill"/>
+                            </Border>
+                            <TextBlock Grid.Column="2"
+                                       Text="{Binding Label}"
+                                       VerticalAlignment="Center" TextWrapping="Wrap"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+
+        <Grid Grid.Row="4" ColumnDefinitions="Auto,16,*">
+            <Button Grid.Column="0"
+                    Content="{local:Localize TaskSettings_HdrOpenPreview}"
+                    Command="{Binding OpenInHdrViewerCommand}"
+                    AutomationProperties.Name="Open the untouched HDR image in a viewer"/>
+            <TextBlock Grid.Column="2"
+                       Text="{Binding OpenHint}"
+                       FontSize="11" Opacity="0.75" TextWrapping="Wrap"
+                       VerticalAlignment="Center"/>
+        </Grid>
+    </Grid>
+</Window>

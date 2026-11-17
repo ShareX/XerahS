@@ -3488,10 +3488,19 @@ This will permanently remove the file from the remote storage. This cannot be un
     <value>Curves only act on content brighter than display white, so an ordinary SDR desktop is saved unchanged. None = no conversion, highlights clip at white; Reinhard = soft roll-off that keeps highlight detail; ACES = filmic, stronger contrast; BT.2446 C = broadcast HDR-to-SDR standard (ITU-R); Hable = filmic, tuned for photos (recommended).</value>
   </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
-    <value>Preview on a real HDR photo</value>
+    <value>Comparison on a real HDR photo</value>
+  </data>
+  <data name="TaskSettings_HdrCompareButton" xml:space="preserve">
+    <value>Visual comparison of HDR → SDR methods</value>
+  </data>
+  <data name="HdrComparison_Title" xml:space="preserve">
+    <value>HDR → SDR comparison</value>
+  </data>
+  <data name="HdrComparison_HdrWindowTitle" xml:space="preserve">
+    <value>XerahS HDR preview</value>
   </data>
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
-    <value>The same public-domain photo (Polyhaven "The Sky is on Fire", CC0) at 640 px. The recommended rendering stays pinned; the other methods scroll underneath so each can be compared at full size.</value>
+    <value>The public-domain photo (Polyhaven "The Sky is on Fire", CC0) rendered by each HDR to SDR method. Pick a method on the right; the recommended Hable curve is selected first.</value>
   </data>
   <data name="TaskImage_TabSettings" xml:space="preserve">
     <value>Settings</value>
@@ -3555,9 +3564,6 @@ This will permanently remove the file from the remote storage. This cannot be un
   </data>
   <data name="TaskSettings_HdrOpenPreviewHint" xml:space="preserve">
     <value>The preview window itself is SDR. On Windows the photo opens in a separate HDR window; elsewhere the app saves an Ultra HDR file and opens it.</value>
-  </data>
-  <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
-    <value>Left: the full HDR content through the recommended curve — highlight detail is kept instead of clipping. Right: the other methods, scroll to compare.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Changes save automatically</value>
