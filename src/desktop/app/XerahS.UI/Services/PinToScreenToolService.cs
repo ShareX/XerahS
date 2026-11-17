@@ -38,7 +38,7 @@ namespace XerahS.UI.Services;
 
 public static class PinToScreenToolService
 {
-    private static readonly FilePickerFileType ImageFileType = new("Image files")
+    private static readonly FilePickerFileType ImageFileType = new(Resources.GetString("Pin_ImageFilesFilter"))
     {
         Patterns = new[] { "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.webp", "*.tiff", "*.tif" }
     };
@@ -121,11 +121,11 @@ public static class PinToScreenToolService
         {
             if (pinnedCount == 0)
             {
-                ShowToast("Pin to Screen", "No compatible image files were available to pin.");
+                ShowToast(Resources.GetString("SendToAction_PinToScreen"), Resources.GetString("Pin_NoCompatibleImages"));
             }
             else if (skippedCount > 0)
             {
-                ShowToast("Pin to Screen", $"Pinned {pinnedCount} image(s); skipped {skippedCount} item(s).");
+                ShowToast(Resources.GetString("SendToAction_PinToScreen"), Resources.GetString("Pin_PinnedSummary", pinnedCount, skippedCount));
             }
         }
 
@@ -215,7 +215,7 @@ public static class PinToScreenToolService
 
         if (bitmap == null)
         {
-            ShowToast("Pin to Screen", "Clipboard does not contain an image.");
+            ShowToast(Resources.GetString("SendToAction_PinToScreen"), Resources.GetString("Pin_ClipboardNoImage"));
             return;
         }
 
@@ -242,7 +242,7 @@ public static class PinToScreenToolService
         using var bitmap = SKBitmap.Decode(path);
         if (bitmap == null)
         {
-            ShowToast("Pin to Screen", "Failed to load image file.");
+            ShowToast(Resources.GetString("SendToAction_PinToScreen"), Resources.GetString("Pin_LoadImageFailed"));
             return;
         }
 
@@ -282,7 +282,7 @@ public static class PinToScreenToolService
 
         var options = new FilePickerOpenOptions
         {
-            Title = "Select Image to Pin",
+            Title = Resources.GetString("Pin_SelectImageTitle"),
             AllowMultiple = false,
             FileTypeFilter = new[] { ImageFileType }
         };
