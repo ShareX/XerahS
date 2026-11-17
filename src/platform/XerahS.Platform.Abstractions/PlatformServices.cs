@@ -188,6 +188,12 @@ namespace XerahS.Platform.Abstractions
         public static IHdrPreviewService? HdrPreview { get; set; }
 
         /// <summary>
+        /// Optional service for HDR surfaces embedded in a host window. Null where the platform
+        /// cannot present HDR content.
+        /// </summary>
+        public static IHdrSurfaceService? HdrSurfaces { get; set; }
+
+        /// <summary>
         /// Checks if platform services have been initialized
         /// </summary>
         public static bool IsInitialized =>
@@ -379,6 +385,7 @@ namespace XerahS.Platform.Abstractions
             HotkeyAccessSetup = null;
             TrayHostSupported = true;
             HdrPreview = null;
+            HdrSurfaces = null;
             _platformInfo = null;
             _screenService = null;
             _clipboardService = null;

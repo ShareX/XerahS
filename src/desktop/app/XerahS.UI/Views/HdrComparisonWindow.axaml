@@ -18,13 +18,24 @@
                    Opacity="0.8" TextWrapping="Wrap"/>
 
         <Grid Grid.Row="2" ColumnDefinitions="*,16,320">
-            <Border Grid.Column="0"
-                    Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1" CornerRadius="6" Padding="4">
-                <Image Source="{Binding SelectedImage}" Stretch="Uniform"
-                       AutomationProperties.Name="Selected HDR to SDR rendering"/>
-            </Border>
+            <Grid Grid.Column="0" ColumnDefinitions="*,*">
+                <!-- Placeholder the native HDR surface is positioned over; the child window paints it. -->
+                <Border x:Name="HdrHost"
+                        Grid.Column="0"
+                        IsVisible="False"
+                        Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="6"/>
+
+                <Border x:Name="SdrHost"
+                        Grid.Column="0" Grid.ColumnSpan="2"
+                        Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="6" Padding="4">
+                    <Image x:Name="SdrImage" Source="{Binding SelectedImage}" Stretch="Uniform"
+                           AutomationProperties.Name="Selected HDR to SDR rendering"/>
+                </Border>
+            </Grid>
 
             <ListBox Grid.Column="2"
                      ItemsSource="{Binding Entries}"
@@ -49,10 +60,16 @@
         </Grid>
 
         <Grid Grid.Row="4" ColumnDefinitions="Auto,16,*">
-            <Button Grid.Column="0"
-                    Content="{local:Localize TaskSettings_HdrOpenPreview}"
-                    Command="{Binding OpenInHdrViewerCommand}"
-                    AutomationProperties.Name="Open the untouched HDR image in a viewer"/>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <CheckBox x:Name="NativeHdrToggle"
+                          Content="{local:Localize HdrComparison_NativeToggle}"
+                          IsVisible="{Binding NativePreviewAvailable}"
+                          IsCheckedChanged="OnNativeHdrToggled"
+                          AutomationProperties.Name="Show the native HDR image next to the tone mapped one"/>
+                <Button Content="{local:Localize TaskSettings_HdrOpenPreview}"
+                        Command="{Binding OpenInHdrViewerCommand}"
+                        AutomationProperties.Name="Open the untouched HDR image in a viewer"/>
+            </StackPanel>
             <TextBlock Grid.Column="2"
                        Text="{Binding OpenHint}"
                        FontSize="11" Opacity="0.75" TextWrapping="Wrap"

@@ -3493,6 +3493,9 @@ This will permanently remove the file from the remote storage. This cannot be un
   <data name="TaskSettings_HdrCompareButton" xml:space="preserve">
     <value>Visual comparison of HDR → SDR methods</value>
   </data>
+  <data name="HdrComparison_NativeToggle" xml:space="preserve">
+    <value>Native HDR (side by side)</value>
+  </data>
   <data name="HdrComparison_Title" xml:space="preserve">
     <value>HDR → SDR comparison</value>
   </data>

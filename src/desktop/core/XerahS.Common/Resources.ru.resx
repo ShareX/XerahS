@@ -3493,6 +3493,9 @@
   <data name="TaskSettings_HdrCompareButton" xml:space="preserve">
     <value>Визуальное сравнение методов HDR → SDR</value>
   </data>
+  <data name="HdrComparison_NativeToggle" xml:space="preserve">
+    <value>Настоящий HDR (рядом)</value>
+  </data>
   <data name="HdrComparison_Title" xml:space="preserve">
     <value>Сравнение HDR → SDR</value>
   </data>

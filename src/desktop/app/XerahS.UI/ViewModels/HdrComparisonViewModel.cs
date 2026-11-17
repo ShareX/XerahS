@@ -79,6 +79,13 @@ public sealed class HdrComparisonViewModel : ObservableObject
 
     public Bitmap? SelectedImage => Selected.Image;
 
+    /// <summary>
+    /// True when the platform can embed an HDR surface next to the tone-mapped view, which is what
+    /// makes comparing them possible without raising a second window.
+    /// </summary>
+    public bool NativePreviewAvailable =>
+        XerahS.Platform.Abstractions.PlatformServices.HdrSurfaces is { IsSupported: true };
+
     public string Legend => XerahS.Common.Resources.GetString("TaskSettings_HdrPhotoLegend");
 
     public string OpenHint => XerahS.Common.Resources.GetString("TaskSettings_HdrOpenPreviewHint");

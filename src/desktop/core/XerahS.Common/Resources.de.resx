@@ -3493,6 +3493,9 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   <data name="TaskSettings_HdrCompareButton" xml:space="preserve">
     <value>Visueller Vergleich der HDR→SDR-Methoden</value>
   </data>
+  <data name="HdrComparison_NativeToggle" xml:space="preserve">
+    <value>Echtes HDR (nebeneinander)</value>
+  </data>
   <data name="HdrComparison_Title" xml:space="preserve">
     <value>HDR→SDR-Vergleich</value>
   </data>

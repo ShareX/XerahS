@@ -100,6 +100,27 @@ internal static class HdrPhotoPreviewCache
         }
     }
 
+    /// <summary>Original fp16 pixels, for an embedded or external HDR surface.</summary>
+    public static bool TryGetSourcePixels(out byte[] pixels, out int width, out int height, out int rowBytes)
+    {
+        pixels = Array.Empty<byte>();
+        width = 0;
+        height = 0;
+        rowBytes = 0;
+
+        using SKBitmap? photo = LoadSource();
+        if (photo == null)
+        {
+            return false;
+        }
+
+        width = photo.Width;
+        height = photo.Height;
+        rowBytes = photo.RowBytes;
+        pixels = photo.GetPixelSpan().ToArray();
+        return true;
+    }
+
     private static SKBitmap? LoadSource()
     {
         try
