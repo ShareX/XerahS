@@ -198,22 +198,22 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
             if (OperatingSystem.IsWindows() && Environment.OSVersion.Version.Build >= 17134)
             {
                 return IsFfmpegAvailableForAdvancedCodecs()
-                    ? "Windows uses native capture with Media Foundation for H.264. HEVC, VP9, and AV1 automatically switch to the FFmpeg backend in this build."
-                    : "Windows uses native capture with Media Foundation for H.264. Install FFmpeg to enable HEVC, VP9, and AV1 recording.";
+                    ? Resources.GetString("Recording_EncoderWindowsNativeFfmpeg")
+                    : Resources.GetString("Recording_EncoderWindowsNativeNoFfmpeg");
             }
             else if (OperatingSystem.IsWindows())
             {
-                return "Using FFmpeg fallback for recording (requires Windows 10 1803+ for native recording).";
+                return Resources.GetString("Recording_EncoderWindowsFallback");
             }
             else if (OperatingSystem.IsMacOS())
             {
                 return IsFfmpegAvailableForAdvancedCodecs()
-                    ? "macOS uses native recording for H.264. HEVC, VP9, and AV1 automatically switch to FFmpeg in this build."
-                    : "macOS native recording currently covers H.264 only. Install FFmpeg to enable HEVC, VP9, and AV1 recording.";
+                    ? Resources.GetString("Recording_EncoderMacosFfmpeg")
+                    : Resources.GetString("Recording_EncoderMacosNoFfmpeg");
             }
             else
             {
-                return "Platform-specific recording support not yet implemented. FFmpeg fallback will be used.";
+                return Resources.GetString("Recording_EncoderOther");
             }
         }
     }
@@ -227,15 +227,15 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
         {
             if (OperatingSystem.IsWindows())
             {
-                return "Record your screen to MP4 video using native Windows.Graphics.Capture";
+                return Resources.GetString("Recording_FeatureWindows");
             }
             else if (OperatingSystem.IsMacOS())
             {
-                return "Record your screen to MP4 video using FFmpeg";
+                return Resources.GetString("Recording_FeatureFfmpeg");
             }
             else if (OperatingSystem.IsLinux())
             {
-                return "Record your screen to MP4 video using FFmpeg";
+                return Resources.GetString("Recording_FeatureFfmpeg");
             }
             else
             {
