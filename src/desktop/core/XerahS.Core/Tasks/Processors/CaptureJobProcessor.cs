@@ -185,11 +185,11 @@ namespace XerahS.Core.Tasks.Processors
 
                     // Persist the user's HDR tonemapping choice and apply it in case the image is
                     // still HDR (fp16). If the pre-window hook already replaced the fp16 image with
-                    // an 8-bit copy, this is a no-op (the image is no longer RgbaF16). If the user
-                    // selected None after that replacement, the fp16 source is already disposed and
-                    // the 8-bit copy stays — acceptable, the choice still applies to future captures.
-                    settings.ImageSettings.ImageHdrToneMapping = result.ToneMapping;
-                    if (TryTonemapHdr(currentImage, result.ToneMapping, settings.AfterCaptureJob & generalSdrTasks, out SKBitmap? postWindowTonemapped) &&
+                    // an 8-bit copy, this is a no-op (the image is no longer RgbaF16).
+                    // NOTE: upstream's after-capture window does not return a tone-mapping choice
+                    // (see docs/upstream/HDR_PORT_STATUS.md, gap 3), so the configured mode is used.
+                    var windowToneMapping = settings.ImageSettings.ImageHdrToneMapping;
+                    if (TryTonemapHdr(currentImage, windowToneMapping, settings.AfterCaptureJob & generalSdrTasks, out SKBitmap? postWindowTonemapped) &&
                         postWindowTonemapped != null)
                     {
                         info.Metadata.Image = postWindowTonemapped;

@@ -324,7 +324,7 @@ public static class HdrSelfTestRunner
             // ── 5. Preview conversion matches Tonemap(None) ───────────────────
             if (isHdr)
             {
-                using var lut = BitmapConversionHelpers.ConvertF16ToSrgb8(capture);
+                using var lut = ImageHelpers.ConvertF16ToSrgb8(capture);
                 using var none = HdrTonemapper.TonemapToBgra8888(capture, HdrToneMappingMode.None);
                 if (lut != null && none != null)
                 {

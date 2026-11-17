@@ -618,4 +618,47 @@ public static class FileHelpers
             return false;
         }
     }
+
+    /// <summary>
+    /// SEC-18: Returns true when <paramref name="fullPath"/> resolves to a location inside
+    /// <paramref name="rootDirectory"/> (or to the directory itself). Both paths are
+    /// normalized with <see cref="Path.GetFullPath(string)"/> before comparison, so ".."
+    /// segments, relative paths, and trailing separators cannot bypass the check.
+    /// </summary>
+    public static bool IsPathWithinDirectory(string fullPath, string rootDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(fullPath) || string.IsNullOrWhiteSpace(rootDirectory))
+        {
+            return false;
+        }
+
+        try
+        {
+            string normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(rootDirectory));
+            string normalizedFullPath = Path.GetFullPath(fullPath);
+
+            // Windows file systems are case-insensitive; Linux file systems are case-sensitive.
+            StringComparison comparison = OperatingSystem.IsWindows()
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
+
+            if (string.Equals(normalizedFullPath, normalizedRoot, comparison))
+            {
+                return true;
+            }
+
+            // Keep the directory separator on filesystem roots (e.g. "C:\" or "/") so that
+            // a sibling of the root directory is not reported as contained.
+            string prefix = normalizedRoot.EndsWith(Path.DirectorySeparatorChar)
+                ? normalizedRoot
+                : normalizedRoot + Path.DirectorySeparatorChar;
+
+            return normalizedFullPath.StartsWith(prefix, comparison);
+        }
+        catch (Exception)
+        {
+            // Unresolvable paths are treated as not contained (fail closed).
+            return false;
+        }
+    }
 }
