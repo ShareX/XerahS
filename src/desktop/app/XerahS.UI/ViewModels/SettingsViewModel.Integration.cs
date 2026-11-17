@@ -124,7 +124,7 @@ namespace XerahS.UI.ViewModels
                 var choices = SettingsManager.Settings.SendToRememberedChoices;
                 if (choices.Count == 0)
                 {
-                    return "No remembered Send-to choices.";
+                    return Resources.GetString("SendTo_NoRememberedChoices");
                 }
 
                 return string.Join(
@@ -154,12 +154,12 @@ namespace XerahS.UI.ViewModels
         }
 
         public string McpApiKeyStatusText => HasMcpApiKey
-            ? "API key is configured. Use Copy to place the full token on the clipboard."
-            : "API key has not been generated yet.";
+            ? Resources.GetString("Mcp_KeyConfigured")
+            : Resources.GetString("Mcp_KeyNotGenerated");
 
         public string McpManifestUrl => "https://xerahs.com/.well-known/mcp/manifest.json";
 
-        private string _assistantHotkeyStatusText = "Use the assistant shortcut to open the in-app command overlay.";
+        private string _assistantHotkeyStatusText = Resources.GetString("Assistant_HotkeyStatusText");
         private string _captureCommandPaletteStatusText = Resources.GetString("Assistant_PaletteStatusText");
 
         public ObservableCollection<AssistantProviderOptionViewModel> AssistantProviderOptions { get; } = new(
@@ -178,7 +178,7 @@ namespace XerahS.UI.ViewModels
         private string _assistantProviderApiKey = string.Empty;
 
         [ObservableProperty]
-        private string _assistantProviderStatusText = "Local commands are available without an AI provider.";
+        private string _assistantProviderStatusText = Resources.GetString("Assistant_LocalCommandsAvailable");
 
         private ObservableCollection<AssistantFeatureOptionViewModel>? _assistantFeatureOptions;
 
@@ -261,15 +261,15 @@ namespace XerahS.UI.ViewModels
 
         public string AssistantProviderKeyStatus => AssistantProviderHasChatGptSession
             ? string.IsNullOrWhiteSpace(ChatGptSignIn.Email)
-                ? "Signed in with ChatGPT. Requests use your ChatGPT plan. An API key is optional."
+                ? Resources.GetString("Auto_Signed_in_with_ChatGPT_Requests_use_your")
                 : $"Signed in with ChatGPT ({ChatGptSignIn.Email}). Requests use your ChatGPT plan. An API key is optional."
             : AssistantProviderHasApiKey
-                ? "API key is stored in the XerahS secret store."
+                ? Resources.GetString("Assistant_KeyStored")
                 : AssistantProviderNeedsApiKey
                     ? AssistantProviderSupportsChatGptSignIn
-                        ? "Not signed in. Continue with ChatGPT, or save an API key."
-                        : "API key is not configured."
-                    : "Ollama uses the local daemon and does not need an API key.";
+                        ? Resources.GetString("Auto_Not_signed_in_Continue_with_ChatGPT_or_s")
+                        : Resources.GetString("Assistant_KeyNotConfigured")
+                    : Resources.GetString("Assistant_OllamaNoKeyNeeded");
 
         public string AssistantHotkeyStatusText
         {
@@ -288,7 +288,7 @@ namespace XerahS.UI.ViewModels
         {
             AssistantHotkeyStatusText = PlatformServices.IsInitialized
                 ? $"Current shortcut: {AssistantHotkeyText}"
-                : "Platform services are not initialized yet.";
+                : Resources.GetString("Assistant_PlatformServicesNotInitialized");
         }
 
         [RelayCommand]
@@ -296,7 +296,7 @@ namespace XerahS.UI.ViewModels
         {
             CaptureCommandPaletteStatusText = PlatformServices.IsInitialized
                 ? $"Current shortcut: {CaptureCommandPaletteHotkeyText}"
-                : "Platform services are not initialized yet.";
+                : Resources.GetString("Assistant_PlatformServicesNotInitialized");
         }
 
         [RelayCommand]
@@ -304,7 +304,7 @@ namespace XerahS.UI.ViewModels
         {
             if (SelectedAssistantProvider == null)
             {
-                AssistantProviderStatusText = "Select a provider first.";
+                AssistantProviderStatusText = Resources.GetString("Assistant_SelectProviderFirst");
                 return;
             }
 
@@ -317,7 +317,7 @@ namespace XerahS.UI.ViewModels
         {
             if (SelectedAssistantProvider == null)
             {
-                AssistantProviderStatusText = "Select a provider first.";
+                AssistantProviderStatusText = Resources.GetString("Assistant_SelectProviderFirst");
                 return;
             }
 
@@ -325,10 +325,10 @@ namespace XerahS.UI.ViewModels
             if (!AssistantProviderSettingsResolver.TryGetActive(out AssistantProviderRuntimeSettings runtimeSettings))
             {
                 AssistantProviderStatusText = AssistantProviderSupportsChatGptSignIn
-                    ? "Sign in with ChatGPT or save an API key before validating this provider."
+                    ? Resources.GetString("Auto_Sign_in_with_ChatGPT_or_save_an_API_key_")
                     : AssistantProviderNeedsApiKey
-                        ? "Save an API key before validating this provider."
-                        : "Provider settings are incomplete.";
+                        ? Resources.GetString("Assistant_SaveApiKeyBeforeValidate")
+                        : Resources.GetString("Assistant_SettingsIncomplete");
                 return;
             }
 
@@ -345,7 +345,7 @@ namespace XerahS.UI.ViewModels
             }
             else
             {
-                AssistantProviderStatusText = result.Text ?? "Provider validation failed.";
+                AssistantProviderStatusText = result.Text ?? Resources.GetString("Assistant_ValidationFailed");
             }
         }
 
@@ -372,12 +372,12 @@ namespace XerahS.UI.ViewModels
             }
 
             SaveSelectedAssistantProviderSettings();
-            AssistantProviderStatusText = "Waiting for ChatGPT in the browser...";
+            AssistantProviderStatusText = Resources.GetString("Auto_Waiting_for_ChatGPT_in_the_browser");
             try
             {
                 string email = await ChatGptSignIn.SignInAsync(CancellationToken.None);
                 AssistantProviderStatusText = string.IsNullOrWhiteSpace(email)
-                    ? "Signed in with ChatGPT."
+                    ? Resources.GetString("Auto_Signed_in_with_ChatGPT")
                     : $"Signed in with ChatGPT as {email}.";
             }
             catch (ChatGptSignInException ex)
@@ -386,7 +386,7 @@ namespace XerahS.UI.ViewModels
             }
             catch (Exception)
             {
-                AssistantProviderStatusText = "ChatGPT sign-in failed.";
+                AssistantProviderStatusText = Resources.GetString("Auto_ChatGPT_sign_in_failed");
             }
 
             NotifyAssistantProviderSecretProperties();
@@ -396,7 +396,7 @@ namespace XerahS.UI.ViewModels
         private void SignOutOfChatGpt()
         {
             ChatGptSignIn.SignOut();
-            AssistantProviderStatusText = "Signed out of ChatGPT.";
+            AssistantProviderStatusText = Resources.GetString("Auto_Signed_out_of_ChatGPT");
             NotifyAssistantProviderSecretProperties();
         }
 
@@ -537,11 +537,11 @@ namespace XerahS.UI.ViewModels
 
         private static string FormatSendToAction(SendToAction action) => action switch
         {
-            SendToAction.UploadNow => "Upload now",
-            SendToAction.OpenUploadContent => "Open in Upload Content",
-            SendToAction.OpenImageEditor => "Open in Image Editor",
-            SendToAction.PinToScreen => "Pin to Screen",
-            SendToAction.IndexFolders => "Index folders",
+            SendToAction.UploadNow => Resources.GetString("SendToAction_UploadNow"),
+            SendToAction.OpenUploadContent => Resources.GetString("SendToAction_OpenUploadContent"),
+            SendToAction.OpenImageEditor => Resources.GetString("SendToAction_OpenImageEditor"),
+            SendToAction.PinToScreen => Resources.GetString("Auto_Pin_to_Screen"),
+            SendToAction.IndexFolders => Resources.GetString("SendToAction_IndexFolders"),
             SendToAction.Cancel => "Cancel",
             _ => action.ToString()
         };

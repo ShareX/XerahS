@@ -64,7 +64,7 @@ public partial class WorkflowsViewModel : ViewModelBase, IDisposable
     private WorkflowEditorViewModel? _selectedEditor;
 
     [ObservableProperty]
-    private string _saveStatus = "Changes save automatically";
+    private string _saveStatus = Resources.GetString("Auto_Changes_save_automatically");
 
     [ObservableProperty]
     private bool _hasSaveError;
@@ -171,7 +171,7 @@ public partial class WorkflowsViewModel : ViewModelBase, IDisposable
         if (_disposed || _reloading || SelectedEditor == null) return;
         _pendingChanges = true;
         HasSaveError = false;
-        SaveStatus = "Saving changes…";
+        SaveStatus = Resources.GetString("Auto_Saving_changes");
         _saveTimer.Stop();
         _saveTimer.Start();
     }
@@ -203,7 +203,7 @@ public partial class WorkflowsViewModel : ViewModelBase, IDisposable
         {
             DebugHelper.WriteException(ex, "Could not save workflow changes");
             HasSaveError = true;
-            SaveStatus = "Changes could not be saved. Retry.";
+            SaveStatus = Resources.GetString("Auto_Changes_could_not_be_saved_Retry");
         }
         finally { _suppressManagerChanges = false; }
     }
@@ -214,13 +214,13 @@ public partial class WorkflowsViewModel : ViewModelBase, IDisposable
         try
         {
             HasSaveError = !_persist();
-            SaveStatus = HasSaveError ? "Changes could not be saved. Retry." : "All changes saved";
+            SaveStatus = HasSaveError ? Resources.GetString("Auto_Changes_could_not_be_saved_Retry") : Resources.GetString("Auto_All_changes_saved");
         }
         catch (Exception ex)
         {
             DebugHelper.WriteException(ex, "Could not save workflow configuration");
             HasSaveError = true;
-            SaveStatus = "Changes could not be saved. Retry.";
+            SaveStatus = Resources.GetString("Auto_Changes_could_not_be_saved_Retry");
         }
         bool wasSuppressing = _suppressManagerChanges;
         _suppressManagerChanges = true;
@@ -240,7 +240,7 @@ public partial class WorkflowsViewModel : ViewModelBase, IDisposable
     {
         FlushAutoSave();
         var model = new WorkflowSettings(WorkflowType.RectangleRegion, new HotkeyInfo());
-        model.TaskSettings.Description = "New workflow";
+        model.TaskSettings.Description = Resources.GetString("Auto_New_workflow");
         model.EnsureId();
         Models.Add(model);
         SaveHotkeys();
@@ -380,7 +380,7 @@ public partial class WorkflowsViewModel : ViewModelBase, IDisposable
     }
 
     private bool CanTogglePin() => SelectedWorkflow != null && !SelectedWorkflow.IsNavWorkflow;
-    public string PinButtonText => SelectedWorkflow?.PinnedToTray == true ? "Unpin from Tray" : "Pin to Tray";
+    public string PinButtonText => SelectedWorkflow?.PinnedToTray == true ? Resources.GetString("Workflows_PinButtonText_Unpin") : Resources.GetString("Workflows_PinButtonText_Pin");
 
     public void Dispose()
     {

@@ -3340,4 +3340,43 @@ This will permanently remove the file from the remote storage. This cannot be un
   <data name="TaskSettings_HdrLegend" xml:space="preserve">
     <value>Curves only act on content brighter than display white, so an ordinary SDR desktop is saved unchanged. None = no conversion, highlights clip at white; Reinhard = soft roll-off that keeps highlight detail; ACES = filmic, stronger contrast; BT.2446 C = broadcast HDR-to-SDR standard (ITU-R); Hable = filmic, tuned for photos (recommended).</value>
   </data>
+  <data name="Auto_Changes_save_automatically" xml:space="preserve">
+    <value>Changes save automatically</value>
+  </data>
+  <data name="Auto_Saving_changes" xml:space="preserve">
+    <value>Saving changes…</value>
+  </data>
+  <data name="Auto_Changes_could_not_be_saved_Retry" xml:space="preserve">
+    <value>Changes could not be saved. Retry.</value>
+  </data>
+  <data name="Auto_All_changes_saved" xml:space="preserve">
+    <value>All changes saved</value>
+  </data>
+  <data name="Auto_New_workflow" xml:space="preserve">
+    <value>New workflow</value>
+  </data>
+  <data name="Auto_Signed_in_with_ChatGPT_Requests_use_your" xml:space="preserve">
+    <value>Signed in with ChatGPT. Requests use your ChatGPT plan. An API key is optional.</value>
+  </data>
+  <data name="Auto_Not_signed_in_Continue_with_ChatGPT_or_s" xml:space="preserve">
+    <value>Not signed in. Continue with ChatGPT, or save an API key.</value>
+  </data>
+  <data name="Auto_Sign_in_with_ChatGPT_or_save_an_API_key_" xml:space="preserve">
+    <value>Sign in with ChatGPT or save an API key before validating this provider.</value>
+  </data>
+  <data name="Auto_Waiting_for_ChatGPT_in_the_browser" xml:space="preserve">
+    <value>Waiting for ChatGPT in the browser...</value>
+  </data>
+  <data name="Auto_Signed_in_with_ChatGPT" xml:space="preserve">
+    <value>Signed in with ChatGPT.</value>
+  </data>
+  <data name="Auto_ChatGPT_sign_in_failed" xml:space="preserve">
+    <value>ChatGPT sign-in failed.</value>
+  </data>
+  <data name="Auto_Signed_out_of_ChatGPT" xml:space="preserve">
+    <value>Signed out of ChatGPT.</value>
+  </data>
+  <data name="Auto_Pin_to_Screen" xml:space="preserve">
+    <value>Pin to Screen</value>
+  </data>
 </root>
