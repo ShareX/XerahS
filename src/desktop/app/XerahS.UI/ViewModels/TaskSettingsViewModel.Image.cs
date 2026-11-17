@@ -27,6 +27,7 @@ using Avalonia.Media.Imaging;
 using SkiaSharp;
 using ShareX.ImageEditor.Presentation.Rendering;
 using XerahS.Common;
+using XerahS.Common.Helpers;
 using XerahS.Core;
 using XerahS.Core.Helpers;
 using XerahS.Services.Abstractions;
@@ -144,6 +145,77 @@ namespace XerahS.UI.ViewModels
             Array.FindAll(Enum.GetValues<HdrToneMappingMode>(), m => m != HdrToneMappingMode.Auto);
 
         private Bitmap? _hdrPreviewBitmap;
+
+        private const string HdrPhotoAssetUri = "avares://XerahS.UI/Assets/hdr/the_sky_is_on_fire_1k.hdr";
+        private const int HdrPhotoPreviewWidth = 320;
+
+        /// <summary>
+        /// The bundled CC0 photograph (Polyhaven "the sky is on fire") rendered through each tone
+        /// curve of the capture pipeline. A real photograph shows the highlight roll-off far better
+        /// than the synthetic bar chart, which only shades luminance.
+        /// </summary>
+        public Bitmap? HdrPhotoNone => GetHdrPhotoPreview(HdrToneMappingMode.None);
+        public Bitmap? HdrPhotoReinhard => GetHdrPhotoPreview(HdrToneMappingMode.TonemapReinhard);
+        public Bitmap? HdrPhotoAces => GetHdrPhotoPreview(HdrToneMappingMode.TonemapAces);
+        public Bitmap? HdrPhotoBt2446C => GetHdrPhotoPreview(HdrToneMappingMode.TonemapBt2446C);
+        public Bitmap? HdrPhotoHable => GetHdrPhotoPreview(HdrToneMappingMode.TonemapHable);
+
+        // Decoding and tonemapping the photo once for the whole process keeps every settings page
+        // cheap; the resulting Avalonia bitmaps are immutable and safe to share.
+        private static readonly Lazy<IReadOnlyDictionary<HdrToneMappingMode, Bitmap?>> HdrPhotoPreviews =
+            new(BuildHdrPhotoPreviews, LazyThreadSafetyMode.ExecutionAndPublication);
+
+        private static readonly HdrToneMappingMode[] PhotoPreviewModes =
+        {
+            HdrToneMappingMode.None,
+            HdrToneMappingMode.TonemapReinhard,
+            HdrToneMappingMode.TonemapAces,
+            HdrToneMappingMode.TonemapBt2446C,
+            HdrToneMappingMode.TonemapHable,
+        };
+
+        private static Bitmap? GetHdrPhotoPreview(HdrToneMappingMode mode)
+        {
+            return HdrPhotoPreviews.Value.TryGetValue(mode, out Bitmap? preview) ? preview : null;
+        }
+
+        private static SKBitmap? LoadBundledHdrPhoto()
+        {
+            try
+            {
+                using Stream stream = Avalonia.Platform.AssetLoader.Open(new Uri(HdrPhotoAssetUri));
+                return RadianceHdrDecoder.TryDecode(stream);
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteLine($"[HDR] bundled preview photo failed to load: {ex.Message}");
+                return null;
+            }
+        }
+
+        private static IReadOnlyDictionary<HdrToneMappingMode, Bitmap?> BuildHdrPhotoPreviews()
+        {
+            var previews = new Dictionary<HdrToneMappingMode, Bitmap?>();
+
+            using SKBitmap? photo = LoadBundledHdrPhoto();
+            if (photo == null)
+            {
+                return previews;
+            }
+
+            // Downscale before tonemapping: the asset is a 2048x1024 panorama and the panel only
+            // shows a thumbnail, so 300k pixels per variant beat 2M for no visible gain.
+            int targetHeight = Math.Max(1, photo.Height * HdrPhotoPreviewWidth / photo.Width);
+            using SKBitmap thumbnail = ImageHelpers.ResizeImage(photo, HdrPhotoPreviewWidth, targetHeight);
+
+            foreach (var mode in PhotoPreviewModes)
+            {
+                using var sdr = HdrTonemapper.TonemapToBgra8888(thumbnail, mode);
+                previews[mode] = sdr != null ? BitmapConversionHelpers.ToAvaloniBitmap(sdr) : null;
+            }
+
+            return previews;
+        }
 
         /// <summary>
         /// Live preview of the selected general HDR → SDR tone mapping, rendered from a synthetic

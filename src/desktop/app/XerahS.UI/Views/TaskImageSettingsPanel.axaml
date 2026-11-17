@@ -124,6 +124,45 @@
                                                HorizontalAlignment="Left"
                                                AutomationProperties.Name="HDR Tone Mapping Preview"/>
                                     </StackPanel>
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{local:Localize TaskSettings_HdrPhotoPreview}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{local:Localize TaskSettings_HdrPhotoLegend}"
+                                                   Opacity="0.75" FontSize="11" TextWrapping="Wrap" MaxWidth="560"
+                                                   HorizontalAlignment="Left"
+                                                   AutomationProperties.Name="HDR photo tone mapping legend"/>
+                                        <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <StackPanel Width="196" Margin="0,0,12,12" Spacing="4">
+                                                <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" ClipToBounds="True">
+                                                    <Image Source="{Binding HdrPhotoNone}" Width="194" Height="97" Stretch="UniformToFill" AutomationProperties.Name="HDR photo without conversion"/>
+                                                </Border>
+                                                <TextBlock Text="{local:Localize HdrToneMappingMode_None}" FontSize="11" Opacity="0.85" TextWrapping="Wrap" TextAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Width="196" Margin="0,0,12,12" Spacing="4">
+                                                <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" ClipToBounds="True">
+                                                    <Image Source="{Binding HdrPhotoReinhard}" Width="194" Height="97" Stretch="UniformToFill" AutomationProperties.Name="HDR photo with Reinhard curve"/>
+                                                </Border>
+                                                <TextBlock Text="{local:Localize HdrToneMappingMode_TonemapReinhard}" FontSize="11" Opacity="0.85" TextWrapping="Wrap" TextAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Width="196" Margin="0,0,12,12" Spacing="4">
+                                                <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" ClipToBounds="True">
+                                                    <Image Source="{Binding HdrPhotoAces}" Width="194" Height="97" Stretch="UniformToFill" AutomationProperties.Name="HDR photo with ACES curve"/>
+                                                </Border>
+                                                <TextBlock Text="{local:Localize HdrToneMappingMode_TonemapAces}" FontSize="11" Opacity="0.85" TextWrapping="Wrap" TextAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Width="196" Margin="0,0,12,12" Spacing="4">
+                                                <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" ClipToBounds="True">
+                                                    <Image Source="{Binding HdrPhotoBt2446C}" Width="194" Height="97" Stretch="UniformToFill" AutomationProperties.Name="HDR photo with BT.2446 C curve"/>
+                                                </Border>
+                                                <TextBlock Text="{local:Localize HdrToneMappingMode_TonemapBt2446C}" FontSize="11" Opacity="0.85" TextWrapping="Wrap" TextAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Width="196" Margin="0,0,12,12" Spacing="4">
+                                                <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" ClipToBounds="True">
+                                                    <Image Source="{Binding HdrPhotoHable}" Width="194" Height="97" Stretch="UniformToFill" AutomationProperties.Name="HDR photo with Hable curve"/>
+                                                </Border>
+                                                <TextBlock Text="{local:Localize HdrToneMappingMode_TonemapHable}" FontSize="11" Opacity="0.85" TextWrapping="Wrap" TextAlignment="Center"/>
+                                            </StackPanel>
+                                        </WrapPanel>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
