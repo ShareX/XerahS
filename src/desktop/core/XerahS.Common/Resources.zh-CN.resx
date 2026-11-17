@@ -3491,7 +3491,7 @@
     <value>在真实 HDR 照片上预览</value>
   </data>
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
-    <value>同一张公有领域照片（Polyhaven《The Sky is on Fire》，CC0），宽度 640 px。未转换的画面固定在上方；下方可滚动查看各条曲线，分别用对应方法进行 HDR→SDR 渲染。</value>
+    <value>同一张公有领域照片（Polyhaven《The Sky is on Fire》，CC0），宽度 640 px。推荐效果固定在上方，其余方法在下方滚动，便于逐一按原尺寸对比。</value>
   </data>
   <data name="TaskImage_TabSettings" xml:space="preserve">
     <value>设置</value>
@@ -3551,7 +3551,7 @@
     <value>预览</value>
   </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
-    <value>上方：SDR 查看器所见的 HDR 画面——高光在白色处裁剪。</value>
+    <value>上方：用推荐曲线呈现的完整 HDR 内容——高光细节得以保留，而不是被裁剪。下方对比其余 HDR→SDR 方法，首先是 SDR 查看器的裁剪效果。</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>更改会自动保存</value>

@@ -3491,7 +3491,7 @@ Esto eliminará permanentemente el archivo del almacenamiento remoto. Esta acci�
     <value>Vista previa con una foto HDR real</value>
   </data>
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
-    <value>La misma foto de dominio público (Polyhaven «The Sky is on Fire», CC0) a 640 px. El fotograma sin convertir queda fijo arriba; debajo se desplazan las curvas, y cada una renderiza ese fotograma con un método HDR→SDR.</value>
+    <value>La misma foto de dominio público (Polyhaven «The Sky is on Fire», CC0) a 640 px. La variante recomendada queda fija arriba; los demás métodos se desplazan debajo para compararlos a tamaño completo.</value>
   </data>
   <data name="TaskImage_TabSettings" xml:space="preserve">
     <value>Configuración</value>
@@ -3551,7 +3551,7 @@ Esto eliminará permanentemente el archivo del almacenamiento remoto. Esta acci�
     <value>Vista previa</value>
   </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
-    <value>Arriba: el fotograma HDR tal como lo muestra un visor SDR: las luces se recortan en el blanco.</value>
+    <value>Arriba: todo el contenido HDR con la curva recomendada: el detalle de las luces se conserva en lugar de recortarse. Debajo se comparan los demás métodos HDR→SDR, empezando por el aspecto recortado de un visor SDR.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Los cambios se guardan automáticamente</value>

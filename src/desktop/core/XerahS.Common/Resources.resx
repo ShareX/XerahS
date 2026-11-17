@@ -3491,7 +3491,7 @@ This will permanently remove the file from the remote storage. This cannot be un
     <value>Preview on a real HDR photo</value>
   </data>
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
-    <value>The same public-domain photo (Polyhaven "The Sky is on Fire", CC0) at 640 px. The unconverted frame stays pinned on top; the curves below scroll, each rendering that frame with one HDR to SDR method.</value>
+    <value>The same public-domain photo (Polyhaven "The Sky is on Fire", CC0) at 640 px. The recommended rendering stays pinned; the other methods scroll underneath so each can be compared at full size.</value>
   </data>
   <data name="TaskImage_TabSettings" xml:space="preserve">
     <value>Settings</value>
@@ -3551,7 +3551,7 @@ This will permanently remove the file from the remote storage. This cannot be un
     <value>Preview</value>
   </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
-    <value>Top: the HDR frame as an SDR viewer shows it, with highlights clipped at white.</value>
+    <value>Top: the full HDR content through the recommended curve — highlight detail is kept instead of clipping. Below, the other HDR to SDR methods are compared, starting with the clipped SDR-viewer look.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Changes save automatically</value>
