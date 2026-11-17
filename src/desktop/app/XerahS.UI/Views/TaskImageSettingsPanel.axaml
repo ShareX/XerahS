@@ -18,24 +18,24 @@
     <Border Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}" Padding="16">
         <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
             <!-- Image Settings Tab -->
-            <TabItem Header="Settings">
+            <TabItem Header="{local:Localize TaskImage_TabSettings}">
                 <ScrollViewer>
                     <Grid ColumnDefinitions="*, 24, *" RowDefinitions="Auto, 16, Auto" Margin="8">
                         <!-- Quality -->
                         <StackPanel Grid.Column="0" Spacing="8">
-                            <TextBlock Text="Quality" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize TaskImage_Quality}" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="16">
                                 <StackPanel Spacing="16">
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="Format:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskImage_Format}" VerticalAlignment="Center"/>
                                         <ComboBox Grid.Column="2" ItemsSource="{Binding ImageFormats}" SelectedItem="{Binding ImageFormat}" HorizontalAlignment="Stretch" AutomationProperties.Name="Image Format"/>
                                     </Grid>
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="JPEG Quality:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskImage_JpegQuality}" VerticalAlignment="Center"/>
                                         <NumericUpDown Grid.Column="2" Value="{Binding ImageJPEGQuality}" Minimum="0" Maximum="100" Increment="1" MinWidth="120" HorizontalAlignment="Stretch" AutomationProperties.Name="JPEG Quality"/>
                                     </Grid>
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="PNG bit depth:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskImage_PngBitDepth}" VerticalAlignment="Center"/>
                                         <ComboBox Grid.Column="2" ItemsSource="{Binding PngBitDepthOptions}" SelectedItem="{Binding ImagePNGBitDepth}" HorizontalAlignment="Stretch" AutomationProperties.Name="PNG Bit Depth">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate x:DataType="x:Object">
@@ -53,22 +53,22 @@
 
                         <!-- Thumbnail -->
                         <StackPanel Grid.Column="2" Spacing="8">
-                            <TextBlock Text="Thumbnail" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize TaskImage_Thumbnail}" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="16">
                                 <StackPanel Spacing="16">
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="Width:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskImage_Width}" VerticalAlignment="Center"/>
                                         <NumericUpDown Grid.Column="2" Value="{Binding ThumbnailWidth}" Minimum="0" Maximum="10000" Increment="10" MinWidth="120" HorizontalAlignment="Stretch" AutomationProperties.Name="Thumbnail Width"/>
                                     </Grid>
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="Height:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskImage_Height}" VerticalAlignment="Center"/>
                                         <NumericUpDown Grid.Column="2" Value="{Binding ThumbnailHeight}" Minimum="0" Maximum="10000" Increment="10" MinWidth="120" HorizontalAlignment="Stretch" AutomationProperties.Name="Thumbnail Height"/>
                                     </Grid>
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="Name:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskImage_Name}" VerticalAlignment="Center"/>
                                         <TextBox Grid.Column="2" Text="{Binding ThumbnailName}" AutomationProperties.Name="Thumbnail Name suffix"/>
                                     </Grid>
-                                    <CheckBox IsChecked="{Binding ThumbnailCheckSize}" Content="Save thumbnail only if smaller than image"/>
+                                    <CheckBox IsChecked="{Binding ThumbnailCheckSize}" Content="{local:Localize TaskImage_ThumbnailOnlyIfSmaller}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -182,18 +182,18 @@
             </TabItem>
 
             <!-- Effects Tab -->
-            <TabItem Header="Effects">
+            <TabItem Header="{local:Localize TaskImage_TabEffects}">
                 <Grid RowDefinitions="Auto, *" Margin="8">
                     <!-- Top Toolbar -->
                     <Border Grid.Row="0" Margin="0,0,0,16" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
                         <Grid ColumnDefinitions="*, Auto">
                             <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-                                <TextBlock Text="Preset:" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <TextBlock Text="{local:Localize TaskImage_Preset}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding ImageEffects.Name}" VerticalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
-                                <Button Command="{Binding ImageEffects.ImportEffectsCommand}" Content="Import..." AutomationProperties.Name="Import Image Effects Preset"/>
-                                <Button Command="{Binding ImageEffects.SavePresetCommand}" Content="Export..." AutomationProperties.Name="Export Image Effects Preset"/>
+                                <Button Command="{Binding ImageEffects.ImportEffectsCommand}" Content="{local:Localize TaskImage_Import}" AutomationProperties.Name="Import Image Effects Preset"/>
+                                <Button Command="{Binding ImageEffects.SavePresetCommand}" Content="{local:Localize TaskImage_Export}" AutomationProperties.Name="Export Image Effects Preset"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -202,7 +202,7 @@
                     <Grid Grid.Row="1" ColumnDefinitions="1.1*, 16, 1.1*, 16, 1.3*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                         <!-- Effects List -->
                         <Grid Grid.Column="0" RowDefinitions="Auto, *, Auto">
-                            <TextBlock Grid.Row="0" Text="Active Effects" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <TextBlock Grid.Row="0" Text="{local:Localize TaskImage_ActiveEffects}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                             <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="6">
                                 <ListBox ItemsSource="{Binding ImageEffects.Effects}" SelectedItem="{Binding ImageEffects.SelectedEffect}" Background="Transparent" BorderThickness="0"
                                          AutomationProperties.Name="Active Effects List">
@@ -214,14 +214,14 @@
                                 </ListBox>
                             </Border>
                             <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
-                                <Button Content="Add Effect" Command="{Binding ImageEffects.OpenEffectBrowserDialogCommand}" AutomationProperties.Name="Add Effect Browser"/>
-                                <Button Command="{Binding ImageEffects.RemoveEffectCommand}" Content="Remove" AutomationProperties.Name="Remove Selected Effect"/>
+                                <Button Content="{local:Localize TaskImage_AddEffect}" Command="{Binding ImageEffects.OpenEffectBrowserDialogCommand}" AutomationProperties.Name="Add Effect Browser"/>
+                                <Button Command="{Binding ImageEffects.RemoveEffectCommand}" Content="{local:Localize TaskImage_RemoveEffect}" AutomationProperties.Name="Remove Selected Effect"/>
                             </StackPanel>
                         </Grid>
 
                         <!-- Properties -->
                         <Grid Grid.Column="2" RowDefinitions="Auto, *">
-                            <TextBlock Grid.Row="0" Text="Properties" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <TextBlock Grid.Row="0" Text="{local:Localize TaskImage_Properties}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                             <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="6" Padding="8">
                                 <controls:PropertyGrid x:Name="EffectPropertyGrid" SelectedObject="{Binding ImageEffects.SelectedEffect}" AutomationProperties.Name="Effect Properties"/>
                             </Border>
@@ -229,7 +229,7 @@
 
                         <!-- Preview -->
                         <Grid Grid.Column="4" RowDefinitions="Auto, *">
-                            <TextBlock Grid.Row="0" Text="Preview" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <TextBlock Grid.Row="0" Text="{local:Localize TaskImage_Preview}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                             <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="6" MinHeight="260">
                                 <Image Source="{Binding ImageEffects.PreviewBitmap}" Stretch="Uniform" Margin="10" AutomationProperties.Name="Effect Preview"/>
                             </Border>

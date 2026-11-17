@@ -3493,6 +3493,63 @@
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
     <value>Одно и то же фото в общественном достоянии (Polyhaven «The Sky is on Fire», CC0) шириной 640 px. Неконвертированный кадр закреплён сверху; ниже прокручиваются кривые — каждая рендерит этот кадр своим методом HDR→SDR.</value>
   </data>
+  <data name="TaskImage_TabSettings" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="TaskImage_Quality" xml:space="preserve">
+    <value>Качество</value>
+  </data>
+  <data name="TaskImage_Format" xml:space="preserve">
+    <value>Формат:</value>
+  </data>
+  <data name="TaskImage_JpegQuality" xml:space="preserve">
+    <value>Качество JPEG:</value>
+  </data>
+  <data name="TaskImage_PngBitDepth" xml:space="preserve">
+    <value>Глубина PNG:</value>
+  </data>
+  <data name="TaskImage_Thumbnail" xml:space="preserve">
+    <value>Миниатюра</value>
+  </data>
+  <data name="TaskImage_Width" xml:space="preserve">
+    <value>Ширина:</value>
+  </data>
+  <data name="TaskImage_Height" xml:space="preserve">
+    <value>Высота:</value>
+  </data>
+  <data name="TaskImage_Name" xml:space="preserve">
+    <value>Имя:</value>
+  </data>
+  <data name="TaskImage_ThumbnailOnlyIfSmaller" xml:space="preserve">
+    <value>Сохранять миниатюру, только если она меньше изображения</value>
+  </data>
+  <data name="TaskImage_TabEffects" xml:space="preserve">
+    <value>Эффекты</value>
+  </data>
+  <data name="TaskImage_Preset" xml:space="preserve">
+    <value>Пресет:</value>
+  </data>
+  <data name="TaskImage_Import" xml:space="preserve">
+    <value>Импорт...</value>
+  </data>
+  <data name="TaskImage_Export" xml:space="preserve">
+    <value>Экспорт...</value>
+  </data>
+  <data name="TaskImage_ActiveEffects" xml:space="preserve">
+    <value>Активные эффекты</value>
+  </data>
+  <data name="TaskImage_AddEffect" xml:space="preserve">
+    <value>Добавить эффект</value>
+  </data>
+  <data name="TaskImage_RemoveEffect" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="TaskImage_Properties" xml:space="preserve">
+    <value>Свойства</value>
+  </data>
+  <data name="TaskImage_Preview" xml:space="preserve">
+    <value>Предпросмотр</value>
+  </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
     <value>Сверху: HDR-кадр как его показывает SDR-просмотрщик — блики обрезаются по белому.</value>
   </data>

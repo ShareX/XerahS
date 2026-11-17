@@ -3493,6 +3493,63 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
     <value>Dasselbe gemeinfreie Foto (Polyhaven „The Sky is on Fire“, CC0) mit 640 px. Das unveränderte Bild bleibt oben fixiert; darunter scrollen die Kurven, die es jeweils mit einer HDR→SDR-Methode rendern.</value>
   </data>
+  <data name="TaskImage_TabSettings" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="TaskImage_Quality" xml:space="preserve">
+    <value>Qualität</value>
+  </data>
+  <data name="TaskImage_Format" xml:space="preserve">
+    <value>Format:</value>
+  </data>
+  <data name="TaskImage_JpegQuality" xml:space="preserve">
+    <value>JPEG-Qualität:</value>
+  </data>
+  <data name="TaskImage_PngBitDepth" xml:space="preserve">
+    <value>PNG-Bittiefe:</value>
+  </data>
+  <data name="TaskImage_Thumbnail" xml:space="preserve">
+    <value>Miniaturansicht</value>
+  </data>
+  <data name="TaskImage_Width" xml:space="preserve">
+    <value>Breite:</value>
+  </data>
+  <data name="TaskImage_Height" xml:space="preserve">
+    <value>Höhe:</value>
+  </data>
+  <data name="TaskImage_Name" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="TaskImage_ThumbnailOnlyIfSmaller" xml:space="preserve">
+    <value>Miniatur nur speichern, wenn sie kleiner als das Bild ist</value>
+  </data>
+  <data name="TaskImage_TabEffects" xml:space="preserve">
+    <value>Effekte</value>
+  </data>
+  <data name="TaskImage_Preset" xml:space="preserve">
+    <value>Voreinstellung:</value>
+  </data>
+  <data name="TaskImage_Import" xml:space="preserve">
+    <value>Importieren...</value>
+  </data>
+  <data name="TaskImage_Export" xml:space="preserve">
+    <value>Exportieren...</value>
+  </data>
+  <data name="TaskImage_ActiveEffects" xml:space="preserve">
+    <value>Aktive Effekte</value>
+  </data>
+  <data name="TaskImage_AddEffect" xml:space="preserve">
+    <value>Effekt hinzufügen</value>
+  </data>
+  <data name="TaskImage_RemoveEffect" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="TaskImage_Properties" xml:space="preserve">
+    <value>Eigenschaften</value>
+  </data>
+  <data name="TaskImage_Preview" xml:space="preserve">
+    <value>Vorschau</value>
+  </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
     <value>Oben: das HDR-Bild so, wie ein SDR-Betrachter es zeigt – Lichter werden auf Weiß abgeschnitten.</value>
   </data>

@@ -3493,6 +3493,63 @@ This will permanently remove the file from the remote storage. This cannot be un
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
     <value>The same public-domain photo (Polyhaven "The Sky is on Fire", CC0) at 640 px. The unconverted frame stays pinned on top; the curves below scroll, each rendering that frame with one HDR to SDR method.</value>
   </data>
+  <data name="TaskImage_TabSettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TaskImage_Quality" xml:space="preserve">
+    <value>Quality</value>
+  </data>
+  <data name="TaskImage_Format" xml:space="preserve">
+    <value>Format:</value>
+  </data>
+  <data name="TaskImage_JpegQuality" xml:space="preserve">
+    <value>JPEG Quality:</value>
+  </data>
+  <data name="TaskImage_PngBitDepth" xml:space="preserve">
+    <value>PNG bit depth:</value>
+  </data>
+  <data name="TaskImage_Thumbnail" xml:space="preserve">
+    <value>Thumbnail</value>
+  </data>
+  <data name="TaskImage_Width" xml:space="preserve">
+    <value>Width:</value>
+  </data>
+  <data name="TaskImage_Height" xml:space="preserve">
+    <value>Height:</value>
+  </data>
+  <data name="TaskImage_Name" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="TaskImage_ThumbnailOnlyIfSmaller" xml:space="preserve">
+    <value>Save thumbnail only if smaller than image</value>
+  </data>
+  <data name="TaskImage_TabEffects" xml:space="preserve">
+    <value>Effects</value>
+  </data>
+  <data name="TaskImage_Preset" xml:space="preserve">
+    <value>Preset:</value>
+  </data>
+  <data name="TaskImage_Import" xml:space="preserve">
+    <value>Import...</value>
+  </data>
+  <data name="TaskImage_Export" xml:space="preserve">
+    <value>Export...</value>
+  </data>
+  <data name="TaskImage_ActiveEffects" xml:space="preserve">
+    <value>Active Effects</value>
+  </data>
+  <data name="TaskImage_AddEffect" xml:space="preserve">
+    <value>Add Effect</value>
+  </data>
+  <data name="TaskImage_RemoveEffect" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="TaskImage_Properties" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="TaskImage_Preview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
     <value>Top: the HDR frame as an SDR viewer shows it, with highlights clipped at white.</value>
   </data>

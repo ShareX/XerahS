@@ -3493,6 +3493,63 @@
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
     <value>同一张公有领域照片（Polyhaven《The Sky is on Fire》，CC0），宽度 640 px。未转换的画面固定在上方；下方可滚动查看各条曲线，分别用对应方法进行 HDR→SDR 渲染。</value>
   </data>
+  <data name="TaskImage_TabSettings" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="TaskImage_Quality" xml:space="preserve">
+    <value>质量</value>
+  </data>
+  <data name="TaskImage_Format" xml:space="preserve">
+    <value>格式：</value>
+  </data>
+  <data name="TaskImage_JpegQuality" xml:space="preserve">
+    <value>JPEG 质量：</value>
+  </data>
+  <data name="TaskImage_PngBitDepth" xml:space="preserve">
+    <value>PNG 位深：</value>
+  </data>
+  <data name="TaskImage_Thumbnail" xml:space="preserve">
+    <value>缩略图</value>
+  </data>
+  <data name="TaskImage_Width" xml:space="preserve">
+    <value>宽度：</value>
+  </data>
+  <data name="TaskImage_Height" xml:space="preserve">
+    <value>高度：</value>
+  </data>
+  <data name="TaskImage_Name" xml:space="preserve">
+    <value>名称：</value>
+  </data>
+  <data name="TaskImage_ThumbnailOnlyIfSmaller" xml:space="preserve">
+    <value>仅在缩略图小于原图时保存</value>
+  </data>
+  <data name="TaskImage_TabEffects" xml:space="preserve">
+    <value>效果</value>
+  </data>
+  <data name="TaskImage_Preset" xml:space="preserve">
+    <value>预设：</value>
+  </data>
+  <data name="TaskImage_Import" xml:space="preserve">
+    <value>导入...</value>
+  </data>
+  <data name="TaskImage_Export" xml:space="preserve">
+    <value>导出...</value>
+  </data>
+  <data name="TaskImage_ActiveEffects" xml:space="preserve">
+    <value>启用的效果</value>
+  </data>
+  <data name="TaskImage_AddEffect" xml:space="preserve">
+    <value>添加效果</value>
+  </data>
+  <data name="TaskImage_RemoveEffect" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="TaskImage_Properties" xml:space="preserve">
+    <value>属性</value>
+  </data>
+  <data name="TaskImage_Preview" xml:space="preserve">
+    <value>预览</value>
+  </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
     <value>上方：SDR 查看器所见的 HDR 画面——高光在白色处裁剪。</value>
   </data>
