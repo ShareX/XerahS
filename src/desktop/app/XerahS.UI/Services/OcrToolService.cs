@@ -51,13 +51,13 @@ public static class OcrToolService
 
         if (ocrService == null || !ocrService.IsSupported)
         {
-            ShowToast("OCR", ocrService?.UnavailableReason ?? "OCR is not supported on this platform.");
+            ShowToast(Resources.GetString("Ocr_Title"), Resources.GetString("Ocr_NotSupported"));
             return;
         }
 
         if (!PlatformServices.IsInitialized)
         {
-            ShowToast("OCR", "Platform services are not initialized.");
+            ShowToast(Resources.GetString("Ocr_Title"), Resources.GetString("Common_PlatformServicesNotInitialized"));
             return;
         }
 
