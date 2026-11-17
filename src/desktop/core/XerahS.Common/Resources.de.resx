@@ -3547,6 +3547,123 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   <data name="TaskSettings_TrayMiddleClick" xml:space="preserve">
     <value>Mittelklick:</value>
   </data>
+  <data name="Settings_UpdateChannelHelp" xml:space="preserve">
+    <value>Release prüft ShareX/XerahS. PreRelease prüft die gewählte Quelle; KovaForge/XerahS enthält die Entwicklungsbuilds dieses Forks. Versionen und Verfügbarkeit können sich zwischen den Repositories unterscheiden.</value>
+  </data>
+  <data name="Settings_NetworkMonitorBackground" xml:space="preserve">
+    <value>Netzwerkmonitor im Hintergrund ausführen</value>
+  </data>
+  <data name="Settings_NetworkMonitorBackgroundHint" xml:space="preserve">
+    <value>Pingt regelmäßig externe Hosts an, um die Verbindung zu überwachen, auch beim Start. Standardmäßig deaktiviert. Eine temporäre Sitzung gibt es unter Werkzeuge > Netzwerkmonitor.</value>
+  </data>
+  <data name="Settings_SendToDefaults" xml:space="preserve">
+    <value>Send-to-Standardwerte</value>
+  </data>
+  <data name="Settings_SendToDefaultsHint" xml:space="preserve">
+    <value>Diese Standardwerte gelten für den Send-to-Dialog. Gespeicherte Auswahlen haben weiterhin Vorrang, wenn die Auswahl zu einem gespeicherten Bereich passt. Upload mit XerahS ist nicht betroffen.</value>
+  </data>
+  <data name="Settings_AssistantIntro" xml:space="preserve">
+    <value>XerahS nutzt Ihr eigenes Konto bei einem KI-Anbieter. Wählen Sie den Anbieter und speichern Sie einen API-Schlüssel. Für OpenAI können Sie stattdessen „Weiter mit ChatGPT“ wählen; dann laufen Anfragen über Ihren ChatGPT-Tarif. Ohne Anbieter funktioniert XerahS weiterhin vollständig lokal.</value>
+  </data>
+  <data name="Settings_AssistantContinueChatGpt" xml:space="preserve">
+    <value>Weiter mit ChatGPT</value>
+  </data>
+  <data name="Settings_AssistantSignOutChatGpt" xml:space="preserve">
+    <value>Von ChatGPT abmelden</value>
+  </data>
+  <data name="Settings_AssistantFeatures" xml:space="preserve">
+    <value>KI-Funktionen</value>
+  </data>
+  <data name="Settings_AssistantFeaturesHint" xml:space="preserve">
+    <value>Wählen Sie, wo XerahS den KI-Anbieter nutzen darf. Es wird nichts gesendet, bis Sie eine Funktion verwenden.</value>
+  </data>
+  <data name="Settings_AssistantOverlay" xml:space="preserve">
+    <value>Assistenten-Overlay</value>
+  </data>
+  <data name="Settings_CloudTitle" xml:space="preserve">
+    <value>XerahS Cloud</value>
+  </data>
+  <data name="Settings_CloudIntro" xml:space="preserve">
+    <value>XerahS Cloud speichert Ihre Bilder und Videos nicht. Es führt eine private Sammlung der Links zu Ihren Uploads, damit Sie sie von jedem Gerät wiederfinden. Die Dateien selbst bleiben beim Ziel.</value>
+  </data>
+  <data name="Settings_CloudPublishHint" xml:space="preserve">
+    <value>Veröffentlichen Sie Uploads aus dem Verlauf, um sie der Sammlung hinzuzufügen. Starke Authentifizierung und eine aktive Testphase oder ein Abo sind erforderlich.</value>
+  </data>
+  <data name="Settings_CloudProfileUrl" xml:space="preserve">
+    <value>Profil-URL:</value>
+  </data>
+  <data name="Settings_CloudSignIn" xml:space="preserve">
+    <value>Anmelden / Konto erstellen</value>
+  </data>
+  <data name="Settings_CloudRefreshStatus" xml:space="preserve">
+    <value>Status aktualisieren</value>
+  </data>
+  <data name="Settings_CloudOpenProfile" xml:space="preserve">
+    <value>Profil öffnen</value>
+  </data>
+  <data name="Settings_CloudCopyProfileUrl" xml:space="preserve">
+    <value>Profil-URL kopieren</value>
+  </data>
+  <data name="Settings_CloudAccountSettings" xml:space="preserve">
+    <value>Sicherheit, Abrechnung &amp; Konto</value>
+  </data>
+  <data name="Settings_CloudSignOut" xml:space="preserve">
+    <value>Abmelden</value>
+  </data>
+  <data name="Settings_CloudWebSettingsHint" xml:space="preserve">
+    <value>In den Web-Einstellungen verwalten Sie TOTP/Passkeys (falls aktiviert), Wiederherstellung, aktive Sitzungen, Abo, Export, Kontolöschung und Abmeldung auf allen Geräten.</value>
+  </data>
+  <data name="Settings_HdrCorrectGdiColors" xml:space="preserve">
+    <value>HDR-Displayfarben bei GDI-Aufnahmen korrigieren</value>
+  </data>
+  <data name="Settings_AnnotationEditor" xml:space="preserve">
+    <value>Anmerkungseditor:</value>
+  </data>
+  <data name="Settings_AnnotationEditorHint" xml:space="preserve">
+    <value>Der OmaSnap-Editor ist das native Hyprland-Overlay. Sidecar-Anmerkungsdateien und erneutes Bearbeiten aus dem Verlauf bleiben beim XerahS-Editor.</value>
+  </data>
+  <data name="Settings_GlobalHotkeys" xml:space="preserve">
+    <value>Globale Tastenkürzel</value>
+  </data>
+  <data name="Settings_GrantKeyboardAccess" xml:space="preserve">
+    <value>Tastaturzugriff erlauben</value>
+  </data>
+  <data name="Settings_HyprlandKeybindings" xml:space="preserve">
+    <value>Hyprland-Tastenbelegungen</value>
+  </data>
+  <data name="Settings_HyprlandKeybindingsHint" xml:space="preserve">
+    <value>Lassen Sie Hyprland die XerahS-Tastenkürzel verwalten (empfohlen auf Omarchy). Hyprland führt „omaxerahs workflow run“ für jedes Workflow-Kürzel aus, sodass Portal-Shortcuts keine Tasten wie PRINT oder F1 mehr belegen.</value>
+  </data>
+  <data name="Settings_HyprlandKeybindingsOn" xml:space="preserve">
+    <value>Hyprland-Tastenbelegungen sind aktiv.</value>
+  </data>
+  <data name="Settings_HyprlandReviewChanges" xml:space="preserve">
+    <value>Änderungen prüfen…</value>
+  </data>
+  <data name="Settings_HyprlandTurnOff" xml:space="preserve">
+    <value>Ausschalten</value>
+  </data>
+  <data name="Settings_HyprlandUnbindHint" xml:space="preserve">
+    <value>Lösen Sie die oben genannten Konflikttasten, damit XerahS sie nutzen kann</value>
+  </data>
+  <data name="Settings_HyprlandApply" xml:space="preserve">
+    <value>Auf meine Hyprland-Konfiguration anwenden</value>
+  </data>
+  <data name="Settings_BackupTitle" xml:space="preserve">
+    <value>Einstellungen sichern und wiederherstellen</value>
+  </data>
+  <data name="Settings_BackupCreateHint" xml:space="preserve">
+    <value>Erstellt eine portable Datei mit App-Einstellungen, Workflows, Ziel-Instanzen, eigenen Uploader-Definitionen und Ziel-Zugangsdaten. Wiederhergestellte Zugangsdaten werden vom Zielrechner verschlüsselt.</value>
+  </data>
+  <data name="Settings_BackupWarning" xml:space="preserve">
+    <value>Sicherheitshinweis: Die Sicherungsdatei ist absichtlich unverschlüsselt und kann Klartext-Passwörter, S3-Schlüssel und OAuth-Token enthalten. Behandeln Sie sie wie einen Passworttresor.</value>
+  </data>
+  <data name="Settings_BackupCreate" xml:space="preserve">
+    <value>In Datei sichern...</value>
+  </data>
+  <data name="Settings_BackupRestore" xml:space="preserve">
+    <value>Aus Datei wiederherstellen...</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>Vergleich an einem echten HDR-Foto</value>
   </data>

@@ -126,7 +126,7 @@
                                         </Grid>
                                     </Grid>
 
-                                    <TextBlock Text="Release checks ShareX/XerahS. PreRelease checks the selected source; KovaForge/XerahS contains this fork's development builds. Versions and availability can differ between repositories."
+                                    <TextBlock Text="{local:Localize Settings_UpdateChannelHelp}"
                                                TextWrapping="Wrap" FontSize="12" Opacity="0.8"/>
 
                                     <Grid ColumnDefinitions="Auto, 16, *">
@@ -148,7 +148,7 @@
 
                         <!-- Notifications -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Notifications" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize TaskSettings_Notifications}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -180,7 +180,7 @@
 
                                     <Grid ColumnDefinitions="120, 16, *" RowDefinitions="Auto, 16, Auto, 16, Auto">
                                         <!-- Row 0: Left Click -->
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Left click:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize TaskSettings_TrayLeftClick}" VerticalAlignment="Center"/>
                                         <ComboBox Grid.Row="0" Grid.Column="2" 
                                                   ItemsSource="{Binding TrayClickActions}"
                                                   SelectedItem="{Binding TrayLeftClickAction}"
@@ -196,7 +196,7 @@
                                                   AutomationProperties.Name="Tray Double Click Action"/>
 
                                         <!-- Row 4: Middle Click -->
-                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Middle click:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="{local:Localize TaskSettings_TrayMiddleClick}" VerticalAlignment="Center"/>
                                         <ComboBox Grid.Row="4" Grid.Column="2" 
                                                   ItemsSource="{Binding TrayClickActions}"
                                                   SelectedItem="{Binding TrayMiddleClickAction}"
@@ -288,9 +288,9 @@
                                     <Grid ColumnDefinitions="*, 16, Auto">
                                         <TextBlock Grid.Column="0" Text="{local:Localize Settings_WatchFolders_ConfiguredFolders}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-                                            <Button Content="Add" Command="{Binding AddWatchFolderCommand}" AutomationProperties.Name="Add Watch Folder"/>
+                                            <Button Content="{local:Localize Settings_WatchFolders_Add}" Command="{Binding AddWatchFolderCommand}" AutomationProperties.Name="Add Watch Folder"/>
                                             <Button Content="{local:Localize Settings_WatchFolders_Edit}" Command="{Binding EditWatchFolderCommand}" AutomationProperties.Name="Edit Watch Folder"/>
-                                            <Button Content="Remove" Command="{Binding RemoveWatchFolderCommand}" AutomationProperties.Name="Remove Watch Folder"/>
+                                            <Button Content="{local:Localize Settings_WatchFolders_Remove}" Command="{Binding RemoveWatchFolderCommand}" AutomationProperties.Name="Remove Watch Folder"/>
                                         </StackPanel>
                                     </Grid>
 
@@ -298,7 +298,7 @@
                                     <Grid ColumnDefinitions="80, 90, 2*, 150, 120, 120, 150, 120" Margin="4,0,4,0">
                                         <TextBlock Grid.Column="0" Text="{local:Localize Settings_WatchFolders_Column_Enabled}" FontWeight="SemiBold" FontSize="12"/>
                                         <TextBlock Grid.Column="1" Text="{local:Localize Settings_WatchFolders_Column_Status}" FontWeight="SemiBold" FontSize="12"/>
-                                        <TextBlock Grid.Column="2" Text="Folder" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="2" Text="{local:Localize IndexFolder_Folder}" FontWeight="SemiBold" FontSize="12"/>
                                         <TextBlock Grid.Column="3" Text="{local:Localize Settings_WatchFolders_Column_Workflow}" FontWeight="SemiBold" FontSize="12"/>
                                         <TextBlock Grid.Column="4" Text="{local:Localize Settings_WatchFolders_Column_Filter}" FontWeight="SemiBold" FontSize="12"/>
                                         <TextBlock Grid.Column="5" Text="{local:Localize Settings_WatchFolders_Column_Subfolders}" FontWeight="SemiBold" FontSize="12"/>
@@ -368,7 +368,7 @@
                                         </StackPanel>
 
                                         <Button Grid.Column="2"
-                                                Content="Refresh"
+                                                Content="{local:Localize Settings_WatchFolderDaemon_Refresh}"
                                                 Command="{Binding RefreshWatchFolderDaemonStatusCommand}"
                                                 AutomationProperties.Name="Refresh Watch Folder Daemon Status"/>
 
@@ -421,8 +421,8 @@
                                     <CheckBox IsChecked="{Binding RunAtStartup}" 
                                               Content="{local:Localize Settings_Integration_RunAtStartup}" AutomationProperties.Name="Run at Startup"/>
                                     <CheckBox IsChecked="{Binding NetworkMonitorEnabled}"
-                                              Content="Run Network Monitor in the background"
-                                              ToolTip.Tip="Periodically pings external hosts to monitor connectivity, including at startup. Disabled by default. You can also use Tools > Network Monitor for a temporary session."
+                                              Content="{local:Localize Settings_NetworkMonitorBackground}"
+                                              ToolTip.Tip="{local:Localize Settings_NetworkMonitorBackgroundHint}"
                                               AutomationProperties.Name="Background Network Monitor"/>
                                     <CheckBox IsChecked="{Binding EnableContextMenuIntegration}" 
                                               Content="{local:Localize Settings_Integration_ContextMenu}"
@@ -441,10 +441,10 @@
                                             CornerRadius="4"
                                             Padding="12">
                                         <StackPanel Spacing="8">
-                                            <TextBlock Text="Send-to defaults"
+                                            <TextBlock Text="{local:Localize Settings_SendToDefaults}"
                                                        FontWeight="SemiBold"
                                                        FontSize="12"/>
-                                            <TextBlock Text="These defaults apply to the Send-to prompt. Remembered choices still win when the selection matches a stored scope. Upload with XerahS is unaffected."
+                                            <TextBlock Text="{local:Localize Settings_SendToDefaultsHint}"
                                                        FontSize="11"
                                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                        TextWrapping="Wrap"/>
@@ -605,7 +605,7 @@
             </TabItem>
 
             <!-- Assistant Tab: the AI provider and every feature that uses it -->
-            <TabItem Header="Assistant">
+            <TabItem Header="{local:Localize Settings_Assistant_Title}">
                 <ScrollViewer controls:SettingsSearch.PageId="assistant">
                     <StackPanel Spacing="24" Margin="24">
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
@@ -615,7 +615,7 @@
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="XerahS uses your own account with an AI provider. Choose the provider, then save an API key. For OpenAI you can instead choose Continue with ChatGPT and requests use your ChatGPT plan. Without a provider, everything in XerahS still works locally."
+                                    <TextBlock Text="{local:Localize Settings_AssistantIntro}"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
@@ -676,11 +676,11 @@
                                                 Command="{Binding RemoveAssistantProviderKeyCommand}"
                                                 IsEnabled="{Binding AssistantProviderHasApiKey}"
                                                 AutomationProperties.Name="Remove Assistant AI Key"/>
-                                        <Button Content="Continue with ChatGPT"
+                                        <Button Content="{local:Localize Settings_AssistantContinueChatGpt}"
                                                 Command="{Binding SignInWithChatGptCommand}"
                                                 IsVisible="{Binding AssistantProviderSupportsChatGptSignIn}"
                                                 AutomationProperties.Name="Continue with ChatGPT"/>
-                                        <Button Content="Sign out of ChatGPT"
+                                        <Button Content="{local:Localize Settings_AssistantSignOutChatGpt}"
                                                 Command="{Binding SignOutOfChatGptCommand}"
                                                 IsVisible="{Binding AssistantProviderHasChatGptSession}"
                                                 AutomationProperties.Name="Sign out of ChatGPT"/>
@@ -695,13 +695,13 @@
                         </StackPanel>
 
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="AI Features" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_AssistantFeatures}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="Choose where XerahS may use the AI provider. Nothing is sent until you use a feature."
+                                    <TextBlock Text="{local:Localize Settings_AssistantFeaturesHint}"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
@@ -737,7 +737,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Assistant Overlay" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_AssistantOverlay}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -779,21 +779,21 @@
             </TabItem>
 
             <!-- XerahS Cloud Tab -->
-            <TabItem Header="XerahS Cloud">
+            <TabItem Header="{local:Localize Settings_CloudTitle}">
                 <ScrollViewer controls:SettingsSearch.PageId="xerahs-cloud">
                     <StackPanel Spacing="24" Margin="24">
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="XerahS Cloud" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_CloudTitle}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="XerahS Cloud doesn't store your images or videos. It keeps a private collection of the links to your uploads, so you can find them again from any device. The files themselves stay with the destination you uploaded them to."
+                                    <TextBlock Text="{local:Localize Settings_CloudIntro}"
                                                TextWrapping="Wrap"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
 
-                                    <TextBlock Text="Publish uploads from History to add them to your collection. Strong authentication and an active trial or subscription are required."
+                                    <TextBlock Text="{local:Localize Settings_CloudPublishHint}"
                                                TextWrapping="Wrap"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
 
@@ -802,7 +802,7 @@
                                                AutomationProperties.Name="XerahS Cloud Status"/>
 
                                     <Grid ColumnDefinitions="Auto, 16, *" IsVisible="{Binding IsCloudSignedIn}">
-                                        <TextBlock Grid.Column="0" Text="Profile URL:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_CloudProfileUrl}" VerticalAlignment="Center"/>
                                         <TextBox Grid.Column="2"
                                                  Text="{Binding CloudProfileUrl}"
                                                  IsReadOnly="True"
@@ -811,33 +811,33 @@
                                     </Grid>
 
                                     <WrapPanel Orientation="Horizontal">
-                                        <Button Content="Sign in / Create account"
+                                        <Button Content="{local:Localize Settings_CloudSignIn}"
                                                 Margin="0,0,8,8"
                                                 Command="{Binding SignInToCloudCommand}"
                                                 AutomationProperties.Name="Sign in to XerahS Cloud"/>
-                                        <Button Content="Refresh status"
+                                        <Button Content="{local:Localize Settings_CloudRefreshStatus}"
                                                 Margin="0,0,8,8"
                                                 Command="{Binding RefreshCloudStatusCommand}"
                                                 AutomationProperties.Name="Refresh XerahS Cloud Status"/>
-                                        <Button Content="Open profile"
+                                        <Button Content="{local:Localize Settings_CloudOpenProfile}"
                                                 Margin="0,0,8,8"
                                                 Command="{Binding OpenCloudProfileCommand}"
                                                 AutomationProperties.Name="Open XerahS Cloud Profile"/>
-                                        <Button Content="Copy profile URL"
+                                        <Button Content="{local:Localize Settings_CloudCopyProfileUrl}"
                                                 Margin="0,0,8,8"
                                                 Command="{Binding CopyCloudProfileUrlCommand}"
                                                 AutomationProperties.Name="Copy XerahS Cloud Profile URL"/>
-                                        <Button Content="Security, billing &amp; account"
+                                        <Button Content="{local:Localize Settings_CloudAccountSettings}"
                                                 Margin="0,0,8,8"
                                                 Command="{Binding OpenCloudSettingsCommand}"
                                                 AutomationProperties.Name="Open XerahS Cloud Web Settings"/>
-                                        <Button Content="Sign out"
+                                        <Button Content="{local:Localize Settings_CloudSignOut}"
                                                 Margin="0,0,8,8"
                                                 Command="{Binding SignOutOfCloudCommand}"
                                                 AutomationProperties.Name="Sign out of XerahS Cloud"/>
                                     </WrapPanel>
 
-                                    <TextBlock Text="Web settings manage TOTP/passkeys (when enabled), recovery, active sessions, subscription, export, account deletion, and sign-out on all devices."
+                                    <TextBlock Text="{local:Localize Settings_CloudWebSettingsHint}"
                                                FontSize="11"
                                                TextWrapping="Wrap"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
@@ -849,12 +849,12 @@
             </TabItem>
 
             <!-- History Tab -->
-            <TabItem Header="History">
+            <TabItem Header="{local:Localize Settings_Tab_History}">
                 <ScrollViewer controls:SettingsSearch.PageId="history">
                     <StackPanel Spacing="24" Margin="24">
                         <!-- History Settings -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="History" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Tab_History}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
@@ -1012,7 +1012,7 @@
                                         CornerRadius="4" Padding="16">
                                     <StackPanel Spacing="16">
                                         <CheckBox IsChecked="{Binding UseModernCapture}" Content="{local:Localize Settings_Advanced_UseModernCapture}" AutomationProperties.Name="Use Modern Capture"/>
-                                        <CheckBox IsChecked="{Binding HDRScreenshotColorCorrection}" Content="Correct HDR display colors when capturing with GDI" AutomationProperties.Name="Correct HDR Display Colors"/>
+                                        <CheckBox IsChecked="{Binding HDRScreenshotColorCorrection}" Content="{local:Localize Settings_HdrCorrectGdiColors}" AutomationProperties.Name="Correct HDR Display Colors"/>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -1108,7 +1108,7 @@
                                         </StackPanel>
                                         <StackPanel Spacing="4" IsVisible="{Binding IsOmaSnapAvailable}">
                                             <Grid ColumnDefinitions="120, 16, *">
-                                                <TextBlock Grid.Column="0" Text="Annotation editor:" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="0" Text="{local:Localize Settings_AnnotationEditor}" VerticalAlignment="Center"/>
                                                 <ComboBox Grid.Column="2"
                                                           ItemsSource="{Binding LinuxAnnotationEditors}"
                                                           SelectedItem="{Binding LinuxAnnotationEditor}"
@@ -1122,7 +1122,7 @@
                                                     </ComboBox.ItemTemplate>
                                                 </ComboBox>
                                             </Grid>
-                                            <TextBlock Text="The OmaSnap editor is the native Hyprland overlay. Sidecar annotation files and re-editing from History stay with the XerahS editor."
+                                            <TextBlock Text="{local:Localize Settings_AnnotationEditorHint}"
                                                        FontSize="12"
                                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                        TextWrapping="Wrap"/>
@@ -1200,7 +1200,7 @@
                             <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True"
                                         DataContext="{Binding HotkeyDelivery}"
                                         x:DataType="vm:HotkeyDeliveryViewModel">
-                                <TextBlock Text="Global Hotkeys" FontWeight="SemiBold"/>
+                                <TextBlock Text="{local:Localize Settings_GlobalHotkeys}" FontWeight="SemiBold"/>
                                 <Border BorderThickness="1"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -1212,7 +1212,7 @@
                                                    TextWrapping="Wrap"/>
                                         <StackPanel Spacing="8" IsVisible="{Binding ShowAccessSetup}">
                                             <TextBlock Text="{Binding AccessSetupDescription}" TextWrapping="Wrap"/>
-                                            <Button Content="Grant keyboard access"
+                                            <Button Content="{local:Localize Settings_GrantKeyboardAccess}"
                                                     HorizontalAlignment="Left"
                                                     Command="{Binding GrantKeyboardAccessCommand}"
                                                     AutomationProperties.Name="Grant Keyboard Access For Global Hotkeys"/>
@@ -1229,19 +1229,19 @@
 
                         <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding IsHyprlandKeybindingsSupported}">
                             <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                                <TextBlock Text="Hyprland Keybindings" FontWeight="SemiBold"/>
+                                <TextBlock Text="{local:Localize Settings_HyprlandKeybindings}" FontWeight="SemiBold"/>
                                 <Border BorderThickness="1"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         CornerRadius="4" Padding="16">
                                     <StackPanel Spacing="12">
-                                        <TextBlock Text="Let Hyprland own XerahS hotkeys (recommended on Omarchy). Hyprland runs &quot;omaxerahs workflow run&quot; for each workflow hotkey, so portal shortcuts no longer take keys such as PRINT or F1."
+                                        <TextBlock Text="{local:Localize Settings_HyprlandKeybindingsHint}"
                                                    TextWrapping="Wrap"/>
-                                        <TextBlock Text="Hyprland keybindings are on." IsVisible="{Binding IsHyprlandKeybindingsEnabled}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{local:Localize Settings_HyprlandKeybindingsOn}" IsVisible="{Binding IsHyprlandKeybindingsEnabled}" FontWeight="SemiBold"/>
                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <Button Content="Review changes…" Command="{Binding ReviewHyprlandKeybindingsCommand}"
+                                            <Button Content="{local:Localize Settings_HyprlandReviewChanges}" Command="{Binding ReviewHyprlandKeybindingsCommand}"
                                                     AutomationProperties.Name="Review Hyprland Keybinding Changes"/>
-                                            <Button Content="Turn off" Command="{Binding DisableHyprlandKeybindingsCommand}"
+                                            <Button Content="{local:Localize Settings_HyprlandTurnOff}" Command="{Binding DisableHyprlandKeybindingsCommand}"
                                                     IsVisible="{Binding IsHyprlandKeybindingsEnabled}"
                                                     AutomationProperties.Name="Turn Off Hyprland Keybindings"/>
                                         </StackPanel>
@@ -1250,9 +1250,9 @@
                                         <StackPanel Spacing="8" IsVisible="{Binding HasHyprlandKeybindingPlan}">
                                             <CheckBox IsChecked="{Binding UnbindConflictingHyprlandKeys}"
                                                       IsVisible="{Binding HasHyprlandKeybindingConflicts}"
-                                                      Content="Unbind the conflicting keys listed above so XerahS can use them"
+                                                      Content="{local:Localize Settings_HyprlandUnbindHint}"
                                                       AutomationProperties.Name="Unbind Conflicting Hyprland Keys"/>
-                                            <Button Content="Apply to my Hyprland config" Command="{Binding ApplyHyprlandKeybindingsCommand}"
+                                            <Button Content="{local:Localize Settings_HyprlandApply}" Command="{Binding ApplyHyprlandKeybindingsCommand}"
                                                     AutomationProperties.Name="Apply Hyprland Keybindings"/>
                                         </StackPanel>
                                         <TextBlock Text="{Binding HyprlandKeybindingStatusText}" FontSize="12" TextWrapping="Wrap"
@@ -1283,28 +1283,28 @@
                         </StackPanel>
                         
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Settings Backup and Restore" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_BackupTitle}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="12">
-                                    <TextBlock Text="Create one portable file containing application settings, workflows, destination instances, custom uploader definitions, and destination credentials. Restored credentials are encrypted by the destination computer."
+                                    <TextBlock Text="{local:Localize Settings_BackupCreateHint}"
                                                TextWrapping="Wrap"/>
                                     <Border Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
                                             BorderBrush="{DynamicResource SystemFillColorCautionBrush}"
                                             BorderThickness="1"
                                             CornerRadius="4"
                                             Padding="12">
-                                        <TextBlock Text="Security warning: the backup file is intentionally unencrypted and can contain plaintext passwords, S3 keys, and OAuth tokens. Protect it like a password vault."
+                                        <TextBlock Text="{local:Localize Settings_BackupWarning}"
                                                    TextWrapping="Wrap"
                                                    FontSize="12"/>
                                     </Border>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <Button Content="Back Up to File..."
+                                        <Button Content="{local:Localize Settings_BackupCreate}"
                                                 Command="{Binding BackupSettingsToFileCommand}"
                                                 AutomationProperties.Name="Back Up Settings to File"/>
-                                        <Button Content="Restore from File..."
+                                        <Button Content="{local:Localize Settings_BackupRestore}"
                                                 Command="{Binding RestoreSettingsFromFileCommand}"
                                                 AutomationProperties.Name="Restore Settings from File"/>
                                     </StackPanel>

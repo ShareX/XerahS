@@ -3547,6 +3547,123 @@
   <data name="TaskSettings_TrayMiddleClick" xml:space="preserve">
     <value>中键单击：</value>
   </data>
+  <data name="Settings_UpdateChannelHelp" xml:space="preserve">
+    <value>Release 检查 ShareX/XerahS。PreRelease 检查所选来源；KovaForge/XerahS 包含此分支的开发构建。不同仓库的版本和可用性可能不同。</value>
+  </data>
+  <data name="Settings_NetworkMonitorBackground" xml:space="preserve">
+    <value>在后台运行网络监视器</value>
+  </data>
+  <data name="Settings_NetworkMonitorBackgroundHint" xml:space="preserve">
+    <value>定期 ping 外部主机以监测连接，包括启动时。默认关闭。也可通过“工具 > 网络监视器”开启临时会话。</value>
+  </data>
+  <data name="Settings_SendToDefaults" xml:space="preserve">
+    <value>Send-to 默认值</value>
+  </data>
+  <data name="Settings_SendToDefaultsHint" xml:space="preserve">
+    <value>这些默认值适用于 Send-to 对话框。当选择与已保存的范围匹配时，已记住的选择仍然优先。使用 XerahS 上传不受影响。</value>
+  </data>
+  <data name="Settings_AssistantIntro" xml:space="preserve">
+    <value>XerahS 使用您自己的 AI 提供商账户。选择提供商并保存 API 密钥。对于 OpenAI，您可以改为“使用 ChatGPT 继续”，请求将使用您的 ChatGPT 套餐。未配置提供商时，XerahS 的一切仍可在本地运行。</value>
+  </data>
+  <data name="Settings_AssistantContinueChatGpt" xml:space="preserve">
+    <value>使用 ChatGPT 继续</value>
+  </data>
+  <data name="Settings_AssistantSignOutChatGpt" xml:space="preserve">
+    <value>退出 ChatGPT 登录</value>
+  </data>
+  <data name="Settings_AssistantFeatures" xml:space="preserve">
+    <value>AI 功能</value>
+  </data>
+  <data name="Settings_AssistantFeaturesHint" xml:space="preserve">
+    <value>选择 XerahS 可以在哪里使用 AI 提供商。在您使用某项功能之前不会发送任何内容。</value>
+  </data>
+  <data name="Settings_AssistantOverlay" xml:space="preserve">
+    <value>助手浮层</value>
+  </data>
+  <data name="Settings_CloudTitle" xml:space="preserve">
+    <value>XerahS Cloud</value>
+  </data>
+  <data name="Settings_CloudIntro" xml:space="preserve">
+    <value>XerahS Cloud 不存储您的图像或视频。它保存上传链接的私有集合，方便在任何设备上再次找到。文件本身仍保存在您上传到的目标位置。</value>
+  </data>
+  <data name="Settings_CloudPublishHint" xml:space="preserve">
+    <value>从历史记录中发布上传内容即可加入您的集合。需要强身份验证以及有效的试用或订阅。</value>
+  </data>
+  <data name="Settings_CloudProfileUrl" xml:space="preserve">
+    <value>个人资料 URL：</value>
+  </data>
+  <data name="Settings_CloudSignIn" xml:space="preserve">
+    <value>登录 / 创建账户</value>
+  </data>
+  <data name="Settings_CloudRefreshStatus" xml:space="preserve">
+    <value>刷新状态</value>
+  </data>
+  <data name="Settings_CloudOpenProfile" xml:space="preserve">
+    <value>打开个人资料</value>
+  </data>
+  <data name="Settings_CloudCopyProfileUrl" xml:space="preserve">
+    <value>复制个人资料 URL</value>
+  </data>
+  <data name="Settings_CloudAccountSettings" xml:space="preserve">
+    <value>安全、账单与账户</value>
+  </data>
+  <data name="Settings_CloudSignOut" xml:space="preserve">
+    <value>退出登录</value>
+  </data>
+  <data name="Settings_CloudWebSettingsHint" xml:space="preserve">
+    <value>网页设置可管理 TOTP/通行密钥（若启用）、恢复、活动会话、订阅、导出、账户删除以及所有设备上的退出登录。</value>
+  </data>
+  <data name="Settings_HdrCorrectGdiColors" xml:space="preserve">
+    <value>使用 GDI 捕获时校正 HDR 显示颜色</value>
+  </data>
+  <data name="Settings_AnnotationEditor" xml:space="preserve">
+    <value>标注编辑器：</value>
+  </data>
+  <data name="Settings_AnnotationEditorHint" xml:space="preserve">
+    <value>OmaSnap 编辑器是 Hyprland 的原生浮层。附属标注文件和从历史记录重新编辑仍由 XerahS 编辑器处理。</value>
+  </data>
+  <data name="Settings_GlobalHotkeys" xml:space="preserve">
+    <value>全局热键</value>
+  </data>
+  <data name="Settings_GrantKeyboardAccess" xml:space="preserve">
+    <value>授予键盘访问权限</value>
+  </data>
+  <data name="Settings_HyprlandKeybindings" xml:space="preserve">
+    <value>Hyprland 按键绑定</value>
+  </data>
+  <data name="Settings_HyprlandKeybindingsHint" xml:space="preserve">
+    <value>让 Hyprland 管理 XerahS 热键（Omarchy 上推荐）。Hyprland 会为每个工作流热键执行“omaxerahs workflow run”，因此门户快捷键不再占用 PRINT 或 F1 等按键。</value>
+  </data>
+  <data name="Settings_HyprlandKeybindingsOn" xml:space="preserve">
+    <value>Hyprland 按键绑定已开启。</value>
+  </data>
+  <data name="Settings_HyprlandReviewChanges" xml:space="preserve">
+    <value>查看更改…</value>
+  </data>
+  <data name="Settings_HyprlandTurnOff" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="Settings_HyprlandUnbindHint" xml:space="preserve">
+    <value>解除上方冲突按键的绑定，以便 XerahS 使用</value>
+  </data>
+  <data name="Settings_HyprlandApply" xml:space="preserve">
+    <value>应用到我的 Hyprland 配置</value>
+  </data>
+  <data name="Settings_BackupTitle" xml:space="preserve">
+    <value>设置备份与恢复</value>
+  </data>
+  <data name="Settings_BackupCreateHint" xml:space="preserve">
+    <value>创建一个可移植文件，包含应用设置、工作流、目标实例、自定义上传器定义和目标凭据。恢复的凭据会由目标计算机加密。</value>
+  </data>
+  <data name="Settings_BackupWarning" xml:space="preserve">
+    <value>安全警告：备份文件故意不加密，可能包含明文密码、S3 密钥和 OAuth 令牌。请像保护密码库一样保护它。</value>
+  </data>
+  <data name="Settings_BackupCreate" xml:space="preserve">
+    <value>备份到文件...</value>
+  </data>
+  <data name="Settings_BackupRestore" xml:space="preserve">
+    <value>从文件恢复...</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>在真实 HDR 照片上对比</value>
   </data>

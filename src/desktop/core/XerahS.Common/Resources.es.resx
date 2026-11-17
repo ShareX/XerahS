@@ -3547,6 +3547,123 @@ Esto eliminará permanentemente el archivo del almacenamiento remoto. Esta acci�
   <data name="TaskSettings_TrayMiddleClick" xml:space="preserve">
     <value>Clic central:</value>
   </data>
+  <data name="Settings_UpdateChannelHelp" xml:space="preserve">
+    <value>Release comprueba ShareX/XerahS. PreRelease comprueba el origen seleccionado; KovaForge/XerahS contiene las compilaciones de desarrollo de este fork. Las versiones y la disponibilidad pueden variar entre repositorios.</value>
+  </data>
+  <data name="Settings_NetworkMonitorBackground" xml:space="preserve">
+    <value>Ejecutar el monitor de red en segundo plano</value>
+  </data>
+  <data name="Settings_NetworkMonitorBackgroundHint" xml:space="preserve">
+    <value>Hace ping periódicamente a hosts externos para supervisar la conectividad, incluso al iniciar. Desactivado por defecto. También puede usar Herramientas > Monitor de red para una sesión temporal.</value>
+  </data>
+  <data name="Settings_SendToDefaults" xml:space="preserve">
+    <value>Valores predeterminados de Send-to</value>
+  </data>
+  <data name="Settings_SendToDefaultsHint" xml:space="preserve">
+    <value>Estos valores se aplican al cuadro Send-to. Las elecciones recordadas siguen teniendo prioridad cuando la selección coincide con un ámbito guardado. Subir con XerahS no se ve afectado.</value>
+  </data>
+  <data name="Settings_AssistantIntro" xml:space="preserve">
+    <value>XerahS usa su propia cuenta con un proveedor de IA. Elija el proveedor y guarde una clave de API. Para OpenAI puede elegir «Continuar con ChatGPT» y las solicitudes usan su plan de ChatGPT. Sin proveedor, todo en XerahS sigue funcionando localmente.</value>
+  </data>
+  <data name="Settings_AssistantContinueChatGpt" xml:space="preserve">
+    <value>Continuar con ChatGPT</value>
+  </data>
+  <data name="Settings_AssistantSignOutChatGpt" xml:space="preserve">
+    <value>Cerrar sesión de ChatGPT</value>
+  </data>
+  <data name="Settings_AssistantFeatures" xml:space="preserve">
+    <value>Funciones de IA</value>
+  </data>
+  <data name="Settings_AssistantFeaturesHint" xml:space="preserve">
+    <value>Elija dónde puede XerahS usar el proveedor de IA. No se envía nada hasta que use una función.</value>
+  </data>
+  <data name="Settings_AssistantOverlay" xml:space="preserve">
+    <value>Superposición del asistente</value>
+  </data>
+  <data name="Settings_CloudTitle" xml:space="preserve">
+    <value>XerahS Cloud</value>
+  </data>
+  <data name="Settings_CloudIntro" xml:space="preserve">
+    <value>XerahS Cloud no almacena sus imágenes ni vídeos. Mantiene una colección privada de los enlaces a sus subidas para poder encontrarlos desde cualquier dispositivo. Los archivos permanecen en el destino.</value>
+  </data>
+  <data name="Settings_CloudPublishHint" xml:space="preserve">
+    <value>Publique las subidas desde el Historial para añadirlas a su colección. Se requieren autenticación fuerte y una prueba o suscripción activa.</value>
+  </data>
+  <data name="Settings_CloudProfileUrl" xml:space="preserve">
+    <value>URL del perfil:</value>
+  </data>
+  <data name="Settings_CloudSignIn" xml:space="preserve">
+    <value>Iniciar sesión / Crear cuenta</value>
+  </data>
+  <data name="Settings_CloudRefreshStatus" xml:space="preserve">
+    <value>Actualizar estado</value>
+  </data>
+  <data name="Settings_CloudOpenProfile" xml:space="preserve">
+    <value>Abrir perfil</value>
+  </data>
+  <data name="Settings_CloudCopyProfileUrl" xml:space="preserve">
+    <value>Copiar URL del perfil</value>
+  </data>
+  <data name="Settings_CloudAccountSettings" xml:space="preserve">
+    <value>Seguridad, facturación y cuenta</value>
+  </data>
+  <data name="Settings_CloudSignOut" xml:space="preserve">
+    <value>Cerrar sesión</value>
+  </data>
+  <data name="Settings_CloudWebSettingsHint" xml:space="preserve">
+    <value>La configuración web gestiona TOTP/claves de acceso (si están habilitadas), recuperación, sesiones activas, suscripción, exportación, eliminación de cuenta y cierre de sesión en todos los dispositivos.</value>
+  </data>
+  <data name="Settings_HdrCorrectGdiColors" xml:space="preserve">
+    <value>Corregir los colores de pantalla HDR al capturar con GDI</value>
+  </data>
+  <data name="Settings_AnnotationEditor" xml:space="preserve">
+    <value>Editor de anotaciones:</value>
+  </data>
+  <data name="Settings_AnnotationEditorHint" xml:space="preserve">
+    <value>El editor OmaSnap es la superposición nativa de Hyprland. Los archivos de anotaciones adjuntos y la reedición desde el Historial siguen con el editor de XerahS.</value>
+  </data>
+  <data name="Settings_GlobalHotkeys" xml:space="preserve">
+    <value>Atajos globales</value>
+  </data>
+  <data name="Settings_GrantKeyboardAccess" xml:space="preserve">
+    <value>Conceder acceso al teclado</value>
+  </data>
+  <data name="Settings_HyprlandKeybindings" xml:space="preserve">
+    <value>Atajos de Hyprland</value>
+  </data>
+  <data name="Settings_HyprlandKeybindingsHint" xml:space="preserve">
+    <value>Deje que Hyprland gestione los atajos de XerahS (recomendado en Omarchy). Hyprland ejecuta «omaxerahs workflow run» para cada atajo, de modo que los atajos del portal ya no ocupan teclas como PRINT o F1.</value>
+  </data>
+  <data name="Settings_HyprlandKeybindingsOn" xml:space="preserve">
+    <value>Los atajos de Hyprland están activados.</value>
+  </data>
+  <data name="Settings_HyprlandReviewChanges" xml:space="preserve">
+    <value>Revisar cambios…</value>
+  </data>
+  <data name="Settings_HyprlandTurnOff" xml:space="preserve">
+    <value>Desactivar</value>
+  </data>
+  <data name="Settings_HyprlandUnbindHint" xml:space="preserve">
+    <value>Desvincule las teclas en conflicto indicadas arriba para que XerahS pueda usarlas</value>
+  </data>
+  <data name="Settings_HyprlandApply" xml:space="preserve">
+    <value>Aplicar a mi configuración de Hyprland</value>
+  </data>
+  <data name="Settings_BackupTitle" xml:space="preserve">
+    <value>Copia de seguridad y restauración</value>
+  </data>
+  <data name="Settings_BackupCreateHint" xml:space="preserve">
+    <value>Crea un archivo portátil con la configuración, los flujos de trabajo, las instancias de destino, las definiciones de cargadores personalizados y las credenciales de destino. Las credenciales restauradas se cifran en el equipo de destino.</value>
+  </data>
+  <data name="Settings_BackupWarning" xml:space="preserve">
+    <value>Advertencia de seguridad: el archivo de copia está intencionadamente sin cifrar y puede contener contraseñas, claves de S3 y tokens OAuth en texto claro. Protéjalo como un gestor de contraseñas.</value>
+  </data>
+  <data name="Settings_BackupCreate" xml:space="preserve">
+    <value>Guardar en archivo...</value>
+  </data>
+  <data name="Settings_BackupRestore" xml:space="preserve">
+    <value>Restaurar desde archivo...</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>Comparación con una foto HDR real</value>
   </data>

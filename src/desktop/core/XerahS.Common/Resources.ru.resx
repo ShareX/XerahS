@@ -3547,6 +3547,123 @@
   <data name="TaskSettings_TrayMiddleClick" xml:space="preserve">
     <value>Средний клик:</value>
   </data>
+  <data name="Settings_UpdateChannelHelp" xml:space="preserve">
+    <value>«Release» проверяет ShareX/XerahS. «PreRelease» проверяет выбранный источник; KovaForge/XerahS содержит сборки этого форка. Версии и доступность в репозиториях могут различаться.</value>
+  </data>
+  <data name="Settings_NetworkMonitorBackground" xml:space="preserve">
+    <value>Запускать сетевой монитор в фоне</value>
+  </data>
+  <data name="Settings_NetworkMonitorBackgroundHint" xml:space="preserve">
+    <value>Периодически опрашивает внешние хосты для контроля связи, в том числе при запуске. По умолчанию выключено. Временную сессию можно открыть через «Инструменты → Сетевой монитор».</value>
+  </data>
+  <data name="Settings_SendToDefaults" xml:space="preserve">
+    <value>Настройки Send-to по умолчанию</value>
+  </data>
+  <data name="Settings_SendToDefaultsHint" xml:space="preserve">
+    <value>Эти значения применяются к окну Send-to. Сохранённый выбор по-прежнему важнее, если совпадает с сохранённой областью. Загрузка через XerahS не затрагивается.</value>
+  </data>
+  <data name="Settings_AssistantIntro" xml:space="preserve">
+    <value>XerahS использует ваш собственный аккаунт у поставщика ИИ. Выберите поставщика и сохраните API-ключ. Для OpenAI можно выбрать «Продолжить с ChatGPT» — тогда запросы идут по вашему тарифу ChatGPT. Без поставщика всё в XerahS работает локально.</value>
+  </data>
+  <data name="Settings_AssistantContinueChatGpt" xml:space="preserve">
+    <value>Продолжить с ChatGPT</value>
+  </data>
+  <data name="Settings_AssistantSignOutChatGpt" xml:space="preserve">
+    <value>Выйти из ChatGPT</value>
+  </data>
+  <data name="Settings_AssistantFeatures" xml:space="preserve">
+    <value>Функции ИИ</value>
+  </data>
+  <data name="Settings_AssistantFeaturesHint" xml:space="preserve">
+    <value>Выберите, где XerahS может использовать поставщика ИИ. Ничего не отправляется, пока вы не воспользуетесь функцией.</value>
+  </data>
+  <data name="Settings_AssistantOverlay" xml:space="preserve">
+    <value>Оверлей ассистента</value>
+  </data>
+  <data name="Settings_CloudTitle" xml:space="preserve">
+    <value>XerahS Cloud</value>
+  </data>
+  <data name="Settings_CloudIntro" xml:space="preserve">
+    <value>XerahS Cloud не хранит ваши изображения и видео. Он ведёт приватную коллекцию ссылок на загрузки, чтобы их можно было найти с любого устройства. Сами файлы остаются там, куда вы их загрузили.</value>
+  </data>
+  <data name="Settings_CloudPublishHint" xml:space="preserve">
+    <value>Опубликуйте загрузки из истории, чтобы добавить их в коллекцию. Требуются надёжная аутентификация и активная пробная версия или подписка.</value>
+  </data>
+  <data name="Settings_CloudProfileUrl" xml:space="preserve">
+    <value>URL профиля:</value>
+  </data>
+  <data name="Settings_CloudSignIn" xml:space="preserve">
+    <value>Войти / Создать аккаунт</value>
+  </data>
+  <data name="Settings_CloudRefreshStatus" xml:space="preserve">
+    <value>Обновить статус</value>
+  </data>
+  <data name="Settings_CloudOpenProfile" xml:space="preserve">
+    <value>Открыть профиль</value>
+  </data>
+  <data name="Settings_CloudCopyProfileUrl" xml:space="preserve">
+    <value>Копировать URL профиля</value>
+  </data>
+  <data name="Settings_CloudAccountSettings" xml:space="preserve">
+    <value>Безопасность, оплата и аккаунт</value>
+  </data>
+  <data name="Settings_CloudSignOut" xml:space="preserve">
+    <value>Выйти</value>
+  </data>
+  <data name="Settings_CloudWebSettingsHint" xml:space="preserve">
+    <value>В веб-настройках управляют TOTP/ключами доступа (если включено), восстановлением, активными сеансами, подпиской, экспортом, удалением аккаунта и выходом на всех устройствах.</value>
+  </data>
+  <data name="Settings_HdrCorrectGdiColors" xml:space="preserve">
+    <value>Корректировать цвета HDR-дисплея при захвате через GDI</value>
+  </data>
+  <data name="Settings_AnnotationEditor" xml:space="preserve">
+    <value>Редактор аннотаций:</value>
+  </data>
+  <data name="Settings_AnnotationEditorHint" xml:space="preserve">
+    <value>Редактор OmaSnap — это нативный оверлей Hyprland. Файлы аннотаций рядом с изображением и повторное редактирование из истории остаются за редактором XerahS.</value>
+  </data>
+  <data name="Settings_GlobalHotkeys" xml:space="preserve">
+    <value>Глобальные горячие клавиши</value>
+  </data>
+  <data name="Settings_GrantKeyboardAccess" xml:space="preserve">
+    <value>Разрешить доступ к клавиатуре</value>
+  </data>
+  <data name="Settings_HyprlandKeybindings" xml:space="preserve">
+    <value>Привязки клавиш Hyprland</value>
+  </data>
+  <data name="Settings_HyprlandKeybindingsHint" xml:space="preserve">
+    <value>Пусть горячие клавиши XerahS принадлежат Hyprland (рекомендуется на Omarchy). Hyprland выполняет «omaxerahs workflow run» для каждого сценария, поэтому портальные сокращения больше не занимают клавиши вроде PRINT или F1.</value>
+  </data>
+  <data name="Settings_HyprlandKeybindingsOn" xml:space="preserve">
+    <value>Привязки Hyprland включены.</value>
+  </data>
+  <data name="Settings_HyprlandReviewChanges" xml:space="preserve">
+    <value>Проверить изменения…</value>
+  </data>
+  <data name="Settings_HyprlandTurnOff" xml:space="preserve">
+    <value>Выключить</value>
+  </data>
+  <data name="Settings_HyprlandUnbindHint" xml:space="preserve">
+    <value>Отвяжите конфликтующие клавиши выше, чтобы XerahS мог их использовать</value>
+  </data>
+  <data name="Settings_HyprlandApply" xml:space="preserve">
+    <value>Применить к моему конфигу Hyprland</value>
+  </data>
+  <data name="Settings_BackupTitle" xml:space="preserve">
+    <value>Резервное копирование настроек</value>
+  </data>
+  <data name="Settings_BackupCreateHint" xml:space="preserve">
+    <value>Создаёт один переносимый файл с настройками приложения, сценариями, экземплярами назначений, описаниями пользовательских загрузчиков и учётными данными назначений. Восстановленные учётные данные шифруются компьютером-получателем.</value>
+  </data>
+  <data name="Settings_BackupWarning" xml:space="preserve">
+    <value>Внимание: файл резервной копии намеренно не шифруется и может содержать пароли, ключи S3 и OAuth-токены в открытом виде. Храните его как хранилище паролей.</value>
+  </data>
+  <data name="Settings_BackupCreate" xml:space="preserve">
+    <value>Сохранить в файл...</value>
+  </data>
+  <data name="Settings_BackupRestore" xml:space="preserve">
+    <value>Восстановить из файла...</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>Сравнение на реальном HDR-фото</value>
   </data>

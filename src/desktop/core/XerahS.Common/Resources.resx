@@ -3547,6 +3547,123 @@ This will permanently remove the file from the remote storage. This cannot be un
   <data name="TaskSettings_TrayMiddleClick" xml:space="preserve">
     <value>Middle click:</value>
   </data>
+  <data name="Settings_UpdateChannelHelp" xml:space="preserve">
+    <value>Release checks ShareX/XerahS. PreRelease checks the selected source; KovaForge/XerahS contains this fork's development builds. Versions and availability can differ between repositories.</value>
+  </data>
+  <data name="Settings_NetworkMonitorBackground" xml:space="preserve">
+    <value>Run Network Monitor in the background</value>
+  </data>
+  <data name="Settings_NetworkMonitorBackgroundHint" xml:space="preserve">
+    <value>Periodically pings external hosts to monitor connectivity, including at startup. Disabled by default. You can also use Tools > Network Monitor for a temporary session.</value>
+  </data>
+  <data name="Settings_SendToDefaults" xml:space="preserve">
+    <value>Send-to defaults</value>
+  </data>
+  <data name="Settings_SendToDefaultsHint" xml:space="preserve">
+    <value>These defaults apply to the Send-to prompt. Remembered choices still win when the selection matches a stored scope. Upload with XerahS is unaffected.</value>
+  </data>
+  <data name="Settings_AssistantIntro" xml:space="preserve">
+    <value>XerahS uses your own account with an AI provider. Choose the provider, then save an API key. For OpenAI you can instead choose Continue with ChatGPT and requests use your ChatGPT plan. Without a provider, everything in XerahS still works locally.</value>
+  </data>
+  <data name="Settings_AssistantContinueChatGpt" xml:space="preserve">
+    <value>Continue with ChatGPT</value>
+  </data>
+  <data name="Settings_AssistantSignOutChatGpt" xml:space="preserve">
+    <value>Sign out of ChatGPT</value>
+  </data>
+  <data name="Settings_AssistantFeatures" xml:space="preserve">
+    <value>AI Features</value>
+  </data>
+  <data name="Settings_AssistantFeaturesHint" xml:space="preserve">
+    <value>Choose where XerahS may use the AI provider. Nothing is sent until you use a feature.</value>
+  </data>
+  <data name="Settings_AssistantOverlay" xml:space="preserve">
+    <value>Assistant Overlay</value>
+  </data>
+  <data name="Settings_CloudTitle" xml:space="preserve">
+    <value>XerahS Cloud</value>
+  </data>
+  <data name="Settings_CloudIntro" xml:space="preserve">
+    <value>XerahS Cloud doesn't store your images or videos. It keeps a private collection of the links to your uploads, so you can find them again from any device. The files themselves stay with the destination you uploaded them to.</value>
+  </data>
+  <data name="Settings_CloudPublishHint" xml:space="preserve">
+    <value>Publish uploads from History to add them to your collection. Strong authentication and an active trial or subscription are required.</value>
+  </data>
+  <data name="Settings_CloudProfileUrl" xml:space="preserve">
+    <value>Profile URL:</value>
+  </data>
+  <data name="Settings_CloudSignIn" xml:space="preserve">
+    <value>Sign in / Create account</value>
+  </data>
+  <data name="Settings_CloudRefreshStatus" xml:space="preserve">
+    <value>Refresh status</value>
+  </data>
+  <data name="Settings_CloudOpenProfile" xml:space="preserve">
+    <value>Open profile</value>
+  </data>
+  <data name="Settings_CloudCopyProfileUrl" xml:space="preserve">
+    <value>Copy profile URL</value>
+  </data>
+  <data name="Settings_CloudAccountSettings" xml:space="preserve">
+    <value>Security, billing &amp; account</value>
+  </data>
+  <data name="Settings_CloudSignOut" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="Settings_CloudWebSettingsHint" xml:space="preserve">
+    <value>Web settings manage TOTP/passkeys (when enabled), recovery, active sessions, subscription, export, account deletion, and sign-out on all devices.</value>
+  </data>
+  <data name="Settings_HdrCorrectGdiColors" xml:space="preserve">
+    <value>Correct HDR display colors when capturing with GDI</value>
+  </data>
+  <data name="Settings_AnnotationEditor" xml:space="preserve">
+    <value>Annotation editor:</value>
+  </data>
+  <data name="Settings_AnnotationEditorHint" xml:space="preserve">
+    <value>The OmaSnap editor is the native Hyprland overlay. Sidecar annotation files and re-editing from History stay with the XerahS editor.</value>
+  </data>
+  <data name="Settings_GlobalHotkeys" xml:space="preserve">
+    <value>Global Hotkeys</value>
+  </data>
+  <data name="Settings_GrantKeyboardAccess" xml:space="preserve">
+    <value>Grant keyboard access</value>
+  </data>
+  <data name="Settings_HyprlandKeybindings" xml:space="preserve">
+    <value>Hyprland Keybindings</value>
+  </data>
+  <data name="Settings_HyprlandKeybindingsHint" xml:space="preserve">
+    <value>Let Hyprland own XerahS hotkeys (recommended on Omarchy). Hyprland runs "omaxerahs workflow run" for each workflow hotkey, so portal shortcuts no longer take keys such as PRINT or F1.</value>
+  </data>
+  <data name="Settings_HyprlandKeybindingsOn" xml:space="preserve">
+    <value>Hyprland keybindings are on.</value>
+  </data>
+  <data name="Settings_HyprlandReviewChanges" xml:space="preserve">
+    <value>Review changes…</value>
+  </data>
+  <data name="Settings_HyprlandTurnOff" xml:space="preserve">
+    <value>Turn off</value>
+  </data>
+  <data name="Settings_HyprlandUnbindHint" xml:space="preserve">
+    <value>Unbind the conflicting keys listed above so XerahS can use them</value>
+  </data>
+  <data name="Settings_HyprlandApply" xml:space="preserve">
+    <value>Apply to my Hyprland config</value>
+  </data>
+  <data name="Settings_BackupTitle" xml:space="preserve">
+    <value>Settings Backup and Restore</value>
+  </data>
+  <data name="Settings_BackupCreateHint" xml:space="preserve">
+    <value>Create one portable file containing application settings, workflows, destination instances, custom uploader definitions, and destination credentials. Restored credentials are encrypted by the destination computer.</value>
+  </data>
+  <data name="Settings_BackupWarning" xml:space="preserve">
+    <value>Security warning: the backup file is intentionally unencrypted and can contain plaintext passwords, S3 keys, and OAuth tokens. Protect it like a password vault.</value>
+  </data>
+  <data name="Settings_BackupCreate" xml:space="preserve">
+    <value>Back Up to File...</value>
+  </data>
+  <data name="Settings_BackupRestore" xml:space="preserve">
+    <value>Restore from File...</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>Comparison on a real HDR photo</value>
   </data>
