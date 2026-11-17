@@ -3491,7 +3491,10 @@
     <value>Предпросмотр на реальном HDR-фото</value>
   </data>
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
-    <value>Одно и то же фото в общественном достоянии (Polyhaven «The Sky is on Fire», CC0), обработанное каждой кривой. На фотографии видно, как кривая ведёт себя с реальными светами и телесными тонами, чего серые полосы показать не могут.</value>
+    <value>Одно и то же фото в общественном достоянии (Polyhaven «The Sky is on Fire», CC0) шириной 640 px. Неконвертированный кадр закреплён сверху; ниже прокручиваются кривые — каждая рендерит этот кадр своим методом HDR→SDR.</value>
+  </data>
+  <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
+    <value>Сверху: HDR-кадр как его показывает SDR-просмотрщик — блики обрезаются по белому.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Изменения сохраняются автоматически</value>

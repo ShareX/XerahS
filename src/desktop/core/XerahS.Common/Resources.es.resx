@@ -3491,7 +3491,10 @@ Esto eliminará permanentemente el archivo del almacenamiento remoto. Esta acci�
     <value>Vista previa con una foto HDR real</value>
   </data>
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
-    <value>La misma foto de dominio público (Polyhaven «The Sky is on Fire», CC0) procesada con cada curva. En una foto se ve cómo trata cada curva las luces y los tonos de piel reales, algo que unas barras grises no pueden mostrar.</value>
+    <value>La misma foto de dominio público (Polyhaven «The Sky is on Fire», CC0) a 640 px. El fotograma sin convertir queda fijo arriba; debajo se desplazan las curvas, y cada una renderiza ese fotograma con un método HDR→SDR.</value>
+  </data>
+  <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
+    <value>Arriba: el fotograma HDR tal como lo muestra un visor SDR: las luces se recortan en el blanco.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Los cambios se guardan automáticamente</value>

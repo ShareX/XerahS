@@ -147,7 +147,7 @@ namespace XerahS.UI.ViewModels
         private Bitmap? _hdrPreviewBitmap;
 
         private const string HdrPhotoAssetUri = "avares://XerahS.UI/Assets/hdr/the_sky_is_on_fire_1k.hdr";
-        private const int HdrPhotoPreviewWidth = 320;
+        private const int HdrPhotoPreviewWidth = 640;
 
         /// <summary>
         /// The bundled CC0 photograph (Polyhaven "the sky is on fire") rendered through each tone

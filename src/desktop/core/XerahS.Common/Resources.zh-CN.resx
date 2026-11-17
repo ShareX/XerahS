@@ -3491,7 +3491,10 @@
     <value>在真实 HDR 照片上预览</value>
   </data>
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
-    <value>同一张公有领域照片（Polyhaven《The Sky is on Fire》，CC0）分别用每种曲线渲染。真实照片能看出各曲线如何处理高光和肤色，灰色色块无法体现这一点。</value>
+    <value>同一张公有领域照片（Polyhaven《The Sky is on Fire》，CC0），宽度 640 px。未转换的画面固定在上方；下方可滚动查看各条曲线，分别用对应方法进行 HDR→SDR 渲染。</value>
+  </data>
+  <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
+    <value>上方：SDR 查看器所见的 HDR 画面——高光在白色处裁剪。</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>更改会自动保存</value>

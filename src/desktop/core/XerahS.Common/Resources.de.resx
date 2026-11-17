@@ -3491,7 +3491,10 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
     <value>Vorschau an einem echten HDR-Foto</value>
   </data>
   <data name="TaskSettings_HdrPhotoLegend" xml:space="preserve">
-    <value>Dasselbe gemeinfreie Foto (Polyhaven „The Sky is on Fire“, CC0), mit jeder Kurve gerendert. An einem Foto wird sichtbar, wie eine Kurve mit echten Lichtern und Hauttönen umgeht – graue Balken können das nicht zeigen.</value>
+    <value>Dasselbe gemeinfreie Foto (Polyhaven „The Sky is on Fire“, CC0) mit 640 px. Das unveränderte Bild bleibt oben fixiert; darunter scrollen die Kurven, die es jeweils mit einer HDR→SDR-Methode rendern.</value>
+  </data>
+  <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
+    <value>Oben: das HDR-Bild so, wie ein SDR-Betrachter es zeigt – Lichter werden auf Weiß abgeschnitten.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Änderungen werden automatisch gespeichert</value>
