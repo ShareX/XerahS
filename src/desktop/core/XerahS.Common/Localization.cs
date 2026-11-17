@@ -75,16 +75,20 @@ namespace XerahS.Common
 
             foreach (CultureInfo culture in CultureInfo.GetCultures(CultureTypes.AllCultures))
             {
-                if (culture.Equals(CultureInfo.InvariantCulture) || !seen.Add(culture.Name))
+                if (culture.Equals(CultureInfo.InvariantCulture))
                 {
                     continue;
                 }
 
                 try
                 {
-                    if (HasSatelliteResources(culture))
+                    // A regional variant (ru-RU) falls back to its neutral parent's satellite (ru),
+                    // so resolving the culture that actually ships the assembly keeps the list free
+                    // of duplicate entries such as "Russian" and "Russian (Russia)".
+                    CultureInfo? resourceCulture = ResolveResourceCulture(culture);
+                    if (resourceCulture != null && seen.Add(resourceCulture.Name))
                     {
-                        cultures.Add(culture);
+                        cultures.Add(resourceCulture);
                     }
                 }
                 catch (ArgumentException)
@@ -107,13 +111,39 @@ namespace XerahS.Common
         {
             string satellite = string.Concat(typeof(Resources).Assembly.GetName().Name, ".resources.dll");
             string path = Path.Combine(AppContext.BaseDirectory, culture.Name, satellite);
-            if (File.Exists(path))
+            return File.Exists(path);
+        }
+
+        /// <summary>
+        /// The culture whose satellite assembly should be listed for <paramref name="culture"/>:
+        /// the culture itself when it ships its own resources, otherwise its neutral parent.
+        /// </summary>
+        private static CultureInfo? ResolveResourceCulture(CultureInfo culture)
+        {
+            if (string.IsNullOrEmpty(culture.Name))
             {
-                return true;
+                return null;
             }
 
-            // Single-file/mixed layouts may still expose the set through the ResourceManager.
-            return Resources.ResourceManager.GetResourceSet(culture, createIfNotExists: false, tryParents: false) != null;
+            if (HasSatelliteResources(culture))
+            {
+                return culture;
+            }
+
+            if (!culture.IsNeutralCulture && culture.Parent.Name.Length > 0 && HasSatelliteResources(culture.Parent))
+            {
+                return culture.Parent;
+            }
+
+            // Single-file/mixed layouts may still expose the set through the ResourceManager; only
+            // neutral cultures are asked, because a regional culture resolves to its parent's set.
+            if (culture.IsNeutralCulture &&
+                Resources.ResourceManager.GetResourceSet(culture, createIfNotExists: false, tryParents: false) != null)
+            {
+                return culture;
+            }
+
+            return null;
         }
 
         /// <summary>Human-readable name for a language entry, shown in its own language.</summary>
