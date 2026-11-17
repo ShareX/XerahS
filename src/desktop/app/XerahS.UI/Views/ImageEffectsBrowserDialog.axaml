@@ -1,4 +1,5 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns:local="using:XerahS.UI.Markup"
+           xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -11,7 +12,7 @@
   <Border Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
           Padding="16">
     <Grid RowDefinitions="Auto,*,Auto">
-      <TextBlock Grid.Row="0" Text="Select an effect to add" FontWeight="SemiBold" Margin="0,0,0,8"/>
+      <TextBlock Grid.Row="0" Text="{local:Localize ImageEffects_SelectEffect}" FontWeight="SemiBold" Margin="0,0,0,8"/>
 
       <Border Grid.Row="1"
               BorderThickness="1"

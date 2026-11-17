@@ -1,4 +1,5 @@
-<views:PageView xmlns="https://github.com/avaloniaui"
+<views:PageView xmlns:local="using:XerahS.UI.Markup"
+              xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -17,8 +18,8 @@
         <Border Grid.Row="0" Padding="16" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
                 BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
             <StackPanel Orientation="Horizontal" Spacing="16">
-                <Button Command="{Binding OpenLogsFolderCommand}" Content="Open Logs Folder" AutomationProperties.Name="Open Logs Folder"/>
-                <Button Command="{Binding OpenSettingsFolderCommand}" Content="Open Settings Folder" AutomationProperties.Name="Open Settings Folder"/>
+                <Button Command="{Binding OpenLogsFolderCommand}" Content="{local:Localize Debug_OpenLogsFolder}" AutomationProperties.Name="Open Logs Folder"/>
+                <Button Command="{Binding OpenSettingsFolderCommand}" Content="{local:Localize Debug_OpenSettingsFolder}" AutomationProperties.Name="Open Settings Folder"/>
                 <Button Command="{Binding CopyCommand}" Content="Copy" AutomationProperties.Name="Copy Log"/>
                 <Button Command="{Binding ClearCommand}" Content="Clear" AutomationProperties.Name="Clear Log"/>
                 <Button Content="Share logs…" Click="OnShareLogsClick"
@@ -31,7 +32,7 @@
         <Border Grid.Row="1" Padding="16" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
                 BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
             <StackPanel Spacing="4">
-                <TextBlock Text="Secret Store Diagnostics" FontWeight="SemiBold"/>
+                <TextBlock Text="{local:Localize Debug_SecretStoreDiagnostics}" FontWeight="SemiBold"/>
                 <TextBlock Text="{Binding SecretStoreBackendName, StringFormat=Backend: {0}}"/>
                 <TextBlock Text="{Binding SecretStoreBackendStatus, StringFormat=Status: {0}}"/>
                 <TextBlock Text="{Binding SecretStoreBackendDetails, StringFormat=Details: {0}}"/>

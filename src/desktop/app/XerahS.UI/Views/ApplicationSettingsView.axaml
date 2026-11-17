@@ -1,4 +1,5 @@
-<views:PageView xmlns="https://github.com/avaloniaui"
+<views:PageView xmlns:local="using:XerahS.UI.Markup"
+              xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -29,20 +30,20 @@
                     VerticalAlignment="Stretch"
                     VerticalContentAlignment="Stretch">
             <!-- General Tab -->
-            <TabItem Header="General">
+            <TabItem Header="{local:Localize Settings_Tab_General}">
                 <ScrollViewer controls:SettingsSearch.PageId="general">
                     <StackPanel Spacing="24" Margin="24">
                         
                         <!-- Theme -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Theme" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Theme_Title}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="Application Theme:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_Theme_ApplicationTheme}" VerticalAlignment="Center"/>
                                         <ComboBox Grid.Column="2"
                                                   ItemsSource="{Binding ThemeModes}"
                                                   SelectedItem="{Binding ThemeMode}"
@@ -50,7 +51,7 @@
                                                   HorizontalAlignment="Stretch"
                                                   AutomationProperties.Name="Application Theme"/>
                                     </Grid>
-                                    <TextBlock Text="'System default' follows your operating system's light/dark mode preference."
+                                    <TextBlock Text="{local:Localize Settings_Theme_SystemDefaultNote}"
                                                FontSize="12"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
@@ -60,17 +61,17 @@
                         
                         <!-- Updates -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Updates" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Updates_Title}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <CheckBox IsChecked="{Binding AutoCheckUpdate}" Content="Automatically check for updates" AutomationProperties.Name="Auto Check Update"/>
+                                    <CheckBox IsChecked="{Binding AutoCheckUpdate}" Content="{local:Localize Settings_Updates_AutoCheck}" AutomationProperties.Name="Auto Check Update"/>
                                     
                                     <Grid ColumnDefinitions="*, 16, *" RowDefinitions="Auto, 12, Auto">
                                         <Grid Grid.Column="0" Grid.Row="0" ColumnDefinitions="Auto, 16, *">
-                                            <TextBlock Grid.Column="0" Text="Update channel:" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="{local:Localize Settings_Updates_UpdateChannel}" VerticalAlignment="Center"/>
                                             <ComboBox Grid.Column="2"
                                                       ItemsSource="{Binding UpdateChannels}"
                                                       SelectedItem="{Binding UpdateChannel}"
@@ -82,7 +83,7 @@
                                         <Grid Grid.Column="2" Grid.Row="0"
                                               ColumnDefinitions="Auto, 16, *"
                                               IsVisible="{Binding ShowPreReleaseSourceSettings}">
-                                            <TextBlock Grid.Column="0" Text="Pre-release source:" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="{local:Localize Settings_Updates_PreReleaseSource}" VerticalAlignment="Center"/>
                                             <ComboBox Grid.Column="2"
                                                       ItemsSource="{Binding PreReleaseUpdateSources}"
                                                       SelectedItem="{Binding PreReleaseUpdateSource}"
@@ -100,10 +101,10 @@
                                         <Grid Grid.Column="2" Grid.Row="2"
                                               ColumnDefinitions="Auto, 16, *"
                                               IsVisible="{Binding ShowCustomPreReleaseSource}">
-                                            <TextBlock Grid.Column="0" Text="Custom source:" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="{local:Localize Settings_Updates_CustomSource}" VerticalAlignment="Center"/>
                                             <TextBox Grid.Column="2"
                                                      Text="{Binding CustomPreReleaseUpdateSource}"
-                                                     PlaceholderText="GitHub owner or owner/repo"
+                                                     PlaceholderText="{local:Localize Settings_Updates_CustomSourcePlaceholder}"
                                                      IsEnabled="{Binding AutoCheckUpdate}"
                                                      HorizontalAlignment="Stretch" MinWidth="160"
                                                      AutomationProperties.Name="Custom Pre-release Source"/>
@@ -139,8 +140,8 @@
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
                                     <CheckBox IsChecked="{Binding DisableToastNotification}"
-                                              Content="Disable notification window"
-                                              ToolTip.Tip="Suppress the corner toast popup that normally appears after a task completes (e.g. 'Task Completed', 'Upload Completed'). Capture, upload and other actions still run normally."
+                                              Content="{local:Localize Settings_Notifications_DisableWindow}"
+                                              ToolTip.Tip="{local:Localize Settings_Notifications_DisableWindowToolTip}"
                                               AutomationProperties.Name="Disable Notification Window"/>
                                 </StackPanel>
                             </Border>
@@ -148,19 +149,19 @@
 
                         <!-- Tray Icon -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Tray Icon" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_TrayIcon_Title}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <CheckBox IsChecked="{Binding TrayIconProgressEnabled}" Content="Show progress on tray icon" AutomationProperties.Name="Show Tray Progress"/>
+                                    <CheckBox IsChecked="{Binding TrayIconProgressEnabled}" Content="{local:Localize Settings_TrayIcon_ShowProgress}" AutomationProperties.Name="Show Tray Progress"/>
                                     <CheckBox IsChecked="{Binding UseWhiteShareXIcon}"
-                                              Content="Use single-color white tray icon"
-                                              ToolTip.Tip="Use the simple monochrome outline tray icon instead of the full-color one. Recommended on macOS and Linux where system panels are dark; opt-in on Windows. On GNOME, requires the AppIndicator extension."
+                                              Content="{local:Localize Settings_TrayIcon_UseWhiteIcon}"
+                                              ToolTip.Tip="{local:Localize Settings_TrayIcon_UseWhiteIconToolTip}"
                                               AutomationProperties.Name="Use White Tray Icon"/>
                                     
-                                    <TextBlock Text="Click Actions" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
+                                    <TextBlock Text="{local:Localize Settings_TrayIcon_ClickActions}" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
 
                                     <Grid ColumnDefinitions="120, 16, *" RowDefinitions="Auto, 16, Auto, 16, Auto">
                                         <!-- Row 0: Left Click -->
@@ -172,7 +173,7 @@
                                                   AutomationProperties.Name="Tray Left Click Action"/>
 
                                         <!-- Row 2: Double Click -->
-                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Double click:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Localize Settings_TrayIcon_DoubleClick}" VerticalAlignment="Center"/>
                                         <ComboBox Grid.Row="2" Grid.Column="2" 
                                                   ItemsSource="{Binding TrayClickActions}"
                                                   SelectedItem="{Binding TrayLeftDoubleClickAction}"
@@ -193,12 +194,12 @@
 
                         <!-- Taskbar -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Taskbar" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Taskbar_Title}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                     CornerRadius="4" Padding="16">
-                                <CheckBox IsChecked="{Binding TaskbarProgressEnabled}" Content="Show progress on taskbar" AutomationProperties.Name="Show Taskbar Progress"/>
+                                <CheckBox IsChecked="{Binding TaskbarProgressEnabled}" Content="{local:Localize Settings_Taskbar_ShowProgress}" AutomationProperties.Name="Show Taskbar Progress"/>
                             </Border>
                         </StackPanel>
                     </StackPanel>
@@ -206,26 +207,26 @@
             </TabItem>
 
             <!-- Paths Tab -->
-            <TabItem Header="Paths">
+            <TabItem Header="{local:Localize Settings_Tab_Paths}">
                 <ScrollViewer controls:SettingsSearch.PageId="paths">
                     <StackPanel Spacing="24" Margin="24">
                          <!-- Screenshots Folder -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Screenshots Folder" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Paths_ScreenshotsFolder}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <CheckBox IsChecked="{Binding UseCustomScreenshotsPath}" Content="Use custom screenshots path" AutomationProperties.Name="Use Custom Screenshots Path"/>
+                                    <CheckBox IsChecked="{Binding UseCustomScreenshotsPath}" Content="{local:Localize Settings_Paths_UseCustomScreenshotsPath}" AutomationProperties.Name="Use Custom Screenshots Path"/>
                                     <Grid ColumnDefinitions="*, 16, Auto" IsEnabled="{Binding UseCustomScreenshotsPath}">
-                                        <TextBox Grid.Column="0" Text="{Binding ScreenshotsFolder}" PlaceholderText="Path to screenshots folder" AutomationProperties.Name="Screenshots Folder Path"/>
+                                        <TextBox Grid.Column="0" Text="{Binding ScreenshotsFolder}" PlaceholderText="{local:Localize Settings_Paths_ScreenshotsPathPlaceholder}" AutomationProperties.Name="Screenshots Folder Path"/>
                                         <Button Grid.Column="2"
                                                 Width="36"
                                                 MinWidth="36"
                                                 Padding="0"
                                                 Content="..."
-                                                ToolTip.Tip="Browse for screenshots folder"
+                                                ToolTip.Tip="{local:Localize Settings_Paths_BrowseScreenshotsToolTip}"
                                                 Command="{Binding BrowseFolderCommand}"
                                                 AutomationProperties.Name="Browse Screenshots Folder"/>
                                     </Grid>
@@ -235,18 +236,18 @@
 
                         <!-- Subfolder Pattern -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Subfolder Pattern" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Paths_SubfolderPattern}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <CheckBox IsChecked="{Binding UseSaveImageSubFolderPattern}" Content="Create subfolders using pattern" AutomationProperties.Name="Use Subfolder Pattern"/>
+                                    <CheckBox IsChecked="{Binding UseSaveImageSubFolderPattern}" Content="{local:Localize Settings_Paths_UseSubfolderPattern}" AutomationProperties.Name="Use Subfolder Pattern"/>
                                     <Grid ColumnDefinitions="Auto, 16, *" IsEnabled="{Binding UseSaveImageSubFolderPattern}">
-                                        <TextBlock Grid.Column="0" Text="Pattern:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_Paths_Pattern}" VerticalAlignment="Center"/>
                                         <TextBox x:Name="SaveImageSubFolderPatternTextBox" Grid.Column="2" Text="{Binding SaveImageSubFolderPattern}" PlaceholderText="%y-%mo" AutomationProperties.Name="Subfolder Pattern"/>
                                     </Grid>
-                                    <TextBlock Text="Example: 2025-01" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                    <TextBlock Text="{local:Localize Settings_Paths_PatternExample}" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -255,39 +256,39 @@
             </TabItem>
 
             <!-- Watch Folders Tab -->
-            <TabItem Header="Watch Folders">
+            <TabItem Header="{local:Localize Settings_Tab_WatchFolders}">
                 <ScrollViewer controls:SettingsSearch.PageId="watch-folders">
                     <StackPanel Spacing="24" Margin="24">
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Watch folders" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_WatchFolders_Title}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="Monitor folders for new files and run file upload workflows automatically."
+                                    <TextBlock Text="{local:Localize Settings_WatchFolders_Description}"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
                                     <Grid ColumnDefinitions="*, 16, Auto">
-                                        <TextBlock Grid.Column="0" Text="Configured folders" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_WatchFolders_ConfiguredFolders}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
                                             <Button Content="Add" Command="{Binding AddWatchFolderCommand}" AutomationProperties.Name="Add Watch Folder"/>
-                                            <Button Content="Edit" Command="{Binding EditWatchFolderCommand}" AutomationProperties.Name="Edit Watch Folder"/>
+                                            <Button Content="{local:Localize Settings_WatchFolders_Edit}" Command="{Binding EditWatchFolderCommand}" AutomationProperties.Name="Edit Watch Folder"/>
                                             <Button Content="Remove" Command="{Binding RemoveWatchFolderCommand}" AutomationProperties.Name="Remove Watch Folder"/>
                                         </StackPanel>
                                     </Grid>
 
                                     <!-- Watch Folder List Header -->
                                     <Grid ColumnDefinitions="80, 90, 2*, 150, 120, 120, 150, 120" Margin="4,0,4,0">
-                                        <TextBlock Grid.Column="0" Text="Enabled" FontWeight="SemiBold" FontSize="12"/>
-                                        <TextBlock Grid.Column="1" Text="Status" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_WatchFolders_Column_Enabled}" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="1" Text="{local:Localize Settings_WatchFolders_Column_Status}" FontWeight="SemiBold" FontSize="12"/>
                                         <TextBlock Grid.Column="2" Text="Folder" FontWeight="SemiBold" FontSize="12"/>
-                                        <TextBlock Grid.Column="3" Text="Workflow" FontWeight="SemiBold" FontSize="12"/>
-                                        <TextBlock Grid.Column="4" Text="Filter" FontWeight="SemiBold" FontSize="12"/>
-                                        <TextBlock Grid.Column="5" Text="Subfolders" FontWeight="SemiBold" FontSize="12"/>
-                                        <TextBlock Grid.Column="6" Text="Move to Screenshots" FontWeight="SemiBold" FontSize="12"/>
-                                        <TextBlock Grid.Column="7" Text="MOV to MP4" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="3" Text="{local:Localize Settings_WatchFolders_Column_Workflow}" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="4" Text="{local:Localize Settings_WatchFolders_Column_Filter}" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="5" Text="{local:Localize Settings_WatchFolders_Column_Subfolders}" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="6" Text="{local:Localize Settings_WatchFolders_Column_MoveToScreenshots}" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Column="7" Text="{local:Localize Settings_WatchFolders_Column_MovToMp4}" FontWeight="SemiBold" FontSize="12"/>
                                     </Grid>
 
                                     <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" CornerRadius="4">
@@ -316,20 +317,20 @@
                         </StackPanel>
 
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Watch Folder Service/Daemon" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_WatchFolderDaemon_Title}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4"
                                     Padding="16">
                                 <StackPanel Spacing="12">
-                                    <TextBlock Text="Run watch-folder monitoring in a dedicated background service/daemon using your existing settings."
+                                    <TextBlock Text="{local:Localize Settings_WatchFolderDaemon_Description}"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
                                     <Grid ColumnDefinitions="Auto, 16, *"
                                           IsVisible="{Binding ShowWatchFolderDaemonScopeSelector}">
-                                        <TextBlock Grid.Column="0" Text="Scope:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_WatchFolderDaemon_Scope}" VerticalAlignment="Center"/>
                                         <ComboBox Grid.Column="2"
                                                   ItemsSource="{Binding WatchFolderDaemonScopes}"
                                                   SelectedItem="{Binding WatchFolderDaemonScope}"
@@ -339,7 +340,7 @@
                                     </Grid>
 
                                     <CheckBox IsChecked="{Binding WatchFolderDaemonStartAtStartup}"
-                                              Content="Start daemon at startup"
+                                              Content="{local:Localize Settings_WatchFolderDaemon_StartAtStartup}"
                                               AutomationProperties.Name="Watch Folder Daemon Startup"/>
 
                                     <Grid ColumnDefinitions="*, 12, Auto, 8, Auto"
@@ -370,25 +371,25 @@
             </TabItem>
             
             <!-- Integration Tab -->
-            <TabItem Header="Integration">
+            <TabItem Header="{local:Localize Settings_Tab_Integration}">
                 <ScrollViewer controls:SettingsSearch.PageId="integration">
                     <StackPanel Spacing="24" Margin="24">
                         <!-- System -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="System" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Integration_System}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <CheckBox IsChecked="{Binding ShowTray}" Content="Show tray icon" AutomationProperties.Name="Show Tray Icon"/>
-                                    <CheckBox IsChecked="{Binding SilentRun}" Content="Start minimized to tray"
+                                    <CheckBox IsChecked="{Binding ShowTray}" Content="{local:Localize Settings_Integration_ShowTrayIcon}" AutomationProperties.Name="Show Tray Icon"/>
+                                    <CheckBox IsChecked="{Binding SilentRun}" Content="{local:Localize Settings_Integration_StartMinimized}"
                                               IsEnabled="{Binding ShowTray}" AutomationProperties.Name="Start Minimized"/>
                                     <CheckBox IsChecked="{Binding RememberMainWindowSize}"
-                                              Content="Remember main window size"
+                                              Content="{local:Localize Settings_Integration_RememberMainWindowSize}"
                                               AutomationProperties.Name="Remember Main Window Size"/>
                                     <CheckBox IsChecked="{Binding RememberMainWindowPosition}"
-                                              Content="Remember main window position"
+                                              Content="{local:Localize Settings_Integration_RememberMainWindowPosition}"
                                               AutomationProperties.Name="Remember Main Window Position"/>
                                 </StackPanel>
                             </Border>
@@ -396,27 +397,27 @@
 
                         <!-- Desktop Integration -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Desktop Integration" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Integration_DesktopIntegration}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
                                     <CheckBox IsChecked="{Binding RunAtStartup}" 
-                                              Content="Run at system startup" AutomationProperties.Name="Run at Startup"/>
+                                              Content="{local:Localize Settings_Integration_RunAtStartup}" AutomationProperties.Name="Run at Startup"/>
                                     <CheckBox IsChecked="{Binding NetworkMonitorEnabled}"
                                               Content="Run Network Monitor in the background"
                                               ToolTip.Tip="Periodically pings external hosts to monitor connectivity, including at startup. Disabled by default. You can also use Tools > Network Monitor for a temporary session."
                                               AutomationProperties.Name="Background Network Monitor"/>
                                     <CheckBox IsChecked="{Binding EnableContextMenuIntegration}" 
-                                              Content="Add 'Upload with XerahS' to context menu"
+                                              Content="{local:Localize Settings_Integration_ContextMenu}"
                                               IsEnabled="{Binding SupportsContextMenuIntegration}"
-                                              ToolTip.Tip="Adds an option to upload files from the right-click context menu"
+                                              ToolTip.Tip="{local:Localize Settings_Integration_ContextMenuToolTip}"
                                               AutomationProperties.Name="Enable Context Menu Integration"/>
                                     <CheckBox IsChecked="{Binding EnableSendToIntegration}" 
-                                              Content="Add to 'Send To' menu"
+                                              Content="{local:Localize Settings_Integration_SendToMenu}"
                                               IsEnabled="{Binding SupportsSendToIntegration}"
-                                              ToolTip.Tip="Adds XerahS to the 'Send To' menu for quick file access"
+                                              ToolTip.Tip="{local:Localize Settings_Integration_SendToMenuToolTip}"
                                               AutomationProperties.Name="Enable Send To Integration"/>
 
                                     <Border BorderThickness="1"
@@ -432,14 +433,14 @@
                                                        FontSize="11"
                                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                        TextWrapping="Wrap"/>
-                                            <TextBlock Text="Folder policy"
+                                            <TextBlock Text="{local:Localize SendToPrompt_FolderPolicy}"
                                                        FontSize="11"/>
                                             <ComboBox ItemsSource="{Binding SendToFolderPolicyOptions}"
                                                       SelectedIndex="{Binding SendToFolderPolicySelectedIndex}"
                                                       MinWidth="220"
                                                       HorizontalAlignment="Left"
                                                       AutomationProperties.Name="Send To Folder Policy"/>
-                                            <TextBlock Text="Image batch policy"
+                                            <TextBlock Text="{local:Localize SendToPrompt_ImageBatchPolicy}"
                                                        FontSize="11"/>
                                             <ComboBox ItemsSource="{Binding SendToBatchPolicyOptions}"
                                                       SelectedIndex="{Binding SendToBatchPolicySelectedIndex}"
@@ -454,7 +455,7 @@
                                                            HorizontalAlignment="Left"
                                                            IsVisible="{Binding ShowSendToBatchThreshold}"
                                                            AutomationProperties.Name="Send To Batch Confirm Threshold"/>
-                                            <TextBlock Text="Send-to remembered choices"
+                                            <TextBlock Text="{local:Localize Settings_Integration_SendToRememberedChoices}"
                                                        FontWeight="SemiBold"
                                                        FontSize="12"
                                                        Margin="0,8,0,0"/>
@@ -462,7 +463,7 @@
                                                        FontSize="11"
                                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                        TextWrapping="Wrap"/>
-                                            <Button Content="Clear remembered Send-to choices"
+                                            <Button Content="{local:Localize Settings_Integration_ClearSendToChoices}"
                                                     Command="{Binding ClearRememberedSendToChoicesCommand}"
                                                     IsEnabled="{Binding HasRememberedSendToChoices}"
                                                     HorizontalAlignment="Left"
@@ -470,22 +471,22 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <TextBlock Text="Clipboard" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
+                                    <TextBlock Text="{local:Localize Settings_Integration_Clipboard}" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
 
                                     <CheckBox IsChecked="{Binding EnableClipboardContentViewer}"
-                                              Content="Monitor clipboard and auto-show Clipboard Viewer"
-                                              ToolTip.Tip="When enabled, automatically opens the Clipboard Viewer when new content is copied to the clipboard"
+                                              Content="{local:Localize Settings_Integration_ClipboardViewer}"
+                                              ToolTip.Tip="{local:Localize Settings_Integration_ClipboardViewerToolTip}"
                                               AutomationProperties.Name="Enable Clipboard Content Viewer"/>
                                               
-                                    <TextBlock Text="File Associations" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
+                                    <TextBlock Text="{local:Localize Settings_Integration_FileAssociations}" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
                                     
-                                    <CheckBox Content="Associate .xsdp files with this application"
+                                    <CheckBox Content="{local:Localize Settings_Integration_AssociateXsdp}"
                                               IsChecked="{Binding IsPluginExtensionRegistered}"
                                               IsVisible="{Binding SupportsFileAssociations}"
-                                              ToolTip.Tip="Allows double-clicking .xsdp plugin packages to install them"
+                                              ToolTip.Tip="{local:Localize Settings_Integration_AssociateXsdpToolTip}"
                                               AutomationProperties.Name="Associate XSDP Files"/>
                                     
-                                    <TextBlock Text="Note: Some integration features require platform-specific support and may not be available on all systems."
+                                    <TextBlock Text="{local:Localize Settings_Integration_Note}"
                                                FontSize="11"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
@@ -495,29 +496,29 @@
 
                         <!-- Capture Command Palette -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Capture Command Palette" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_CapturePalette_Title}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="Open a searchable overlay for configured capture and recording workflows."
+                                    <TextBlock Text="{local:Localize Settings_CapturePalette_Description}"
                                                FontSize="12"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
                                     <CheckBox IsChecked="{Binding CaptureCommandPaletteEnabled}"
-                                              Content="Enable Capture Command Palette"
+                                              Content="{local:Localize Settings_CapturePalette_Enable}"
                                               AutomationProperties.Name="Enable Capture Command Palette"/>
 
                                     <Grid ColumnDefinitions="Auto, 16, *, 16, Auto">
-                                        <TextBlock Grid.Column="0" Text="Shortcut:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_Shortcut}" VerticalAlignment="Center"/>
                                         <TextBox Grid.Column="2"
                                                  Text="{Binding CaptureCommandPaletteHotkeyText}"
                                                  IsReadOnly="True"
                                                  AutomationProperties.Name="Capture Command Palette Shortcut"/>
                                         <Button Grid.Column="4"
-                                                Content="Test Shortcut"
+                                                Content="{local:Localize Settings_TestShortcut}"
                                                 Command="{Binding TestCaptureCommandPaletteShortcutCommand}"
                                                 AutomationProperties.Name="Test Capture Command Palette Shortcut"/>
                                     </Grid>
@@ -532,18 +533,18 @@
 
                         <!-- MCP Server -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="MCP Server" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Mcp_Title}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="Use the dedicated xerahs-mcp executable to expose XerahS over the Model Context Protocol."
+                                    <TextBlock Text="{local:Localize Settings_Mcp_Description}"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="Manifest URL:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_Mcp_ManifestUrl}" VerticalAlignment="Center"/>
                                         <TextBox Grid.Column="2"
                                                  Text="{Binding McpManifestUrl}"
                                                  IsReadOnly="True"
@@ -552,7 +553,7 @@
                                     </Grid>
 
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="API key:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_Assistant_ApiKey}" VerticalAlignment="Center"/>
                                         <TextBox Grid.Column="2"
                                                  Text="{Binding McpApiKeyDisplay}"
                                                  IsReadOnly="True"
@@ -566,18 +567,18 @@
                                                TextWrapping="Wrap"/>
 
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <Button Content="Copy API Key"
+                                        <Button Content="{local:Localize Settings_Mcp_CopyApiKey}"
                                                 Command="{Binding CopyMcpApiKeyCommand}"
                                                 AutomationProperties.Name="Copy MCP API Key"/>
-                                        <Button Content="Generate or Regenerate API Key"
+                                        <Button Content="{local:Localize Settings_Mcp_GenerateApiKey}"
                                                 Command="{Binding GenerateMcpApiKeyCommand}"
                                                 AutomationProperties.Name="Generate MCP API Key"/>
-                                        <Button Content="Copy Manifest URL"
+                                        <Button Content="{local:Localize Settings_Mcp_CopyManifestUrl}"
                                                 Command="{Binding CopyMcpManifestUrlCommand}"
                                                 AutomationProperties.Name="Copy MCP Manifest URL"/>
                                     </StackPanel>
 
-                                    <TextBlock Text="HTTP transport requires the bearer token above. If no key exists, the MCP runtime also generates one automatically on first launch."
+                                    <TextBlock Text="{local:Localize Settings_Mcp_HttpTransportNote}"
                                                FontSize="11"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
@@ -593,7 +594,7 @@
                 <ScrollViewer controls:SettingsSearch.PageId="assistant">
                     <StackPanel Spacing="24" Margin="24">
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="AI Provider" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Assistant_AIProvider}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -604,7 +605,7 @@
                                                TextWrapping="Wrap"/>
 
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="Provider:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_Assistant_Provider}" VerticalAlignment="Center"/>
                                         <ComboBox Grid.Column="2"
                                                   ItemsSource="{Binding AssistantProviderOptions}"
                                                   SelectedItem="{Binding SelectedAssistantProvider}"
@@ -619,15 +620,15 @@
                                     </Grid>
 
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="Model:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_Assistant_Model}" VerticalAlignment="Center"/>
                                         <TextBox Grid.Column="2"
                                                  Text="{Binding AssistantProviderModelId}"
-                                                 PlaceholderText="Model ID"
+                                                 PlaceholderText="{local:Localize Settings_Assistant_ModelIdPlaceholder}"
                                                  AutomationProperties.Name="Assistant AI Model"/>
                                     </Grid>
 
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="Base URL:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_Assistant_BaseUrl}" VerticalAlignment="Center"/>
                                         <TextBox Grid.Column="2"
                                                  Text="{Binding AssistantProviderBaseUrl}"
                                                  PlaceholderText="https://api.example.com/v1"
@@ -635,11 +636,11 @@
                                     </Grid>
 
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="API key:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_Assistant_ApiKey}" VerticalAlignment="Center"/>
                                         <TextBox Grid.Column="2"
                                                  Text="{Binding AssistantProviderApiKey}"
                                                  PasswordChar="*"
-                                                 PlaceholderText="Stored in the XerahS secret store"
+                                                 PlaceholderText="{local:Localize Settings_Assistant_ApiKeyPlaceholder}"
                                                  IsEnabled="{Binding AssistantProviderNeedsApiKey}"
                                                  AutomationProperties.Name="Assistant AI API Key"/>
                                     </Grid>
@@ -650,13 +651,13 @@
                                                TextWrapping="Wrap"/>
 
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <Button Content="Save Provider"
+                                        <Button Content="{local:Localize Settings_Assistant_SaveProvider}"
                                                 Command="{Binding SaveAssistantProviderSettingsCommand}"
                                                 AutomationProperties.Name="Save Assistant AI Provider"/>
-                                        <Button Content="Validate"
+                                        <Button Content="{local:Localize Settings_Assistant_Validate}"
                                                 Command="{Binding ValidateAssistantProviderCommand}"
                                                 AutomationProperties.Name="Validate Assistant AI Provider"/>
-                                        <Button Content="Remove Key"
+                                        <Button Content="{local:Localize Settings_Assistant_RemoveKey}"
                                                 Command="{Binding RemoveAssistantProviderKeyCommand}"
                                                 IsEnabled="{Binding AssistantProviderHasApiKey}"
                                                 AutomationProperties.Name="Remove Assistant AI Key"/>
@@ -727,22 +728,22 @@
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="Use a local-first command overlay for XerahS history and capture actions."
+                                    <TextBlock Text="{local:Localize Settings_Assistant_Description}"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
 
                                     <CheckBox IsChecked="{Binding AssistantEnabled}"
-                                              Content="Enable XerahS Assistant"
+                                              Content="{local:Localize Settings_Assistant_Enable}"
                                               AutomationProperties.Name="Enable Assistant"/>
 
                                     <Grid ColumnDefinitions="Auto, 16, *, 16, Auto">
-                                        <TextBlock Grid.Column="0" Text="Shortcut:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_Shortcut}" VerticalAlignment="Center"/>
                                         <TextBox Grid.Column="2"
                                                  Text="{Binding AssistantHotkeyText}"
                                                  IsReadOnly="True"
                                                  AutomationProperties.Name="Assistant Shortcut"/>
                                         <Button Grid.Column="4"
-                                                Content="Test Shortcut"
+                                                Content="{local:Localize Settings_TestShortcut}"
                                                 Command="{Binding TestAssistantShortcutCommand}"
                                                 AutomationProperties.Name="Test Assistant Shortcut"/>
                                     </Grid>
@@ -753,7 +754,7 @@
                                                TextWrapping="Wrap"/>
 
                                     <CheckBox IsChecked="{Binding AssistantPromptHistoryEnabled}"
-                                              Content="Save assistant command history"
+                                              Content="{local:Localize Settings_Assistant_SaveHistory}"
                                               AutomationProperties.Name="Save Assistant History"/>
                                 </StackPanel>
                             </Border>
@@ -844,12 +845,12 @@
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <CheckBox IsChecked="{Binding HistorySaveTasks}" Content="Save captured/uploaded items to history" AutomationProperties.Name="Save Tasks to History"/>
-                                    <CheckBox IsChecked="{Binding HistoryCheckURL}" Content="Only save items with URL" AutomationProperties.Name="Only Save Tasks with URL"/>
+                                    <CheckBox IsChecked="{Binding HistorySaveTasks}" Content="{local:Localize Settings_History_SaveTasks}" AutomationProperties.Name="Save Tasks to History"/>
+                                    <CheckBox IsChecked="{Binding HistoryCheckURL}" Content="{local:Localize Settings_History_OnlySaveWithUrl}" AutomationProperties.Name="Only Save Tasks with URL"/>
                                     <CheckBox IsChecked="{Binding ScreenshotContentSearchEnabled}"
-                                              Content="Make screenshots searchable"
+                                              Content="{local:Localize Settings_History_ScreenshotSearch}"
                                               AutomationProperties.Name="Make Screenshots Searchable"/>
-                                    <TextBlock Text="Reads text in new screenshots locally so History and Assistant search can find screenshots by visible words."
+                                    <TextBlock Text="{local:Localize Settings_History_ScreenshotSearchNote}"
                                                FontSize="11"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
@@ -859,16 +860,16 @@
 
                         <!-- Recent Tasks Settings -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Recent Tasks" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_RecentTasks_Title}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <CheckBox IsChecked="{Binding RecentTasksSave}" Content="Save recent tasks" AutomationProperties.Name="Save Recent Tasks"/>
+                                    <CheckBox IsChecked="{Binding RecentTasksSave}" Content="{local:Localize Settings_RecentTasks_Save}" AutomationProperties.Name="Save Recent Tasks"/>
                                     
                                     <Grid ColumnDefinitions="Auto, 16, Auto">
-                                        <TextBlock Grid.Column="0" Text="Maximum recent tasks:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_RecentTasks_MaxCount}" VerticalAlignment="Center"/>
                                         <NumericUpDown Grid.Column="2" 
                                                        Value="{Binding RecentTasksMaxCount}" 
                                                        Minimum="1" Maximum="100" 
@@ -876,12 +877,12 @@
                                                        AutomationProperties.Name="Max Recent Tasks"/>
                                     </Grid>
                                     
-                                    <TextBlock Text="Display Options" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
+                                    <TextBlock Text="{local:Localize Settings_RecentTasks_DisplayOptions}" FontWeight="SemiBold" FontSize="12" Margin="0,8,0,0"/>
                                     
-                                    <CheckBox IsChecked="{Binding RecentTasksShowInMainWindow}" Content="Show recent tasks in main window" AutomationProperties.Name="Show Recent Tasks in Main Window"/>
-                                    <CheckBox IsChecked="{Binding RecentTasksShowInTrayMenu}" Content="Show recent tasks in tray menu" AutomationProperties.Name="Show Recent Tasks in Tray Menu"/>
+                                    <CheckBox IsChecked="{Binding RecentTasksShowInMainWindow}" Content="{local:Localize Settings_RecentTasks_ShowInMainWindow}" AutomationProperties.Name="Show Recent Tasks in Main Window"/>
+                                    <CheckBox IsChecked="{Binding RecentTasksShowInTrayMenu}" Content="{local:Localize Settings_RecentTasks_ShowInTrayMenu}" AutomationProperties.Name="Show Recent Tasks in Tray Menu"/>
                                     <CheckBox IsChecked="{Binding RecentTasksTrayMenuMostRecentFirst}" 
-                                              Content="Show most recent first in tray menu" 
+                                              Content="{local:Localize Settings_RecentTasks_MostRecentFirst}" 
                                               IsEnabled="{Binding RecentTasksShowInTrayMenu}"
                                               AutomationProperties.Name="Show Recent Tasks First"/>
                                 </StackPanel>
@@ -892,27 +893,27 @@
             </TabItem>
 
              <!-- Proxy Tab -->
-            <TabItem Header="Proxy">
+            <TabItem Header="{local:Localize Settings_Tab_Proxy}">
                 <ScrollViewer controls:SettingsSearch.PageId="proxy">
                     <StackPanel Spacing="24" Margin="24">
 
                         <!-- Proxy Method -->
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Proxy Configuration" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Proxy_Title}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
                                     <Grid ColumnDefinitions="Auto, 16, *">
-                                        <TextBlock Grid.Column="0" Text="Proxy method:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize Settings_Proxy_Method}" VerticalAlignment="Center"/>
                                         <ComboBox Grid.Column="2"
                                                   ItemsSource="{Binding ProxyMethods}"
                                                   SelectedItem="{Binding ProxyMethod}"
                                                   HorizontalAlignment="Stretch" MinWidth="200"
                                                   AutomationProperties.Name="Proxy Method"/>
                                     </Grid>
-                                    <TextBlock Text="Configure how network requests should be proxied. Changes apply immediately to all uploads."
+                                    <TextBlock Text="{local:Localize Settings_Proxy_MethodDescription}"
                                                FontSize="12"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                TextWrapping="Wrap"/>
@@ -923,20 +924,20 @@
                         <!-- Manual Proxy Settings -->
                         <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding IsManualProxy}">
                             <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                                <TextBlock Text="Proxy Server" FontWeight="SemiBold"/>
+                                <TextBlock Text="{local:Localize Settings_Proxy_Server}" FontWeight="SemiBold"/>
                                 <Border BorderThickness="1"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         CornerRadius="4" Padding="16">
                                     <StackPanel Spacing="16">
                                         <Grid ColumnDefinitions="100, 16, *">
-                                            <TextBlock Grid.Column="0" Text="Host:" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="{local:Localize Settings_Proxy_Host}" VerticalAlignment="Center"/>
                                             <TextBox Grid.Column="2" Text="{Binding ProxyHost}"
                                                      PlaceholderText="proxy.example.com"
                                                      AutomationProperties.Name="Proxy Host"/>
                                         </Grid>
                                         <Grid ColumnDefinitions="100, 16, *">
-                                            <TextBlock Grid.Column="0" Text="Port:" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="{local:Localize Settings_Proxy_Port}" VerticalAlignment="Center"/>
                                             <NumericUpDown Grid.Column="2"
                                                            Value="{Binding ProxyPort}"
                                                            Minimum="1" Maximum="65535"
@@ -951,26 +952,26 @@
                         <!-- Authentication -->
                         <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding IsManualProxy}">
                             <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                                <TextBlock Text="Authentication (Optional)" FontWeight="SemiBold"/>
+                                <TextBlock Text="{local:Localize Settings_Proxy_Authentication}" FontWeight="SemiBold"/>
                                 <Border BorderThickness="1"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         CornerRadius="4" Padding="16">
                                     <StackPanel Spacing="16">
                                         <Grid ColumnDefinitions="100, 16, *">
-                                            <TextBlock Grid.Column="0" Text="Username:" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="{local:Localize Settings_Proxy_Username}" VerticalAlignment="Center"/>
                                             <TextBox Grid.Column="2" Text="{Binding ProxyUsername}"
-                                                     PlaceholderText="username"
+                                                     PlaceholderText="{local:Localize Settings_Proxy_UsernamePlaceholder}"
                                                      AutomationProperties.Name="Proxy Username"/>
                                         </Grid>
                                         <Grid ColumnDefinitions="100, 16, *">
-                                            <TextBlock Grid.Column="0" Text="Password:" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="{local:Localize Settings_Proxy_Password}" VerticalAlignment="Center"/>
                                             <TextBox Grid.Column="2" Text="{Binding ProxyPassword}"
-                                                     PlaceholderText="password"
+                                                     PlaceholderText="{local:Localize Settings_Proxy_PasswordPlaceholder}"
                                                      PasswordChar="•"
                                                      AutomationProperties.Name="Proxy Password"/>
                                         </Grid>
-                                        <TextBlock Text="Leave username and password blank if your proxy does not require authentication."
+                                        <TextBlock Text="{local:Localize Settings_Proxy_AuthNote}"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                    TextWrapping="Wrap"/>
@@ -984,18 +985,18 @@
             </TabItem>
 
              <!-- Advanced Tab -->
-             <TabItem Header="Advanced">
+             <TabItem Header="{local:Localize Settings_Tab_Advanced}">
                 <ScrollViewer controls:SettingsSearch.PageId="advanced">
                     <StackPanel Spacing="24" Margin="24">
                         <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding ShowUseModernCaptureSetting}">
                             <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                                <TextBlock Text="Capture Engine" FontWeight="SemiBold"/>
+                                <TextBlock Text="{local:Localize Settings_Advanced_CaptureEngine}" FontWeight="SemiBold"/>
                                 <Border BorderThickness="1" 
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                         CornerRadius="4" Padding="16">
                                     <StackPanel Spacing="16">
-                                        <CheckBox IsChecked="{Binding UseModernCapture}" Content="Use Modern Screen Capture (Direct3D11 on Windows, XDG Portal on Linux). Requires restart." AutomationProperties.Name="Use Modern Capture"/>
+                                        <CheckBox IsChecked="{Binding UseModernCapture}" Content="{local:Localize Settings_Advanced_UseModernCapture}" AutomationProperties.Name="Use Modern Capture"/>
                                         <CheckBox IsChecked="{Binding HDRScreenshotColorCorrection}" Content="Correct HDR display colors when capturing with GDI" AutomationProperties.Name="Correct HDR Display Colors"/>
                                     </StackPanel>
                                 </Border>
@@ -1004,16 +1005,16 @@
 
                         <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding IsMacOSPlatform}">
                             <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                                <TextBlock Text="macOS Region Selector" FontWeight="SemiBold"/>
+                                <TextBlock Text="{local:Localize Settings_Advanced_MacRegionSelector}" FontWeight="SemiBold"/>
                                 <Border BorderThickness="1"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         CornerRadius="4" Padding="16">
                                     <StackPanel Spacing="16">
-                                        <TextBlock Text="Choose one selector for macOS interactive region capture so the native crosshair and XerahS overlay are not shown in the same workflow."
+                                        <TextBlock Text="{local:Localize Settings_Advanced_MacRegionSelectorDescription}"
                                                    TextWrapping="Wrap"/>
                                         <Grid ColumnDefinitions="120, 16, *">
-                                            <TextBlock Grid.Column="0" Text="Region selector:" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="{local:Localize Settings_RegionSelector}" VerticalAlignment="Center"/>
                                             <ComboBox Grid.Column="2"
                                                       ItemsSource="{Binding MacOSRegionSelectorPreferences}"
                                                       SelectedItem="{Binding MacOSRegionSelectorPreference}"
@@ -1027,12 +1028,12 @@
                                                 </ComboBox.ItemTemplate>
                                             </ComboBox>
                                         </Grid>
-                                        <TextBlock Text="This is the default for macOS workflows and capture tools. Workflows set to Automatic follow this value."
+                                        <TextBlock Text="{local:Localize Settings_Advanced_MacRegionSelectorNote}"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                    TextWrapping="Wrap"/>
                                         <CheckBox IsChecked="{Binding MacOSPlayCaptureSound}"
-                                                  Content="Play native macOS capture sound"
+                                                  Content="{local:Localize Settings_Advanced_PlayMacCaptureSound}"
                                                   AutomationProperties.Name="Play Native macOS Capture Sound"/>
                                     </StackPanel>
                                 </Border>
@@ -1041,16 +1042,16 @@
 
                         <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding IsLinuxPlatform}">
                             <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                                <TextBlock Text="Linux Region Selector" FontWeight="SemiBold"/>
+                                <TextBlock Text="{local:Localize Settings_Advanced_LinuxRegionSelector}" FontWeight="SemiBold"/>
                                 <Border BorderThickness="1"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         CornerRadius="4" Padding="16">
                                     <StackPanel Spacing="16">
-                                        <TextBlock Text="Choose which selector XerahS should prefer for Linux interactive region selection."
+                                        <TextBlock Text="{local:Localize Settings_Advanced_LinuxRegionSelectorDescription}"
                                                    TextWrapping="Wrap"/>
                                         <Grid ColumnDefinitions="120, 16, *">
-                                            <TextBlock Grid.Column="0" Text="Region selector:" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="{local:Localize Settings_RegionSelector}" VerticalAlignment="Center"/>
                                             <ComboBox Grid.Column="2"
                                                       ItemsSource="{Binding LinuxRegionSelectorPreferences}"
                                                       SelectedItem="{Binding LinuxRegionSelectorPreference}"
@@ -1118,16 +1119,16 @@
 
                         <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding IsLinuxPlatform}">
                             <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                                <TextBlock Text="Linux Recording Backend" FontWeight="SemiBold"/>
+                                <TextBlock Text="{local:Localize Settings_Advanced_LinuxRecordingBackend}" FontWeight="SemiBold"/>
                                 <Border BorderThickness="1"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         CornerRadius="4" Padding="16">
                                     <StackPanel Spacing="16">
-                                        <TextBlock Text="Choose which recording backend XerahS should prefer for Linux screen recording workflows."
+                                        <TextBlock Text="{local:Localize Settings_Advanced_LinuxRecordingBackendDescription}"
                                                    TextWrapping="Wrap"/>
                                         <Grid ColumnDefinitions="120, 16, *">
-                                            <TextBlock Grid.Column="0" Text="Recording backend:" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="{local:Localize Settings_Advanced_RecordingBackend}" VerticalAlignment="Center"/>
                                             <ComboBox Grid.Column="2"
                                                       ItemsSource="{Binding LinuxRecordingBackendPreferences}"
                                                       SelectedItem="{Binding LinuxRecordingBackendPreference}"
@@ -1141,7 +1142,7 @@
                                                 </ComboBox.ItemTemplate>
                                             </ComboBox>
                                         </Grid>
-                                        <TextBlock Text="Automatic prefers native or portal-backed recording when available and falls back to FFmpeg when needed."
+                                        <TextBlock Text="{local:Localize Settings_Advanced_LinuxRecordingBackendNote}"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                    TextWrapping="Wrap"/>
@@ -1152,7 +1153,7 @@
 
                         <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding IsLinuxPlatform}">
                             <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                                <TextBlock Text="Linux Clipboard" FontWeight="SemiBold"/>
+                                <TextBlock Text="{local:Localize Settings_Advanced_LinuxClipboard}" FontWeight="SemiBold"/>
                                 <Border BorderThickness="1"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -1169,9 +1170,9 @@
                                                        FontSize="12"/>
                                         </Border>
                                         <CheckBox IsChecked="{Binding PersistClipboardAfterExit}"
-                                                  Content="Keep clipboard contents after XerahS exits (Wayland: uses wl-copy)"
+                                                  Content="{local:Localize Settings_Advanced_PersistClipboard}"
                                                   AutomationProperties.Name="Persist Clipboard After Exit"/>
-                                        <TextBlock Text="Background workflows (CLI, watch-folder daemon) need wl-clipboard or xclip. The .deb and .rpm packages recommend these tools."
+                                        <TextBlock Text="{local:Localize Settings_Advanced_LinuxClipboardNote}"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                    TextWrapping="Wrap"/>
@@ -1248,16 +1249,16 @@
 
                         <StackPanel controls:SettingsSearch.IsAvailabilityContainer="True" IsVisible="{Binding IsLinuxPlatform}">
                             <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                                <TextBlock Text="Wayland Portal Services" FontWeight="SemiBold"/>
+                                <TextBlock Text="{local:Localize Settings_Advanced_WaylandPortalServices}" FontWeight="SemiBold"/>
                                 <Border BorderThickness="1"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         CornerRadius="4" Padding="16">
                                     <StackPanel Spacing="16">
                                         <CheckBox IsChecked="{Binding LinuxUseWaylandPortalServices}"
-                                                  Content="Use Wayland portal services for hotkeys, input capture, and open-uri integration. Requires restart."
+                                                  Content="{local:Localize Settings_Advanced_UseWaylandPortalServices}"
                                                   AutomationProperties.Name="Use Wayland Portal Services"/>
-                                        <TextBlock Text="This setting controls portal-backed desktop integration on Wayland. It does not choose the Linux screenshot region selector or recording backend."
+                                        <TextBlock Text="{local:Localize Settings_Advanced_WaylandPortalServicesNote}"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                    TextWrapping="Wrap"/>
@@ -1301,7 +1302,7 @@
                         </StackPanel>
 
                         <StackPanel Spacing="8" controls:SettingsSearch.IsPanel="True">
-                            <TextBlock Text="Application Configuration" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Advanced_ApplicationConfiguration}" FontWeight="SemiBold"/>
                             <Border BorderThickness="1"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"

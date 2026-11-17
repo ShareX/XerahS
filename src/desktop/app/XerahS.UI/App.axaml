@@ -1,4 +1,5 @@
-<Application xmlns="https://github.com/avaloniaui"
+<Application xmlns:localize="using:XerahS.UI.Markup"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:XerahS.UI"
              xmlns:vm="using:XerahS.UI.ViewModels"
@@ -30,7 +31,7 @@
             <MenuFlyout x:Key="HistoryItemMenuFlyout"
                         x:DataType="vm:IHistoryItemMenuContext"
                         Opened="OnHistoryItemMenuFlyoutOpened">
-                <MenuItem Header="Edit..."
+                <MenuItem Header="{localize:Localize App_Edit}"
                           Command="{Binding EditImageCommand}"
                           IsVisible="{Binding Item.HasExistingFile}"
                           InputGesture="Enter"/>
@@ -43,17 +44,17 @@
                 <MenuItem Header="Trim video..."
                           Command="{Binding TrimVideoCommand}"
                           IsVisible="{Binding Item.HasVideoFile}"/>
-                <MenuItem Header="Edit Annotations"
+                <MenuItem Header="{localize:Localize App_EditAnnotations}"
                           Command="{Binding EditAnnotationsCommand}"
                           IsVisible="{Binding Item.HasEditableAnnotations}"
                           InputGesture="Ctrl+Shift+E"/>
-                <MenuItem Header="Open File"
+                <MenuItem Header="{localize:Localize App_OpenFile}"
                           Command="{Binding OpenFileCommand}"
                           IsVisible="{Binding Item.HasExistingFile}"/>
                 <MenuItem Header="Upload"
                           Command="{Binding UploadItemCommand}"
                           IsVisible="{Binding Item.HasExistingFile}"/>
-                <MenuItem Header="Show in Explorer"
+                <MenuItem Header="{localize:Localize App_ShowInExplorer}"
                           Command="{Binding OpenFolderCommand}"
                           IsVisible="{Binding Item.HasFilePath}"/>
                 <Separator/>
@@ -63,13 +64,13 @@
                 <MenuItem Header="{Binding CopyUrlHeader}"
                           Command="{Binding CopyURLCommand}"
                           IsVisible="{Binding Item.URL, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                <MenuItem Header="Copy markdown image"
+                <MenuItem Header="{localize:Localize App_CopyMarkdownImage}"
                           Command="{Binding CopyMarkdownImageCommand}"
                           IsVisible="{Binding Item.URL, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
                 <MenuItem Header="Copy image to clipboard"
                           Command="{Binding CopyImageToClipboardCommand}"
                           IsVisible="{Binding Item.HasImageFile}"/>
-                <MenuItem Header="Copy Errors"
+                <MenuItem Header="{localize:Localize App_CopyErrors}"
                           Command="{Binding CopyErrorsCommand}"
                           IsVisible="{Binding Item.HasErrors}"/>
                 <MenuItem Header="Open URL"
@@ -85,7 +86,7 @@
                 <MenuItem Header="Delete from host"
                           Command="{Binding DeleteRemoteCommand}"
                           IsVisible="{Binding Item.CanDeleteRemotely}"/>
-                <MenuItem Header="Delete"
+                <MenuItem Header="{localize:Localize App_Delete}"
                           Command="{Binding DeleteItemCommand}"
                           IsVisible="{Binding Item.HasExistingFile}"
                           InputGesture="Delete"/>
@@ -151,9 +152,9 @@
     <!-- macOS Native Menu -->
     <NativeMenu.Menu>
         <NativeMenu>
-            <NativeMenuItem Header="About XerahS" Click="OnAboutClick"/>
+            <NativeMenuItem Header="{localize:Localize App_AboutXerahS}" Click="OnAboutClick"/>
             <NativeMenuItemSeparator/>
-            <NativeMenuItem Header="Preferences..." Click="OnPreferencesClick"/>
+            <NativeMenuItem Header="{localize:Localize App_Preferences}" Click="OnPreferencesClick"/>
         </NativeMenu>
     </NativeMenu.Menu>
   

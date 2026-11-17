@@ -1,4 +1,5 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns:local="using:XerahS.UI.Markup"
+           xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="using:XerahS.UI.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -108,7 +109,7 @@
     <!-- Header -->
     <Border Grid.Row="0" Classes="card" Padding="{StaticResource CardPadding}">
       <Grid RowDefinitions="Auto, Auto" RowSpacing="{StaticResource SpaceXS}">
-        <TextBlock Text="After capture" Classes="title" AutomationProperties.Name="After Capture Title"/>
+        <TextBlock Text="{local:Localize AfterCapture_AfterCapture}" Classes="title" AutomationProperties.Name="After Capture Title"/>
         <TextBlock Grid.Row="1"
                    Text="Choose what to put on the clipboard."
                    Classes="caption"
@@ -122,7 +123,7 @@
       <Grid Grid.Column="0" RowDefinitions="Auto, *" RowSpacing="{StaticResource SpaceS}">
         <StackPanel Spacing="{StaticResource SpaceXS}">
           <TextBlock Text="Preview" Classes="section-header" AutomationProperties.Name="Preview Heading"/>
-          <TextBlock Text="Inspect the capture before applying tasks." Classes="caption" AutomationProperties.Name="Preview Description"/>
+          <TextBlock Text="{local:Localize AfterCapture_PreviewDescription}" Classes="caption" AutomationProperties.Name="Preview Description"/>
         </StackPanel>
         <Border Grid.Row="1"
                 Classes="card"
@@ -173,7 +174,7 @@
                            IsChecked="{Binding IsCopyUrlGoal}"
                            AutomationProperties.Name="Copy URL">
                 <StackPanel Spacing="{StaticResource SpaceXS}">
-                  <TextBlock Text="Copy URL" FontWeight="SemiBold"/>
+                  <TextBlock Text="{local:Localize App_CopyUrl}" FontWeight="SemiBold"/>
                   <TextBlock Text="Uploads the image, then copies the link." Classes="caption"/>
                 </StackPanel>
               </RadioButton>
@@ -191,23 +192,23 @@
                         IsEnabled="False"
                         IsVisible="{Binding IsCopyImageGoal}"
                         AutomationProperties.Name="Copy Image to Clipboard"/>
-              <CheckBox Content="Save image to file"
+              <CheckBox Content="{local:Localize AfterCapture_SaveImageToFile}"
                         IsChecked="{Binding SaveImageToFile}"
                         IsEnabled="False"
                         IsVisible="{Binding IsCopyFilePathGoal}"
                         AutomationProperties.Name="Save Image to File Required"/>
-              <CheckBox Content="Copy file path to clipboard"
+              <CheckBox Content="{local:Localize AfterCapture_CopyFilePathToClipboard}"
                         IsChecked="{Binding CopyFilePathToClipboard}"
                         IsEnabled="False"
                         IsVisible="{Binding IsCopyFilePathGoal}"
                         AutomationProperties.Name="Copy File Path to Clipboard"/>
-              <CheckBox Content="Upload image to host"
+              <CheckBox Content="{local:Localize AfterCapture_UploadImageToHost}"
                         IsChecked="{Binding UploadImageToHost}"
                         IsEnabled="False"
                         IsVisible="{Binding IsCopyUrlGoal}"
                         AutomationProperties.Name="Upload Image to Host"/>
               <CheckBox Content="Privacy mode: scan and redact before upload" IsChecked="{Binding PrivacyMode}" IsEnabled="{Binding UploadImageToHost}"/>
-              <CheckBox Content="Copy URL to clipboard"
+              <CheckBox Content="{local:Localize AfterCapture_CopyURLToClipboard}"
                         IsChecked="{Binding CopyURLToClipboard}"
                         IsEnabled="False"
                         IsVisible="{Binding IsCopyUrlGoal}"
@@ -221,29 +222,29 @@
           </StackPanel>
           <Border Classes="card" Padding="{StaticResource CardPadding}">
             <StackPanel Spacing="{StaticResource SpaceM}">
-              <CheckBox Content="Save image to file"
+              <CheckBox Content="{local:Localize AfterCapture_SaveImageToFile}"
                         IsChecked="{Binding SaveImageToFile}"
                         IsVisible="{Binding ShowSaveImageOption}"
                         AutomationProperties.Name="Save Image to File"/>
-              <CheckBox Content="Apply image effects"
+              <CheckBox Content="{local:Localize TaskSettings_ApplyImageEffects}"
                         IsChecked="{Binding AddImageEffects}"
                         ToolTip.Tip="Applies this workflow's image effects to the capture. Untick to skip them this time."
                         AutomationProperties.Name="Apply Image Effects"/>
-              <CheckBox Content="Annotate media"
+              <CheckBox Content="{local:Localize AfterCapture_AnnotateMedia}"
                         IsChecked="{Binding AnnotateMedia}"
                         AutomationProperties.Name="Annotate Media"/>
-              <CheckBox Content="Copy OCR text to clipboard"
+              <CheckBox Content="{local:Localize AfterCapture_CopyOcrTextToClipboard}"
                         IsChecked="{Binding CopyOcrTextToClipboard}"
                         AutomationProperties.Name="Copy OCR Text to Clipboard"/>
-              <CheckBox Content="Use URL shortener"
+              <CheckBox Content="{local:Localize AfterCapture_UseURLShortener}"
                         IsChecked="{Binding UseURLShortener}"
                         IsVisible="{Binding ShowUrlOptions}"
                         AutomationProperties.Name="Use URL Shortener"/>
-              <CheckBox Content="Share URL"
+              <CheckBox Content="{local:Localize AfterCapture_ShareURL}"
                         IsChecked="{Binding ShareURL}"
                         IsVisible="{Binding ShowUrlOptions}"
                         AutomationProperties.Name="Share URL"/>
-              <CheckBox Content="Show after upload window"
+              <CheckBox Content="{local:Localize AfterCapture_ShowAfterUploadWindow}"
                         IsChecked="{Binding ShowAfterUploadWindow}"
                         IsVisible="{Binding ShowUrlOptions}"
                         AutomationProperties.Name="Show After Upload Window"/>
@@ -268,7 +269,7 @@
                   Command="{Binding CancelCommand}"
                   IsCancel="True"
                   AutomationProperties.Name="Cancel"/>
-          <Button Content="Continue"
+          <Button Content="{local:Localize AfterCapture_Continue}"
                   Command="{Binding ContinueCommand}"
                   IsDefault="True"
                   AutomationProperties.Name="Continue"/>

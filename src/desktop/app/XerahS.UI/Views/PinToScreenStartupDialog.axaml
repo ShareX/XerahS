@@ -1,4 +1,5 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns:local="using:XerahS.UI.Markup"
+           xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="XerahS.UI.Views.PinToScreenStartupDialog"
         MinWidth="320" MinHeight="200"
@@ -6,27 +7,27 @@
 
   <StackPanel Margin="24" Spacing="12" VerticalAlignment="Center">
 
-    <TextBlock Text="Select image source to pin:"
+    <TextBlock Text="{local:Localize PinToScreenStartup_SelectSource}"
                FontWeight="SemiBold"
                FontSize="14"
                HorizontalAlignment="Center"
                Margin="0,0,0,8" />
 
     <Button x:Name="FromScreenButton"
-            Content="From Screen"
+            Content="{local:Localize PinToScreenStartup_FromScreen}"
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Center"
             Classes="accent"
             AutomationProperties.Name="Capture region from screen" />
 
     <Button x:Name="FromClipboardButton"
-            Content="From Clipboard"
+            Content="{local:Localize PinToScreenStartup_FromClipboard}"
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Center"
             AutomationProperties.Name="Get image from clipboard" />
 
     <Button x:Name="FromFileButton"
-            Content="From File"
+            Content="{local:Localize PinToScreenStartup_FromFile}"
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Center"
             AutomationProperties.Name="Browse for image file" />

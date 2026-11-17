@@ -1,4 +1,5 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns:local="using:XerahS.UI.Markup"
+           xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -27,18 +28,18 @@
                     <StackPanel Spacing="24" Margin="20">
                         <!-- General Capture Settings -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="General" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize Settings_Tab_General}" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
                                     <CheckBox IsChecked="{Binding UseModernCapture}"
-                                              Content="Use modern screen capture (Direct3D11)"
+                                              Content="{local:Localize TaskSettings_UseModernCapture}"
                                               IsVisible="{Binding ShowUseModernCaptureSetting}"/>
                                     <CheckBox IsChecked="{Binding HDRScreenshotColorCorrection}"
                                               Content="Correct HDR display colors"
                                               IsVisible="{Binding ShowUseModernCaptureSetting}"
                                               AutomationProperties.Name="Correct HDR Display Colors"/>
                                     <StackPanel Spacing="10" IsVisible="{Binding IsLinuxPlatform}">
-                                        <TextBlock Text="Preferred Linux region selector:" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{local:Localize TaskSettings_PreferredLinuxRegionSelector}" VerticalAlignment="Center"/>
                                         <ComboBox ItemsSource="{Binding LinuxRegionSelectorPreferences}"
                                                   SelectedItem="{Binding LinuxRegionSelectorPreference}"
                                                   HorizontalAlignment="Stretch"
@@ -60,7 +61,7 @@
                                                   AutomationProperties.Name="OmaSnap Region Only"/>
                                     </StackPanel>
                                     <StackPanel Spacing="10" IsVisible="{Binding IsMacOSPlatform}">
-                                        <TextBlock Text="Preferred macOS region selector:" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{local:Localize TaskSettings_PreferredMacOSRegionSelector}" VerticalAlignment="Center"/>
                                         <ComboBox ItemsSource="{Binding MacOSRegionSelectorPreferences}"
                                                   SelectedItem="{Binding MacOSRegionSelectorPreference}"
                                                   HorizontalAlignment="Stretch"
@@ -72,35 +73,35 @@
                                                 </DataTemplate>
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
-                                        <TextBlock Text="Automatic follows Application Settings. Choose XerahS overlay or macOS native crosshair here to override this workflow only."
+                                        <TextBlock Text="{local:Localize TaskSettings_MacOSRegionSelectorNote}"
                                                    FontSize="12"
                                                    Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                    TextWrapping="Wrap"/>
                                         <CheckBox IsChecked="{Binding MacOSPlayCaptureSound}"
-                                                  Content="Play native macOS capture sound"
+                                                  Content="{local:Localize Settings_Advanced_PlayMacCaptureSound}"
                                                   AutomationProperties.Name="Play Native macOS Capture Sound"/>
                                     </StackPanel>
-                                    <CheckBox IsChecked="{Binding ShowCursor}" Content="Show cursor in screenshots"/>
+                                    <CheckBox IsChecked="{Binding ShowCursor}" Content="{local:Localize TaskSettings_ShowCursor}"/>
                                     
                                     <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, Auto, Auto">
                                         <!-- Screenshot Delay -->
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Screenshot delay:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize TaskSettings_ScreenshotDelay}" VerticalAlignment="Center"/>
                                         <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Spacing="8">
                                             <NumericUpDown Value="{Binding ScreenshotDelay}" Minimum="0" Maximum="60" Increment="0.1" FormatString="0.0" MinWidth="120" HorizontalAlignment="Stretch" AutomationProperties.Name="Screenshot Delay"/>
-                                            <TextBlock Text="seconds" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{local:Localize AutoCapture_Seconds}" VerticalAlignment="Center"/>
                                         </StackPanel>
 
                                         <!-- Window Title -->
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Window title:" VerticalAlignment="Center" Margin="0,16,0,0"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="{local:Localize TaskSettings_WindowTitle}" VerticalAlignment="Center" Margin="0,16,0,0"/>
                                         <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding CaptureCustomWindow, UpdateSourceTrigger=PropertyChanged}" 
-                                                 PlaceholderText="Window title to capture (CustomWindow job)" Margin="0,16,0,0" AutomationProperties.Name="Window Title"/>
+                                                 PlaceholderText="{local:Localize TaskSettings_WindowTitlePlaceholder}" Margin="0,16,0,0" AutomationProperties.Name="Window Title"/>
                                     </Grid>
 
                                     <StackPanel Spacing="10">
-                                        <CheckBox IsChecked="{Binding CaptureTransparent}" Content="Capture transparency"/>
-                                        <CheckBox IsChecked="{Binding CaptureShadow}" Content="Capture window shadow" IsEnabled="{Binding CaptureTransparent}" Margin="24,0,0,0"/>
-                                        <CheckBox IsChecked="{Binding CaptureClientArea}" Content="Capture client area (remove window chrome)"/>
-                                        <CheckBox IsChecked="{Binding CaptureAutoHideTaskbar}" Content="Auto hide taskbar during capture"/>
+                                        <CheckBox IsChecked="{Binding CaptureTransparent}" Content="{local:Localize TaskSettings_CaptureTransparency}"/>
+                                        <CheckBox IsChecked="{Binding CaptureShadow}" Content="{local:Localize TaskSettings_CaptureShadow}" IsEnabled="{Binding CaptureTransparent}" Margin="24,0,0,0"/>
+                                        <CheckBox IsChecked="{Binding CaptureClientArea}" Content="{local:Localize TaskSettings_CaptureClientArea}"/>
+                                        <CheckBox IsChecked="{Binding CaptureAutoHideTaskbar}" Content="{local:Localize TaskSettings_AutoHideTaskbar}"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
@@ -143,27 +144,27 @@
 
                         <!-- After Capture Tasks Section -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="After capture" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize AfterCapture_AfterCapture}" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="12">
-                                    <TextBlock Text="Choose actions to perform automatically after capturing" 
+                                    <TextBlock Text="{local:Localize TaskSettings_AfterCaptureDescription}" 
                                                FontSize="12" 
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
                                                Margin="0,0,0,4"/>
                                     
-                                    <CheckBox IsChecked="{Binding SaveImageToFile}" Content="Save image to file"/>
+                                    <CheckBox IsChecked="{Binding SaveImageToFile}" Content="{local:Localize AfterCapture_SaveImageToFile}"/>
                                     <CheckBox IsChecked="{Binding CopyImageToClipboard}" Content="Copy image to clipboard"/>
-                                    <CheckBox IsChecked="{Binding UploadImageToHost}" Content="Upload image to host" FontWeight="SemiBold"/>
+                                    <CheckBox IsChecked="{Binding UploadImageToHost}" Content="{local:Localize AfterCapture_UploadImageToHost}" FontWeight="SemiBold"/>
                                     <CheckBox IsChecked="{Binding PrivacyMode}" IsEnabled="{Binding PrivacyModeAvailable}" Content="Privacy mode: scan and redact before upload"
                                               ToolTip.Tip="Uses the active AI connection after consent, then lets you review or annotate. Runs only for image uploads."/>
                                     <TextBox Text="{Binding PrivacyCustomPatterns}" AcceptsReturn="True" MinHeight="60" IsVisible="{Binding PrivacyMode}" IsEnabled="{Binding PrivacyModeAvailable}"
                                              PlaceholderText="Optional local sensitivity patterns, one .NET regex per line"
                                              ToolTip.Tip="Up to 16 rules, 500 characters each. Local OCR only; invalid rules require manual review."/>
-                                    <CheckBox IsChecked="{Binding ApplyImageEffects}" Content="Apply image effects"/>
-                                    <CheckBox IsChecked="{Binding AnnotateMedia}" Content="Annotate media"/>
-                                    <CheckBox IsChecked="{Binding ShowAfterCaptureWindow}" Content="Show after capture window"/>
-                                    <CheckBox IsChecked="{Binding DoOCR}" Content="OCR text recognition"/>
-                                    <CheckBox IsChecked="{Binding CopyOcrTextToClipboard}" Content="Copy OCR text to clipboard"/>
+                                    <CheckBox IsChecked="{Binding ApplyImageEffects}" Content="{local:Localize TaskSettings_ApplyImageEffects}"/>
+                                    <CheckBox IsChecked="{Binding AnnotateMedia}" Content="{local:Localize AfterCapture_AnnotateMedia}"/>
+                                    <CheckBox IsChecked="{Binding ShowAfterCaptureWindow}" Content="{local:Localize TaskSettings_ShowAfterCaptureWindow}"/>
+                                    <CheckBox IsChecked="{Binding DoOCR}" Content="{local:Localize TaskSettings_OcrTextRecognition}"/>
+                                    <CheckBox IsChecked="{Binding CopyOcrTextToClipboard}" Content="{local:Localize AfterCapture_CopyOcrTextToClipboard}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -172,15 +173,15 @@
             </TabItem>
 
             <!-- Index Folder Tab (Conditional) -->
-            <TabItem Header="Index Folder" IsVisible="{Binding IsIndexFolderJob}">
+            <TabItem Header="{local:Localize IndexFolder_Title}" IsVisible="{Binding IsIndexFolderJob}">
                 <ScrollViewer>
                      <StackPanel Spacing="8" Margin="20">
-                        <TextBlock Text="Index folder" FontWeight="SemiBold"/>
+                        <TextBlock Text="{local:Localize TaskSettings_IndexFolder}" FontWeight="SemiBold"/>
                         <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                             <StackPanel Spacing="16">
                                 <Grid ColumnDefinitions="Auto, 16, *, Auto">
-                                    <TextBlock Grid.Column="0" Text="Folder:" VerticalAlignment="Center"/>
-                                    <TextBox Grid.Column="2" Text="{Binding IndexerFolderPath}" PlaceholderText="Folder to index" AutomationProperties.Name="Indexer Folder"/>
+                                    <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_Folder}" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Column="2" Text="{Binding IndexerFolderPath}" PlaceholderText="{local:Localize TaskSettings_FolderToIndex}" AutomationProperties.Name="Indexer Folder"/>
                                     <Button Grid.Column="3" Content="Browse..." Command="{Binding BrowseIndexerFolderCommand}" Margin="16,0,0,0"/>
                                 </Grid>
 
@@ -190,16 +191,16 @@
                                 </Grid>
 
                                 <Grid ColumnDefinitions="Auto, 16, *">
-                                    <TextBlock Grid.Column="0" Text="Max depth:" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_MaxDepth}" VerticalAlignment="Center"/>
                                     <NumericUpDown Grid.Column="2" Value="{Binding IndexerMaxDepthLevel}" Minimum="0" Maximum="50" MinWidth="120" HorizontalAlignment="Stretch" AutomationProperties.Name="Max Depth Level"/>
                                 </Grid>
 
                                 <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding IndexerSkipHiddenFolders}" Content="Skip hidden folders"/>
-                                    <CheckBox IsChecked="{Binding IndexerSkipHiddenFiles}" Content="Skip hidden files"/>
-                                    <CheckBox IsChecked="{Binding IndexerSkipFiles}" Content="Skip files"/>
-                                    <CheckBox IsChecked="{Binding IndexerShowSizeInfo}" Content="Show size info"/>
-                                    <CheckBox IsChecked="{Binding IndexerAddFooter}" Content="Add footer"/>
+                                    <CheckBox IsChecked="{Binding IndexerSkipHiddenFolders}" Content="{local:Localize IndexFolder_SkipHiddenFolders}"/>
+                                    <CheckBox IsChecked="{Binding IndexerSkipHiddenFiles}" Content="{local:Localize IndexFolder_SkipHiddenFiles}"/>
+                                    <CheckBox IsChecked="{Binding IndexerSkipFiles}" Content="{local:Localize TaskSettings_SkipFiles}"/>
+                                    <CheckBox IsChecked="{Binding IndexerShowSizeInfo}" Content="{local:Localize TaskSettings_ShowSizeInfo}"/>
+                                    <CheckBox IsChecked="{Binding IndexerAddFooter}" Content="{local:Localize TaskSettings_AddFooter}"/>
                                 </StackPanel>
 
                                 <Grid ColumnDefinitions="Auto, 16, *">
@@ -207,32 +208,32 @@
                                     <TextBox Grid.Column="2" Text="{Binding IndexerIndentationText}" MinWidth="200" HorizontalAlignment="Stretch" AutomationProperties.Name="Indentation Text"/>
                                 </Grid>
 
-                                <CheckBox IsChecked="{Binding IndexerAddEmptyLineAfterFolders}" Content="Add empty line after folders"/>
+                                <CheckBox IsChecked="{Binding IndexerAddEmptyLineAfterFolders}" Content="{local:Localize IndexFolder_AddEmptyLineAfterFolders}"/>
 
                                 <Separator Background="{DynamicResource SystemControlForegroundBaseLowBrush}" Height="1"/>
                                 
-                                <TextBlock Text="HTML options" FontWeight="SemiBold" FontSize="12"/>
-                                <CheckBox IsChecked="{Binding IndexerUseCustomCssFile}" Content="Use custom CSS file"/>
+                                <TextBlock Text="{local:Localize TaskSettings_HtmlOptions}" FontWeight="SemiBold" FontSize="12"/>
+                                <CheckBox IsChecked="{Binding IndexerUseCustomCssFile}" Content="{local:Localize IndexFolder_UseCustomCss}"/>
                                 
                                 <Grid ColumnDefinitions="Auto, 16, *, Auto" IsEnabled="{Binding IndexerUseCustomCssFile}">
-                                    <TextBlock Grid.Column="0" Text="CSS path:" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_CssPath}" VerticalAlignment="Center"/>
                                     <TextBox Grid.Column="2" Text="{Binding IndexerCustomCssFilePath}" AutomationProperties.Name="CSS File Path"/>
                                     <Button Grid.Column="3" Content="Browse..." Command="{Binding BrowseIndexerCssFileCommand}" Margin="16,0,0,0"/>
                                 </Grid>
                                 
-                                <CheckBox IsChecked="{Binding IndexerDisplayPath}" Content="Display path for subfolders"/>
+                                <CheckBox IsChecked="{Binding IndexerDisplayPath}" Content="{local:Localize IndexFolder_DisplayPath}"/>
                                 <CheckBox IsChecked="{Binding IndexerDisplayPathLimited}"
-                                          Content="Limit display path to root folder"
+                                          Content="{local:Localize TaskSettings_LimitDisplayPath}"
                                           IsEnabled="{Binding IndexerDisplayPath}"
                                           Margin="24,0,0,0"/>
 
                                 <Separator Background="{DynamicResource SystemControlForegroundBaseLowBrush}" Height="1"/>
                                 
-                                <TextBlock Text="XML / JSON options" FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="{local:Localize TaskSettings_XmlJsonOptions}" FontWeight="SemiBold" FontSize="12"/>
                                 <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding IndexerUseAttribute}" Content="Write file info as attribute (XML)"/>
-                                    <CheckBox IsChecked="{Binding IndexerCreateParseableJson}" Content="Create parseable JSON"/>
-                                    <CheckBox IsChecked="{Binding IndexerBinaryUnits}" Content="Use binary units for size"/>
+                                    <CheckBox IsChecked="{Binding IndexerUseAttribute}" Content="{local:Localize TaskSettings_WriteFileInfoAsAttribute}"/>
+                                    <CheckBox IsChecked="{Binding IndexerCreateParseableJson}" Content="{local:Localize IndexFolder_ParseableJson}"/>
+                                    <CheckBox IsChecked="{Binding IndexerBinaryUnits}" Content="{local:Localize IndexFolder_BinaryUnits}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -244,29 +245,29 @@
             <TabItem Header="File">
                 <ScrollViewer>
                      <StackPanel Spacing="8" Margin="20">
-                        <TextBlock Text="File naming" FontWeight="SemiBold"/>
+                        <TextBlock Text="{local:Localize TaskSettings_FileNaming}" FontWeight="SemiBold"/>
                         <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                             <StackPanel Spacing="16">
                                 <Grid ColumnDefinitions="Auto, 16, *">
-                                    <TextBlock Grid.Column="0" Text="Name pattern:" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_NamePattern}" VerticalAlignment="Center"/>
                                     <TextBox x:Name="NameFormatPatternTextBox" Grid.Column="2" Text="{Binding NameFormatPattern, Mode=TwoWay}" AutomationProperties.Name="Name Pattern"/>
                                 </Grid>
                                 <Grid ColumnDefinitions="Auto, 16, *">
-                                    <TextBlock Grid.Column="0" Text="Active window name pattern:" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_ActiveWindowNamePattern}" VerticalAlignment="Center"/>
                                     <TextBox x:Name="NameFormatPatternActiveWindowTextBox" Grid.Column="2" Text="{Binding NameFormatPatternActiveWindow, Mode=TwoWay}" AutomationProperties.Name="Active Window Name Pattern"/>
                                 </Grid>
                                 
                                 <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding FileUploadUseNamePattern}" Content="Use name pattern for file uploaders"/>
-                                    <CheckBox IsChecked="{Binding FileUploadReplaceProblematicCharacters}" Content="Replace potentially problematic characters"/>
-                                    <CheckBox IsChecked="{Binding URLRegexReplace}" Content="Perform regex replace on URL"/>
+                                    <CheckBox IsChecked="{Binding FileUploadUseNamePattern}" Content="{local:Localize TaskSettings_UseNamePatternForFileUploaders}"/>
+                                    <CheckBox IsChecked="{Binding FileUploadReplaceProblematicCharacters}" Content="{local:Localize TaskSettings_ReplaceProblematicCharacters}"/>
+                                    <CheckBox IsChecked="{Binding URLRegexReplace}" Content="{local:Localize TaskSettings_PerformRegexReplace}"/>
                                 </StackPanel>
                                 
                                 <Grid ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, 16, Auto" IsVisible="{Binding URLRegexReplace}">
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Regex pattern:" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize TaskSettings_RegexPattern}" VerticalAlignment="Center"/>
                                     <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding URLRegexReplacePattern, Mode=TwoWay}" AutomationProperties.Name="URL Regex Pattern"/>
                                     
-                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Replacement:" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Localize TaskSettings_Replacement}" VerticalAlignment="Center"/>
                                     <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding URLRegexReplaceReplacement, Mode=TwoWay}" AutomationProperties.Name="URL Regex Replacement"/>
                                 </Grid>
                             </StackPanel>
@@ -281,15 +282,15 @@
                    <StackPanel Spacing="24" Margin="20">
                         <!-- Destinations Section (New) -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Destinations" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize TaskSettings_Destinations}" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="Select the destination for this task:" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{local:Localize TaskSettings_SelectDestination}" VerticalAlignment="Center"/>
                                     <ComboBox ItemsSource="{Binding $parent[views:WorkflowEditorView].((vm:WorkflowEditorViewModel)DataContext).AvailableDestinations}"
                                               SelectedItem="{Binding $parent[views:WorkflowEditorView].((vm:WorkflowEditorViewModel)DataContext).SelectedDestination}"
                                               HorizontalAlignment="Stretch"
                                               AutomationProperties.Name="Select Destination"
-                                              ToolTip.Tip="Auto tries your configured uploaders in order until one succeeds. Any other destination uploads only to that uploader (configure it under Destination Settings). See documentation for details on image uploads and fallback behavior.">
+                                              ToolTip.Tip="{local:Localize TaskSettings_DestinationToolTip}">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate x:DataType="vm:UploaderInstanceViewModel">
                                                  <StackPanel Orientation="Horizontal" Spacing="8">
@@ -304,11 +305,11 @@
 
                         <!-- Clipboard Upload -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Clipboard upload" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize TaskSettings_ClipboardUpload}" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="10">
-                                    <CheckBox IsChecked="{Binding ClipboardUploadURLContents}" Content="Upload URL contents"/>
-                                    <CheckBox IsChecked="{Binding ClipboardUploadShortenURL}" Content="Shorten URL"/>
+                                    <CheckBox IsChecked="{Binding ClipboardUploadURLContents}" Content="{local:Localize TaskSettings_UploadUrlContents}"/>
+                                    <CheckBox IsChecked="{Binding ClipboardUploadShortenURL}" Content="{local:Localize TaskSettings_ShortenUrl}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -318,19 +319,19 @@
                             <TextBlock Text="After upload" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="12">
-                                    <TextBlock Text="Choose actions to perform automatically after upload" 
+                                    <TextBlock Text="{local:Localize TaskSettings_AfterUploadDescription}" 
                                                FontSize="12" 
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
                                                Margin="0,0,0,4"/>
                                     <CheckBox IsChecked="{Binding ShowAfterUploadWindow}" 
-                                              Content="Show after upload window"
+                                              Content="{local:Localize AfterCapture_ShowAfterUploadWindow}"
                                               AutomationProperties.Name="Show After Upload Window"/>
                                     <CheckBox IsChecked="{Binding CopyURLToClipboard}" 
-                                              Content="Copy URL to clipboard"/>
+                                              Content="{local:Localize AfterCapture_CopyURLToClipboard}"/>
                                     <CheckBox IsChecked="{Binding UseURLShortener}" 
-                                              Content="Use URL shortener"/>
+                                              Content="{local:Localize AfterCapture_UseURLShortener}"/>
                                     <CheckBox IsChecked="{Binding ShareURL}" 
-                                              Content="Share URL"/>
+                                              Content="{local:Localize AfterCapture_ShareURL}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -348,10 +349,10 @@
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
                                     <StackPanel Spacing="10">
-                                        <CheckBox IsChecked="{Binding PlaySoundAfterCapture}" Content="Play sound after capture"/>
-                                        <CheckBox IsChecked="{Binding PlaySoundAfterUpload}" Content="Play sound after upload"/>
-                                        <CheckBox IsChecked="{Binding PlaySoundAfterAction}" Content="Play sound after action"/>
-                                        <CheckBox IsChecked="{Binding ShowToastNotification}" Content="Include toast notification"/>
+                                        <CheckBox IsChecked="{Binding PlaySoundAfterCapture}" Content="{local:Localize TaskSettings_PlaySoundAfterCapture}"/>
+                                        <CheckBox IsChecked="{Binding PlaySoundAfterUpload}" Content="{local:Localize TaskSettings_PlaySoundAfterUpload}"/>
+                                        <CheckBox IsChecked="{Binding PlaySoundAfterAction}" Content="{local:Localize TaskSettings_PlaySoundAfterAction}"/>
+                                        <CheckBox IsChecked="{Binding ShowToastNotification}" Content="{local:Localize TaskSettings_IncludeToastNotification}"/>
                                     </StackPanel>
                                     
                                     <!-- Toast Settings -->
@@ -359,25 +360,25 @@
                                           IsVisible="{Binding ShowToastNotification}" Margin="24,0,0,0">
                                         
                                         <!-- Duration -->
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Duration:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize TaskSettings_Duration}" VerticalAlignment="Center"/>
                                         <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Spacing="8">
                                             <NumericUpDown Value="{Binding ToastWindowDuration}" Minimum="0.5" Maximum="30" Increment="0.5" FormatString="0.0" MinWidth="120" AutomationProperties.Name="Toast Duration"/>
-                                            <TextBlock Text="seconds" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{local:Localize AutoCapture_Seconds}" VerticalAlignment="Center"/>
                                         </StackPanel>
 
                                         <!-- Fade Duration -->
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Fade duration:" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="{local:Localize TaskSettings_FadeDuration}" VerticalAlignment="Center" Margin="0,8,0,0"/>
                                         <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
                                             <NumericUpDown Value="{Binding ToastWindowFadeDuration}" Minimum="0" Maximum="5" Increment="0.1" FormatString="0.0" MinWidth="120" AutomationProperties.Name="Toast Fade Duration"/>
-                                            <TextBlock Text="seconds" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{local:Localize AutoCapture_Seconds}" VerticalAlignment="Center"/>
                                         </StackPanel>
 
                                         <!-- Placement -->
-                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Placement:" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Localize TaskSettings_Placement}" VerticalAlignment="Center" Margin="0,8,0,0"/>
                                         <ComboBox Grid.Row="2" Grid.Column="2" ItemsSource="{Binding ContentAlignments}" SelectedItem="{Binding ToastWindowPlacement}" HorizontalAlignment="Stretch" MinWidth="200" Margin="0,8,0,0" AutomationProperties.Name="Toast Placement"/>
 
                                         <!-- Size -->
-                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Size:" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="{local:Localize TaskSettings_Size}" VerticalAlignment="Center" Margin="0,8,0,0"/>
                                         <StackPanel Grid.Row="3" Grid.Column="2" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
                                             <NumericUpDown Value="{Binding ToastWindowWidth}" Minimum="100" Maximum="2000" Increment="10" MinWidth="120" AutomationProperties.Name="Toast Width"/>
                                             <TextBlock Text="x" VerticalAlignment="Center"/>
@@ -385,7 +386,7 @@
                                         </StackPanel>
                                         
                                         <!-- Auto Hide -->
-                                         <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" IsChecked="{Binding ToastWindowAutoHide}" Content="Auto hide toast notification" Margin="0,8,0,0"/>
+                                         <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" IsChecked="{Binding ToastWindowAutoHide}" Content="{local:Localize TaskSettings_AutoHideToast}" Margin="0,8,0,0"/>
 
                                         <!-- Click Actions -->
                                         <Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" ColumnDefinitions="Auto, 16, *" RowDefinitions="Auto, Auto, Auto" Margin="0,16,0,0">
@@ -395,7 +396,7 @@
                                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Middle click:" VerticalAlignment="Center" Margin="0,8,0,0"/>
                                             <ComboBox Grid.Row="1" Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowMiddleClickAction}" HorizontalAlignment="Stretch" Margin="0,8,0,0" AutomationProperties.Name="Middle Click Action"/>
 
-                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Right click:" VerticalAlignment="Center" Margin="0,8,0,0"/>
+                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Localize TaskSettings_RightClick}" VerticalAlignment="Center" Margin="0,8,0,0"/>
                                             <ComboBox Grid.Row="2" Grid.Column="2" ItemsSource="{Binding ToastClickActions}" SelectedItem="{Binding ToastWindowRightClickAction}" HorizontalAlignment="Stretch" Margin="0,8,0,0" AutomationProperties.Name="Right Click Action"/>
                                         </Grid>
                                     </Grid>
@@ -405,12 +406,12 @@
 
                         <!-- Sound Section -->
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Sound" FontWeight="SemiBold"/>
+                            <TextBlock Text="{local:Localize TaskSettings_Sound}" FontWeight="SemiBold"/>
                             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
                                 <StackPanel Spacing="16">
-                                    <CheckBox IsChecked="{Binding UseCustomCaptureSound}" Content="Use custom capture sound"/>
+                                    <CheckBox IsChecked="{Binding UseCustomCaptureSound}" Content="{local:Localize TaskSettings_UseCustomCaptureSound}"/>
                                     <Grid ColumnDefinitions="Auto, 16, *" IsVisible="{Binding UseCustomCaptureSound}">
-                                        <TextBlock Grid.Column="0" Text="Path:" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="0" Text="{local:Localize TaskSettings_Path}" VerticalAlignment="Center"/>
                                         <TextBox Grid.Column="2" Text="{Binding CustomCaptureSoundPath}" AutomationProperties.Name="Sound File Path"/>
                                     </Grid>
                                 </StackPanel>
@@ -421,10 +422,10 @@
             </TabItem>
 
             <!-- Advanced Tab -->
-            <TabItem Header="Advanced">
+            <TabItem Header="{local:Localize Settings_Tab_Advanced}">
                 <Grid Margin="24" RowDefinitions="Auto, *">
                     <TextBlock Grid.Row="0"
-                               Text="Advanced Properties"
+                               Text="{local:Localize TaskSettings_AdvancedProperties}"
                                 FontWeight="SemiBold"
                                 Margin="0,0,0,12"/>
                     <Border Grid.Row="1"

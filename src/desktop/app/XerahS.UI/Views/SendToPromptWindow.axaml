@@ -1,4 +1,5 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns:local="using:XerahS.UI.Markup"
+           xmlns="https://github.com/avaloniaui"
                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                   xmlns:ui="using:XerahS.UI.Views"
                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -82,11 +83,11 @@
               Padding="{StaticResource CardPadding}">
         <Grid RowDefinitions="Auto,Auto"
               RowSpacing="{StaticResource SpaceXS}">
-          <TextBlock Text="How should XerahS handle sent files?"
+          <TextBlock Text="{local:Localize SendToPrompt_Title}"
                      Classes="title"
                      AutomationProperties.Name="Send to title"/>
           <TextBlock Grid.Row="1"
-                     Text="Choose the action before XerahS starts processing this Send-to batch."
+                     Text="{local:Localize SendToPrompt_Description}"
                      Classes="caption"
                      AutomationProperties.Name="Send to description"/>
         </Grid>
@@ -99,7 +100,7 @@
                 Padding="{StaticResource CardPadding}">
           <StackPanel Spacing="{StaticResource SpaceL}">
             <StackPanel Spacing="{StaticResource SpaceXS}">
-              <TextBlock Text="Selection"
+              <TextBlock Text="{local:Localize SendToPrompt_Selection}"
                          Classes="section-header"
                          AutomationProperties.Name="Selection heading"/>
               <TextBlock Text="{Binding SelectionSummaryText}"
@@ -114,7 +115,7 @@
                     Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                     Padding="{StaticResource CardPaddingCompact}">
               <StackPanel Spacing="{StaticResource SpaceXS}">
-                <TextBlock Text="Classification"
+                <TextBlock Text="{local:Localize SendToPrompt_Classification}"
                            Classes="caption"
                            AutomationProperties.Name="Selection kind label"/>
                 <TextBlock Text="{Binding SelectionKindText}"
@@ -131,7 +132,7 @@
                     Padding="{StaticResource CardPaddingCompact}"
                     IsVisible="{Binding HasFolders}">
               <StackPanel Spacing="{StaticResource SpaceS}">
-                <TextBlock Text="Folder policy"
+                <TextBlock Text="{local:Localize SendToPrompt_FolderPolicy}"
                            Classes="caption"
                            AutomationProperties.Name="Folder policy label"/>
                 <ComboBox ItemsSource="{Binding FolderPolicyOptions}"
@@ -148,7 +149,7 @@
                     Padding="{StaticResource CardPaddingCompact}"
                     IsVisible="{Binding ShowBatchPolicy}">
               <StackPanel Spacing="{StaticResource SpaceS}">
-                <TextBlock Text="Image batch policy"
+                <TextBlock Text="{local:Localize SendToPrompt_ImageBatchPolicy}"
                            Classes="caption"
                            AutomationProperties.Name="Batch policy label"/>
                 <ComboBox ItemsSource="{Binding BatchPolicyOptions}"
@@ -179,17 +180,17 @@
                         HorizontalScrollBarVisibility="Disabled">
             <StackPanel Spacing="{StaticResource SpaceM}">
               <StackPanel Spacing="{StaticResource SpaceXS}">
-                <TextBlock Text="Actions"
+                <TextBlock Text="{local:Localize SendToPrompt_Actions}"
                            Classes="section-header"
                            AutomationProperties.Name="Actions heading"/>
-                <TextBlock Text="Primary actions are always available. Context-specific actions appear only when the sent items support them."
+                <TextBlock Text="{local:Localize SendToPrompt_ActionsDescription}"
                            Classes="caption"
                            AutomationProperties.Name="Actions description"/>
               </StackPanel>
 
               <StackPanel Spacing="{StaticResource SpaceS}">
                 <StackPanel Spacing="{StaticResource SpaceXS}">
-                  <Button Content="Upload now"
+                  <Button Content="{local:Localize SendToAction_UploadNow}"
                           Classes="accent"
                           Command="{Binding UploadNowCommand}"
                           IsDefault="True"
@@ -200,7 +201,7 @@
                 </StackPanel>
 
                 <StackPanel Spacing="{StaticResource SpaceXS}">
-                  <Button Content="Open in Upload Content"
+                  <Button Content="{local:Localize SendToAction_OpenUploadContent}"
                           Command="{Binding OpenUploadContentCommand}"
                           AutomationProperties.Name="Open in Upload Content"/>
                   <TextBlock Text="{Binding UploadContentDescription}"
@@ -210,7 +211,7 @@
 
                 <StackPanel Spacing="{StaticResource SpaceXS}"
                             IsVisible="{Binding CanOpenImageEditor}">
-                  <Button Content="Open in Image Editor"
+                  <Button Content="{local:Localize SendToAction_OpenImageEditor}"
                           Command="{Binding OpenImageEditorCommand}"
                           AutomationProperties.Name="Open in Image Editor"/>
                   <TextBlock Text="{Binding ImageEditorDescription}"
@@ -249,7 +250,7 @@
         <Grid ColumnDefinitions="*,Auto"
               ColumnSpacing="{StaticResource SpaceM}"
               VerticalAlignment="Center">
-          <TextBlock Text="Closing the dialog cancels this Send-to request."
+          <TextBlock Text="{local:Localize SendToPrompt_CancelHint}"
                      Classes="caption"
                      AutomationProperties.Name="Cancel hint"/>
           <Button Grid.Column="1"

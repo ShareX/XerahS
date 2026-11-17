@@ -1,4 +1,5 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns:local="using:XerahS.UI.Markup"
+           xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -16,28 +17,28 @@
       
       <!-- Header -->
       <StackPanel Spacing="8">
-        <TextBlock Text="FFmpeg Recording Options"
+        <TextBlock Text="{local:Localize FFmpeg_OptionsTitle}"
                    FontSize="20"
                    FontWeight="SemiBold"/>
-        <TextBlock Text="Configure per-workflow FFmpeg behavior, including the executable override path used by FFmpeg-based recording and GIF conversion."
+        <TextBlock Text="{local:Localize FFmpeg_OptionsDescription}"
                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                    TextWrapping="Wrap"/>
       </StackPanel>
 
       <!-- General Section -->
       <StackPanel Spacing="8">
-        <TextBlock Text="General" FontWeight="SemiBold"/>
+        <TextBlock Text="{local:Localize Settings_Tab_General}" FontWeight="SemiBold"/>
         <Border BorderThickness="1"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 CornerRadius="4"
                 Padding="16">
           <StackPanel Spacing="16">
-            <CheckBox Content="Override FFmpeg executable path"
+            <CheckBox Content="{local:Localize FFmpeg_OverridePath}"
                       IsChecked="{Binding OverrideCLIPath}"/>
             
             <Grid ColumnDefinitions="140, 16, *, 16, Auto">
-              <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="Executable path:"/>
+              <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_ExecutablePath}"/>
               <TextBox Grid.Column="2" Text="{Binding CLIPath}" AutomationProperties.Name="FFmpeg Executable Path"/>
               <Button Grid.Column="4" Content="Browse..." Click="BrowseFFmpeg_Click"/>
             </Grid>
@@ -49,14 +50,14 @@
 
             <Grid ColumnDefinitions="140, 16, *, 24, 140, 16, *" RowDefinitions="Auto, 16, Auto, 16, Auto">
               <!-- Row 0 -->
-              <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Video source:"/>
+              <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_VideoSource}"/>
               <ComboBox Grid.Row="0" Grid.Column="2"
                         ItemsSource="{Binding VideoCaptureDevices}"
                         SelectedItem="{Binding SelectedVideoDevice}"
                         HorizontalAlignment="Stretch"
                         AutomationProperties.Name="Video Source"/>
 
-              <TextBlock Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" Text="Audio source:"/>
+              <TextBlock Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" Text="{local:Localize FFmpeg_AudioSource}"/>
               <ComboBox Grid.Row="0" Grid.Column="6"
                         ItemsSource="{Binding AudioCaptureDevices}"
                         SelectedItem="{Binding SelectedAudioDevice}"
@@ -64,14 +65,14 @@
                         AutomationProperties.Name="Audio Source"/>
 
               <!-- Row 2 -->
-              <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Video codec:"/>
+              <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_VideoCodec}"/>
               <ComboBox Grid.Row="2" Grid.Column="2"
                         ItemsSource="{Binding VideoCodecs}"
                         SelectedItem="{Binding VideoCodec}"
                         HorizontalAlignment="Stretch"
                         AutomationProperties.Name="Video Codec"/>
 
-              <TextBlock Grid.Row="2" Grid.Column="4" VerticalAlignment="Center" Text="Audio codec:"/>
+              <TextBlock Grid.Row="2" Grid.Column="4" VerticalAlignment="Center" Text="{local:Localize FFmpeg_AudioCodec}"/>
               <ComboBox Grid.Row="2" Grid.Column="6"
                         ItemsSource="{Binding AudioCodecs}"
                         SelectedItem="{Binding AudioCodec}"
@@ -79,20 +80,20 @@
                         AutomationProperties.Name="Audio Codec"/>
               
               <!-- Row 4 -->
-              <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Extra args:"/>
+              <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_ExtraArgs}"/>
               <TextBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="5"
                        Text="{Binding UserArgs}"
-                       PlaceholderText="Additional ffmpeg arguments"
+                       PlaceholderText="{local:Localize FFmpeg_ExtraArgsPlaceholder}"
                        AutomationProperties.Name="Extra Arguments"/>
             </Grid>
 
             <StackPanel Spacing="8">
-              <CheckBox Content="Use custom full command"
+              <CheckBox Content="{local:Localize FFmpeg_UseCustomFullCommand}"
                         IsChecked="{Binding UseCustomCommands}"/>
               <TextBox Text="{Binding CustomCommands}"
                        AcceptsReturn="True"
                        Height="80"
-                       PlaceholderText="Full ffmpeg command when overriding"
+                       PlaceholderText="{local:Localize FFmpeg_CustomCommandPlaceholder}"
                        TextWrapping="Wrap"
                        AutomationProperties.Name="Custom Full Command"/>
             </StackPanel>
@@ -102,7 +103,7 @@
 
       <!-- Video Section -->
       <StackPanel Spacing="8">
-        <TextBlock Text="Video" FontWeight="SemiBold"/>
+        <TextBlock Text="{local:Localize FFmpeg_Video}" FontWeight="SemiBold"/>
         <Border BorderThickness="1"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -110,21 +111,21 @@
                 Padding="16">
           <Grid ColumnDefinitions="160, 16, *, 24, 160, 16, *" RowDefinitions="Auto, 16, Auto, 16, Auto, 16, Auto, 16, Auto">
             <!-- Row 0: x264 -->
-            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="x264 preset:"/>
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_X264Preset}"/>
             <ComboBox Grid.Row="0" Grid.Column="2"
                       ItemsSource="{Binding X264Presets}"
                       SelectedItem="{Binding X264Preset}"
                       HorizontalAlignment="Stretch"
                       AutomationProperties.Name="x264 Preset"/>
 
-            <TextBlock Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" Text="x264 CRF:"/>
+            <TextBlock Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" Text="{local:Localize FFmpeg_X264Crf}"/>
             <NumericUpDown Grid.Row="0" Grid.Column="6"
                            Minimum="0" Maximum="51"
                            Value="{Binding X264CRF}"
                            AutomationProperties.Name="x264 CRF"/>
 
             <!-- Row 2: x264 Bitrate -->
-            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="x264 Bitrate (kbps):"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_X264Bitrate}"/>
             <NumericUpDown Grid.Row="2" Grid.Column="2"
                            Minimum="100" Maximum="50000" Increment="100"
                            Value="{Binding X264Bitrate}"
@@ -133,30 +134,30 @@
             
             <CheckBox Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="3"
                       IsChecked="{Binding X264UseBitrate}"
-                      Content="Use bitrate instead of CRF"/>
+                      Content="{local:Localize FFmpeg_UseBitrateInsteadOfCrf}"/>
 
             <!-- Row 4: VPx / XviD -->
-            <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="VPx Bitrate (kbps):"/>
+            <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_VPxBitrate}"/>
             <NumericUpDown Grid.Row="4" Grid.Column="2"
                            Minimum="100" Maximum="50000" Increment="100"
                            Value="{Binding VPxBitrate}"
                            AutomationProperties.Name="VPx Bitrate"/>
 
-            <TextBlock Grid.Row="4" Grid.Column="4" VerticalAlignment="Center" Text="XviD QScale:"/>
+            <TextBlock Grid.Row="4" Grid.Column="4" VerticalAlignment="Center" Text="{local:Localize FFmpeg_XvidQScale}"/>
             <NumericUpDown Grid.Row="4" Grid.Column="6"
                            Minimum="1" Maximum="31"
                            Value="{Binding XviDQScale}"
                            AutomationProperties.Name="XviD QScale"/>
 
             <!-- Row 6: NVENC -->
-            <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="NVENC preset:"/>
+            <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_NvencPreset}"/>
             <ComboBox Grid.Row="6" Grid.Column="2"
                       ItemsSource="{Binding NvencPresets}"
                       SelectedItem="{Binding NvencPreset}"
                       HorizontalAlignment="Stretch"
                       AutomationProperties.Name="NVENC Preset"/>
             
-            <TextBlock Grid.Row="6" Grid.Column="4" VerticalAlignment="Center" Text="NVENC tune:"/>
+            <TextBlock Grid.Row="6" Grid.Column="4" VerticalAlignment="Center" Text="{local:Localize FFmpeg_NvencTune}"/>
             <ComboBox Grid.Row="6" Grid.Column="6"
                       ItemsSource="{Binding NvencTunes}"
                       SelectedItem="{Binding NvencTune}"
@@ -164,13 +165,13 @@
                       AutomationProperties.Name="NVENC Tune"/>
 
             <!-- Row 8: NVENC Bitrate / GIF Stats -->
-            <TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" Text="NVENC Bitrate (kbps):"/>
+            <TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_NvencBitrate}"/>
             <NumericUpDown Grid.Row="8" Grid.Column="2"
                            Minimum="100" Maximum="50000" Increment="100"
                            Value="{Binding NvencBitrate}"
                            AutomationProperties.Name="NVENC Bitrate"/>
 
-            <TextBlock Grid.Row="8" Grid.Column="4" VerticalAlignment="Center" Text="GIF palette stats:"/>
+            <TextBlock Grid.Row="8" Grid.Column="4" VerticalAlignment="Center" Text="{local:Localize FFmpeg_GifPaletteStats}"/>
             <ComboBox Grid.Row="8" Grid.Column="6"
                       ItemsSource="{Binding GifStatsModes}"
                       SelectedItem="{Binding GifStatsMode}"
@@ -188,28 +189,28 @@
               Padding="16">
           <Grid ColumnDefinitions="160, 16, *, 24, 160, 16, *" RowDefinitions="Auto, 16, Auto, 16, Auto, 16, Auto">
             <!-- Row 0: GIF Dither / Bayer -->
-            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="GIF dither:"/>
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_GifDither}"/>
             <ComboBox Grid.Row="0" Grid.Column="2"
                       ItemsSource="{Binding GifDithers}"
                       SelectedItem="{Binding GifDither}"
                       HorizontalAlignment="Stretch"
                       AutomationProperties.Name="GIF Dither"/>
 
-            <TextBlock Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" Text="GIF Bayer scale:"/>
+            <TextBlock Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" Text="{local:Localize FFmpeg_GifBayerScale}"/>
             <NumericUpDown Grid.Row="0" Grid.Column="6"
                            Minimum="0" Maximum="10"
                            Value="{Binding GifBayerScale}"
                            AutomationProperties.Name="GIF Bayer Scale"/>
 
             <!-- Row 2: AMF Usage / Quality -->
-            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="AMF usage:"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_AmfUsage}"/>
             <ComboBox Grid.Row="2" Grid.Column="2"
                       ItemsSource="{Binding AmfUsages}"
                       SelectedItem="{Binding AmfUsage}"
                       HorizontalAlignment="Stretch"
                       AutomationProperties.Name="AMF Usage"/>
 
-            <TextBlock Grid.Row="2" Grid.Column="4" VerticalAlignment="Center" Text="AMF quality:"/>
+            <TextBlock Grid.Row="2" Grid.Column="4" VerticalAlignment="Center" Text="{local:Localize FFmpeg_AmfQuality}"/>
             <ComboBox Grid.Row="2" Grid.Column="6"
                       ItemsSource="{Binding AmfQualities}"
                       SelectedItem="{Binding AmfQuality}"
@@ -217,13 +218,13 @@
                       AutomationProperties.Name="AMF Quality"/>
 
             <!-- Row 4: AMF Bitrate / QSV Preset -->
-            <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="AMF Bitrate (kbps):"/>
+            <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_AmfBitrate}"/>
             <NumericUpDown Grid.Row="4" Grid.Column="2"
                            Minimum="100" Maximum="50000" Increment="100"
                            Value="{Binding AmfBitrate}"
                            AutomationProperties.Name="AMF Bitrate"/>
 
-            <TextBlock Grid.Row="4" Grid.Column="4" VerticalAlignment="Center" Text="QSV preset:"/>
+            <TextBlock Grid.Row="4" Grid.Column="4" VerticalAlignment="Center" Text="{local:Localize FFmpeg_QsvPreset}"/>
             <ComboBox Grid.Row="4" Grid.Column="6"
                       ItemsSource="{Binding QsvPresets}"
                       SelectedItem="{Binding QsvPreset}"
@@ -231,7 +232,7 @@
                       AutomationProperties.Name="QSV Preset"/>
             
             <!-- Row 6: QSV Bitrate -->
-            <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="QSV Bitrate (kbps):"/>
+            <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_QsvBitrate}"/>
             <NumericUpDown Grid.Row="6" Grid.Column="2"
                            Minimum="100" Maximum="50000" Increment="100"
                            Value="{Binding QsvBitrate}"
@@ -241,7 +242,7 @@
 
       <!-- Audio Section -->
       <StackPanel Spacing="8">
-        <TextBlock Text="Audio" FontWeight="SemiBold"/>
+        <TextBlock Text="{local:Localize FFmpeg_Audio}" FontWeight="SemiBold"/>
         <Border BorderThickness="1"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -249,26 +250,26 @@
                 Padding="16">
           <Grid ColumnDefinitions="180, 16, *, 24, 180, 16, *" RowDefinitions="Auto, 16, Auto">
             <!-- Row 0: AAC / Opus -->
-            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="AAC bitrate (kbps):"/>
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_AacBitrate}"/>
             <NumericUpDown Grid.Row="0" Grid.Column="2"
                            Minimum="32" Maximum="512" Increment="16"
                            Value="{Binding AACBitrate}"
                            AutomationProperties.Name="AAC Bitrate"/>
 
-            <TextBlock Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" Text="Opus bitrate (kbps):"/>
+            <TextBlock Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" Text="{local:Localize FFmpeg_OpusBitrate}"/>
             <NumericUpDown Grid.Row="0" Grid.Column="6"
                            Minimum="32" Maximum="512" Increment="16"
                            Value="{Binding OpusBitrate}"
                            AutomationProperties.Name="Opus Bitrate"/>
 
             <!-- Row 2: Vorbis / MP3 -->
-            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Vorbis QScale:"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="{local:Localize FFmpeg_VorbisQScale}"/>
             <NumericUpDown Grid.Row="2" Grid.Column="2"
                            Minimum="0" Maximum="10"
                            Value="{Binding VorbisQScale}"
                            AutomationProperties.Name="Vorbis QScale"/>
 
-            <TextBlock Grid.Row="2" Grid.Column="4" VerticalAlignment="Center" Text="MP3 QScale:"/>
+            <TextBlock Grid.Row="2" Grid.Column="4" VerticalAlignment="Center" Text="{local:Localize FFmpeg_Mp3QScale}"/>
             <NumericUpDown Grid.Row="2" Grid.Column="6"
                            Minimum="0" Maximum="10"
                            Value="{Binding MP3QScale}"

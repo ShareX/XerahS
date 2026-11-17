@@ -1,4 +1,5 @@
-<Window x:Name="MainWindowRoot" xmlns="https://github.com/avaloniaui"
+<Window xmlns:local="using:XerahS.UI.Markup"
+      x:Name="MainWindowRoot" xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:XerahS.UI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -41,98 +42,98 @@
         <Border Grid.Row="0" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
             <Menu Background="Transparent" DataContext="{Binding #MainWindowRoot}">
                 <!-- File Menu -->
-                <MenuItem Header="_File">
-                    <MenuItem Header="_Open..." Command="{Binding OpenImageMenuCommand}" InputGesture="Ctrl+O"/>
+                <MenuItem Header="{local:Localize MainWindow_Menu_File}">
+                    <MenuItem Header="{local:Localize MainWindow_Menu_Open}" Command="{Binding OpenImageMenuCommand}" InputGesture="Ctrl+O"/>
                     <Separator/>
-                    <MenuItem Header="_Upload">
-                        <MenuItem Header="Upload _File..." Command="{Binding NavigateMenuCommand}" CommandParameter="Upload_FileUpload"/>
-                        <MenuItem Header="Upload _Content..." Command="{Binding NavigateMenuCommand}" CommandParameter="Upload_ClipboardUploadWithContentViewer"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_Upload}">
+                        <MenuItem Header="{local:Localize MainWindow_Menu_UploadFile}" Command="{Binding NavigateMenuCommand}" CommandParameter="Upload_FileUpload"/>
+                        <MenuItem Header="{local:Localize MainWindow_Menu_UploadContent}" Command="{Binding NavigateMenuCommand}" CommandParameter="Upload_ClipboardUploadWithContentViewer"/>
                     </MenuItem>
                     <Separator/>
-                    <MenuItem Header="_Save" Command="{Binding #MainWindowRoot.DataContext.SaveCommand}" InputGesture="Ctrl+S"/>
-                    <MenuItem Header="Save _As..." Command="{Binding #MainWindowRoot.DataContext.SaveAsCommand}" InputGesture="Ctrl+Shift+S"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_Save}" Command="{Binding #MainWindowRoot.DataContext.SaveCommand}" InputGesture="Ctrl+S"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_SaveAs}" Command="{Binding #MainWindowRoot.DataContext.SaveAsCommand}" InputGesture="Ctrl+Shift+S"/>
                     <Separator/>
-                    <MenuItem Header="E_xit" Command="{Binding ExitMenuCommand}" InputGesture="Alt+F4"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_Exit}" Command="{Binding ExitMenuCommand}" InputGesture="Alt+F4"/>
                 </MenuItem>
                 
                 <!-- Edit Menu -->
-                <MenuItem Header="_Edit">
-                    <MenuItem Header="_Undo" Command="{Binding #MainWindowRoot.DataContext.UndoCommand}" InputGesture="Ctrl+Z"/>
-                    <MenuItem Header="_Redo" Command="{Binding #MainWindowRoot.DataContext.RedoCommand}" InputGesture="Ctrl+Y"/>
+                <MenuItem Header="{local:Localize MainWindow_Menu_Edit}">
+                    <MenuItem Header="{local:Localize MainWindow_Menu_Undo}" Command="{Binding #MainWindowRoot.DataContext.UndoCommand}" InputGesture="Ctrl+Z"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_Redo}" Command="{Binding #MainWindowRoot.DataContext.RedoCommand}" InputGesture="Ctrl+Y"/>
                     <Separator/>
-                    <MenuItem Header="_Copy to Clipboard" Command="{Binding #MainWindowRoot.DataContext.CopyCommand}" InputGesture="Ctrl+Shift+C"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_CopyToClipboard}" Command="{Binding #MainWindowRoot.DataContext.CopyCommand}" InputGesture="Ctrl+Shift+C"/>
                 </MenuItem>
                 
                 <!-- View Menu -->
-                <MenuItem Header="_View">
-                    <MenuItem Header="_Editor" Command="{Binding NavigateMenuCommand}" CommandParameter="Editor"/>
-                    <MenuItem Header="_History" Command="{Binding NavigateMenuCommand}" CommandParameter="History"/>
+                <MenuItem Header="{local:Localize MainWindow_Menu_View}">
+                    <MenuItem Header="{local:Localize MainWindow_Menu_Editor}" Command="{Binding NavigateMenuCommand}" CommandParameter="Editor"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_History}" Command="{Binding NavigateMenuCommand}" CommandParameter="History"/>
                     <MenuItem Header="_Statistics" Command="{Binding NavigateMenuCommand}" CommandParameter="Statistics"/>
                     <Separator/>
-                    <MenuItem Header="_Reset Zoom" Command="{Binding #MainWindowRoot.DataContext.ResetZoomCommand}" InputGesture="Ctrl+0"/>
-                    <MenuItem Header="Zoom _In" Command="{Binding #MainWindowRoot.DataContext.ZoomInCommand}" InputGesture="Ctrl++"/>
-                    <MenuItem Header="Zoom _Out" Command="{Binding #MainWindowRoot.DataContext.ZoomOutCommand}" InputGesture="Ctrl+-"/>
-                    <MenuItem Header="Zoom to _Fit" Command="{Binding #MainWindowRoot.DataContext.ZoomToFitCommand}" InputGesture="Ctrl+D9"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_ResetZoom}" Command="{Binding #MainWindowRoot.DataContext.ResetZoomCommand}" InputGesture="Ctrl+0"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_ZoomIn}" Command="{Binding #MainWindowRoot.DataContext.ZoomInCommand}" InputGesture="Ctrl++"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_ZoomOut}" Command="{Binding #MainWindowRoot.DataContext.ZoomOutCommand}" InputGesture="Ctrl+-"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_ZoomToFit}" Command="{Binding #MainWindowRoot.DataContext.ZoomToFitCommand}" InputGesture="Ctrl+D9"/>
                 </MenuItem>
                 
                 <!-- Workflows Menu -->
-                <MenuItem Header="_Workflows" Name="WorkflowsMenuItem">
-                    <MenuItem Header="_Manage Workflows" Command="{Binding NavigateMenuCommand}" CommandParameter="Workflows"/>
+                <MenuItem Header="{local:Localize MainWindow_Menu_Workflows}" Name="WorkflowsMenuItem">
+                    <MenuItem Header="{local:Localize MainWindow_Menu_ManageWorkflows}" Command="{Binding NavigateMenuCommand}" CommandParameter="Workflows"/>
                     <Separator/>
-                    <MenuItem Header="_Run Workflow" Name="RunWorkflowsMenuItem"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_RunWorkflow}" Name="RunWorkflowsMenuItem"/>
                 </MenuItem>
                 
                 <!-- Tools Menu -->
-                <MenuItem Header="_Tools">
-                    <MenuItem Header="_Color Picker..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ColorPicker"/>
-                    <MenuItem Header="_Ruler" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_Ruler"/>
+                <MenuItem Header="{local:Localize MainWindow_Menu_Tools}">
+                    <MenuItem Header="{local:Localize MainWindow_Menu_ColorPicker}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ColorPicker"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_Ruler}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_Ruler"/>
                     <Separator/>
-                    <MenuItem Header="_QR Code">
-                        <MenuItem Header="_Generator..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_QrGenerator"/>
-                        <MenuItem Header="Scan from _Screen" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_QrScanScreen"/>
-                        <MenuItem Header="Scan from _Region" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_QrScanRegion"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_QRCode}">
+                        <MenuItem Header="{local:Localize MainWindow_Menu_QRGenerator}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_QrGenerator"/>
+                        <MenuItem Header="{local:Localize MainWindow_Menu_QRScanScreen}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_QrScanScreen"/>
+                        <MenuItem Header="{local:Localize MainWindow_Menu_QRScanRegion}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_QrScanRegion"/>
                     </MenuItem>
-                    <MenuItem Header="_Pin to Screen">
-                        <MenuItem Header="From _Screen" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_PinToScreenFromScreen"/>
-                        <MenuItem Header="From _Clipboard" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_PinToScreenFromClipboard"/>
-                        <MenuItem Header="From _File" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_PinToScreenFromFile"/>
-                        <MenuItem Header="Close _All" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_PinToScreenCloseAll"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_PinToScreen}">
+                        <MenuItem Header="{local:Localize MainWindow_Menu_PinFromScreen}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_PinToScreenFromScreen"/>
+                        <MenuItem Header="{local:Localize MainWindow_Menu_PinFromClipboard}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_PinToScreenFromClipboard"/>
+                        <MenuItem Header="{local:Localize MainWindow_Menu_PinFromFile}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_PinToScreenFromFile"/>
+                        <MenuItem Header="{local:Localize MainWindow_Menu_PinCloseAll}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_PinToScreenCloseAll"/>
                     </MenuItem>
                     <Separator/>
-                    <MenuItem Header="_OCR" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_OCR"/>
-                    <MenuItem Header="_Hash Checker..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_HashCheck"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_OCR}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_OCR"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_HashChecker}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_HashCheck"/>
                     <MenuItem Header="_Media Browser..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_MediaBrowser"/>
-                    <MenuItem Header="_Index Folder..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_IndexFolder"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_IndexFolder}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_IndexFolder"/>
                     <Separator/>
-                    <MenuItem Header="_Image Combiner..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ImageCombiner"/>
-                    <MenuItem Header="Image _Splitter..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ImageSplitter"/>
-                    <MenuItem Header="Image _Thumbnailer..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ImageThumbnailer"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_ImageCombiner}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ImageCombiner"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_ImageSplitter}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ImageSplitter"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_ImageThumbnailer}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ImageThumbnailer"/>
                     <MenuItem Header="Image Resizer..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ImageResizer"/>
                     <MenuItem Header="Image Converter..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ImageConverter"/>
                     <MenuItem Header="Image Watermark..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ImageWatermark"/>
                     <MenuItem Header="Animated GIF Maker..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_AnimatedGifMaker"/>
-                    <MenuItem Header="_Analyze Image..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_AnalyzeImage"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_AnalyzeImage}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_AnalyzeImage"/>
                     <Separator/>
-                    <MenuItem Name="MenuItemVideoEditor" Header="_Video Editor..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_VideoEditor"/>
-                    <MenuItem Header="_Video Converter..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_VideoConverter"/>
+                    <MenuItem Name="MenuItemVideoEditor" Header="{local:Localize MainWindow_Menu_VideoEditor}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_VideoEditor"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_VideoConverter}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_VideoConverter"/>
                     <MenuItem Header="Video _Trimmer..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_VideoTrimmer"/>
-                    <MenuItem Header="Video Thumb_nailer..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_VideoThumbnailer"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_VideoThumbnailer}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_VideoThumbnailer"/>
                     <Separator/>
-                    <MenuItem Header="Clipboard _Viewer" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ClipboardViewer"/>
-                    <MenuItem Header="_Monitor Test" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_MonitorTest"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_ClipboardViewer}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_ClipboardViewer"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_MonitorTest}" Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_MonitorTest"/>
                     <MenuItem Header="_Network Monitor..." Command="{Binding NavigateMenuCommand}" CommandParameter="Tools_NetworkMonitor"/>
                 </MenuItem>
                 
                 <!-- Settings Menu -->
-                <MenuItem Header="_Settings">
-                    <MenuItem Header="_Application Settings" Command="{Binding NavigateMenuCommand}" CommandParameter="Settings_App"/>
-                    <MenuItem Header="_Destination Settings" Command="{Binding NavigateMenuCommand}" CommandParameter="Settings_Dest"/>
+                <MenuItem Header="{local:Localize MainWindow_Menu_Settings}">
+                    <MenuItem Header="{local:Localize MainWindow_Menu_ApplicationSettings}" Command="{Binding NavigateMenuCommand}" CommandParameter="Settings_App"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_DestinationSettings}" Command="{Binding NavigateMenuCommand}" CommandParameter="Settings_Dest"/>
                 </MenuItem>
                 
                 <!-- Help Menu -->
-                <MenuItem Header="_Help">
-                    <MenuItem Header="_About" Command="{Binding NavigateMenuCommand}" CommandParameter="About"/>
-                    <MenuItem Header="_Debug" Command="{Binding NavigateMenuCommand}" CommandParameter="Debug"/>
+                <MenuItem Header="{local:Localize MainWindow_Menu_Help}">
+                    <MenuItem Header="{local:Localize MainWindow_Menu_About}" Command="{Binding NavigateMenuCommand}" CommandParameter="About"/>
+                    <MenuItem Header="{local:Localize MainWindow_Menu_Debug}" Command="{Binding NavigateMenuCommand}" CommandParameter="Debug"/>
                 </MenuItem>
             </Menu>
         </Border>

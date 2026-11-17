@@ -1,4 +1,5 @@
-<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns:local="using:XerahS.UI.Markup"
+      xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:XerahS.UI.Onboarding"
         xmlns:theming="clr-namespace:XerahS.UI.Theming"
@@ -59,7 +60,7 @@
                 <TextBlock Classes="IconGlyph" Text="{x:Static theming:HostIcons.OnboardingTheme}" />
               </Border>
               <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                <TextBlock Text="Welcome to XerahS"
+                <TextBlock Text="{local:Localize Onboarding_WelcomeTitle}"
                            Classes="section-header"
                            AutomationProperties.HeadingLevel="1" />
                 <TextBlock Text="Pick how XerahS looks. You can change this later in Application Settings."
@@ -82,7 +83,7 @@
               </Border>
               <Border Classes="setting-row" IsVisible="{Binding CanChooseTheme}">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                  <TextBlock Text="Theme" FontWeight="SemiBold" VerticalAlignment="Center" />
+                  <TextBlock Text="{local:Localize Settings_Theme_Title}" FontWeight="SemiBold" VerticalAlignment="Center" />
                   <ComboBox Grid.Column="1"
                             Width="160"
                             VerticalAlignment="Center"
@@ -211,7 +212,7 @@
 
     <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
       <Button Grid.Column="0"
-              Content="Back"
+              Content="{local:Localize Onboarding_Back}"
               Command="{Binding BackCommand}"
               Classes="WizardGhostButton"
               IsVisible="{Binding CanGoBack}" />
