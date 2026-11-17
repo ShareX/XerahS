@@ -98,6 +98,23 @@
                   </ComboBox>
                 </Grid>
               </Border>
+              <Border Classes="setting-row">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                  <TextBlock Text="{local:Localize Settings_Theme_Language}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                  <ComboBox Grid.Column="1"
+                            Width="160"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="Language"
+                            ItemsSource="{Binding LanguageOptions}"
+                            SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:OnboardingLanguageOption">
+                        <TextBlock Text="{Binding DisplayName}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </Grid>
+              </Border>
             </StackPanel>
           </StackPanel>
 

@@ -101,6 +101,46 @@ public partial class OnboardingWizardViewModel : ViewModelBase
 
     public bool HasAttentionItems => ReadyItems.Any(item => item.NeedsAttention);
 
+    /// <summary>
+    /// Language picker on the welcome step. Lists the cultures that actually ship translations
+    /// (discovered from satellite assemblies), so a language appears here as soon as its
+    /// Resources.&lt;culture&gt;.resx exists.
+    /// </summary>
+    public IReadOnlyList<OnboardingLanguageOption> LanguageOptions { get; } = BuildLanguageOptions();
+
+    private OnboardingLanguageOption? _selectedLanguage;
+
+    public OnboardingLanguageOption SelectedLanguage
+    {
+        get => _selectedLanguage ??= LanguageOptions.FirstOrDefault(
+                   option => string.Equals(option.Code, SettingsManager.Settings.LanguageCode, StringComparison.OrdinalIgnoreCase))
+               ?? LanguageOptions[0];
+        set
+        {
+            if (value == null || ReferenceEquals(value, _selectedLanguage)) return;
+
+            _selectedLanguage = value;
+            OnPropertyChanged();
+            SettingsManager.Settings.LanguageCode = value.Code;
+            XerahS.Common.Localization.ApplyCulture(value.Code);
+        }
+    }
+
+    private static IReadOnlyList<OnboardingLanguageOption> BuildLanguageOptions()
+    {
+        var options = new List<OnboardingLanguageOption>
+        {
+            new(string.Empty, XerahS.Common.SupportedLanguage.Automatic.GetLocalizedDescription())
+        };
+
+        foreach (var culture in XerahS.Common.Localization.GetAvailableCultures())
+        {
+            options.Add(new OnboardingLanguageOption(culture.Name, XerahS.Common.Localization.GetDisplayName(culture)));
+        }
+
+        return options;
+    }
+
     public string PrimaryButtonText => IsReadyStep ? "Finish" : "Next";
 
     public bool IsThemeStep => CurrentStepIndex == 0;
@@ -252,3 +292,6 @@ public sealed record OnboardingAdvice(
     IReadOnlyList<string> Tips);
 
 public sealed record OnboardingThemeOption(AppThemeMode Mode, string DisplayName);
+
+/// <summary>One language entry on the welcome step: culture code plus its own-language name.</summary>
+public sealed record OnboardingLanguageOption(string Code, string DisplayName);
