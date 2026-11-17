@@ -518,19 +518,6 @@ namespace XerahS.UI.Views
 
         private void OnWindowOpened(object? sender, EventArgs e)
         {
-            // WSLg has no window decorations and opens new toplevels at three quarters of the
-            // screen. Maximize once the window is mapped: asking for it before Show() leaves the
-            // window in a state its window manager cannot restore.
-            if (IsWslgSession &&
-                !SettingsManager.Settings.SilentRun &&
-                !SettingsManager.Settings.RememberMainFormSize &&
-                !SettingsManager.Settings.RememberMainFormPosition)
-            {
-                Avalonia.Threading.Dispatcher.UIThread.Post(
-                    () => WindowState = Avalonia.Controls.WindowState.Maximized,
-                    Avalonia.Threading.DispatcherPriority.Background);
-            }
-
             // First Opened only: later tray "Open Main Window" must stay visible.
             if (SilentRunStartupPolicy.ShouldHideMainWindowToTray(
                     SettingsManager.Settings.SilentRun, App.IsExiting, _silentRunHideApplied))
@@ -728,21 +715,9 @@ namespace XerahS.UI.Views
 
             if (!settings.SilentRun && !rememberSize && !rememberPosition)
             {
-                // WSLg's RDP window manager mishandles a window that maps itself maximized: once
-                // minimized from the Windows taskbar it comes back unusable. Start windowed there.
-                if (IsWslgSession)
-                {
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                }
-                else
-                {
-                    WindowState = Avalonia.Controls.WindowState.Maximized;
-                }
+                WindowState = Avalonia.Controls.WindowState.Maximized;
             }
         }
-
-        /// <summary>True inside a WSLg session, whose RDP window manager cannot restore maximized windows.</summary>
-        private static bool IsWslgSession => OperatingSystem.IsLinux() && Directory.Exists("/mnt/wslg");
 
         /// <summary>
         /// Toggles maximized/normal. Desktops without window decorations (WSLg draws no title bar)
