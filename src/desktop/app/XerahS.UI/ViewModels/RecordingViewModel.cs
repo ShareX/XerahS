@@ -254,22 +254,22 @@ public partial class RecordingViewModel : ViewModelBase, IDisposable
             if (OperatingSystem.IsWindows() && Environment.OSVersion.Version.Build >= 17134)
             {
                 return IsFfmpegAvailableForAdvancedCodecs()
-                    ? "Note: H.264 records through Windows.Graphics.Capture + Media Foundation. HEVC, VP9, and AV1 are routed through FFmpeg automatically."
-                    : "Note: H.264 records through Windows.Graphics.Capture + Media Foundation. Install FFmpeg to unlock HEVC, VP9, and AV1.";
+                    ? Resources.GetString("Recording_UsageWindowsFfmpeg")
+                    : Resources.GetString("Recording_UsageWindowsNoFfmpeg");
             }
             else if (OperatingSystem.IsWindows())
             {
-                return "Note: Recording uses FFmpeg for video encoding. Requires Windows 10 1803+ for native Windows.Graphics.Capture support.";
+                return Resources.GetString("Recording_UsageWindowsFallback");
             }
             else if (OperatingSystem.IsMacOS())
             {
                 return IsFfmpegAvailableForAdvancedCodecs()
-                    ? "Note: H.264 records natively. HEVC, VP9, and AV1 use FFmpeg on macOS in this build."
-                    : "Note: Install FFmpeg if you want HEVC, VP9, or AV1 on macOS.";
+                    ? Resources.GetString("Recording_UsageMacosFfmpeg")
+                    : Resources.GetString("Recording_UsageMacosNoFfmpeg");
             }
             else
             {
-                return "Note: Recording uses FFmpeg for video encoding. Ensure FFmpeg is installed and accessible in your system PATH.";
+                return Resources.GetString("Recording_UsageLinuxGeneric");
             }
         }
     }

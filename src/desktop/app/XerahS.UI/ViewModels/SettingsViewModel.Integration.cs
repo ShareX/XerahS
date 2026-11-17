@@ -145,7 +145,7 @@ namespace XerahS.UI.ViewModels
                 var apiKey = SettingsManager.Settings.McpApiKey;
                 if (string.IsNullOrWhiteSpace(apiKey))
                 {
-                    return "Not generated yet";
+                    return Resources.GetString("Mcp_NotGenerated");
                 }
 
                 var suffixLength = Math.Min(4, apiKey.Length);
@@ -160,7 +160,7 @@ namespace XerahS.UI.ViewModels
         public string McpManifestUrl => "https://xerahs.com/.well-known/mcp/manifest.json";
 
         private string _assistantHotkeyStatusText = "Use the assistant shortcut to open the in-app command overlay.";
-        private string _captureCommandPaletteStatusText = "Use the palette shortcut to search configured capture workflows.";
+        private string _captureCommandPaletteStatusText = Resources.GetString("Assistant_PaletteStatusText");
 
         public ObservableCollection<AssistantProviderOptionViewModel> AssistantProviderOptions { get; } = new(
             AssistantProviderCatalog.GetProviders().Select(provider => new AssistantProviderOptionViewModel(provider.Id, provider.DisplayName)));
