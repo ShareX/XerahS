@@ -3550,8 +3550,14 @@
   <data name="TaskImage_Preview" xml:space="preserve">
     <value>Предпросмотр</value>
   </data>
+  <data name="TaskSettings_HdrOpenPreview" xml:space="preserve">
+    <value>Открыть в HDR-просмотрщике</value>
+  </data>
+  <data name="TaskSettings_HdrOpenPreviewHint" xml:space="preserve">
+    <value>Само окно — SDR, поэтому настоящие блики видны только в HDR-просмотрщике. Приложение сохранит фото как Ultra HDR JPEG и откроет его.</value>
+  </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
-    <value>Сверху: полноценный HDR-контент, обработанный рекомендуемой кривой — детали в светах сохраняются, а не обрезаются. Ниже сравниваются остальные методы HDR→SDR, начиная с вида «как в SDR-просмотрщике» (с обрезкой).</value>
+    <value>Слева: полноценный HDR-контент с рекомендуемой кривой — детали в светах сохраняются, а не обрезаются. Справа: остальные методы, прокрутите для сравнения.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Изменения сохраняются автоматически</value>

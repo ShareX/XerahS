@@ -3550,8 +3550,14 @@ This will permanently remove the file from the remote storage. This cannot be un
   <data name="TaskImage_Preview" xml:space="preserve">
     <value>Preview</value>
   </data>
+  <data name="TaskSettings_HdrOpenPreview" xml:space="preserve">
+    <value>Open in an HDR viewer</value>
+  </data>
+  <data name="TaskSettings_HdrOpenPreviewHint" xml:space="preserve">
+    <value>The window itself is SDR, so the real highlights are only visible in an HDR-capable viewer. The app saves the photo as an Ultra HDR JPEG and opens it.</value>
+  </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
-    <value>Top: the full HDR content through the recommended curve — highlight detail is kept instead of clipping. Below, the other HDR to SDR methods are compared, starting with the clipped SDR-viewer look.</value>
+    <value>Left: the full HDR content through the recommended curve — highlight detail is kept instead of clipping. Right: the other methods, scroll to compare.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Changes save automatically</value>

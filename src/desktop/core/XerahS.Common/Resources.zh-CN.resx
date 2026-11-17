@@ -3550,8 +3550,14 @@
   <data name="TaskImage_Preview" xml:space="preserve">
     <value>预览</value>
   </data>
+  <data name="TaskSettings_HdrOpenPreview" xml:space="preserve">
+    <value>在 HDR 查看器中打开</value>
+  </data>
+  <data name="TaskSettings_HdrOpenPreviewHint" xml:space="preserve">
+    <value>窗口本身是 SDR，因此真实高光只能在支持 HDR 的查看器中看到。应用会把照片保存为 Ultra HDR JPEG 并打开它。</value>
+  </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
-    <value>上方：用推荐曲线呈现的完整 HDR 内容——高光细节得以保留，而不是被裁剪。下方对比其余 HDR→SDR 方法，首先是 SDR 查看器的裁剪效果。</value>
+    <value>左侧：用推荐曲线呈现的完整 HDR 内容——高光细节得以保留。右侧：其余方法，滚动即可对比。</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>更改会自动保存</value>

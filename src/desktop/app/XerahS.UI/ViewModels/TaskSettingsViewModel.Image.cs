@@ -23,7 +23,9 @@
 
 #endregion License Information (GPL v3)
 using System.Buffers.Binary;
+using System.Diagnostics;
 using Avalonia.Media.Imaging;
+using CommunityToolkit.Mvvm.Input;
 using SkiaSharp;
 using ShareX.ImageEditor.Presentation.Rendering;
 using XerahS.Common;
@@ -177,6 +179,40 @@ namespace XerahS.UI.ViewModels
         private static Bitmap? GetHdrPhotoPreview(HdrToneMappingMode mode)
         {
             return HdrPhotoPreviews.Value.TryGetValue(mode, out Bitmap? preview) ? preview : null;
+        }
+
+        private IRelayCommand? _openHdrPhotoCommand;
+
+        /// <summary>
+        /// Writes the bundled photo as an Ultra HDR JPEG and hands it to the system viewer. The app
+        /// window is an SDR surface, so an external HDR-capable viewer is the only way to see the
+        /// image's real highlights.
+        /// </summary>
+        public IRelayCommand OpenHdrPhotoCommand => _openHdrPhotoCommand ??= new RelayCommand(OpenBundledHdrPhotoExternally);
+
+        private void OpenBundledHdrPhotoExternally()
+        {
+            try
+            {
+                using SKBitmap? photo = LoadBundledHdrPhoto();
+                if (photo == null)
+                {
+                    return;
+                }
+
+                string path = Path.Combine(Path.GetTempPath(), "xerahs-hdr-preview.jpg");
+                if (!UltraHdrJpegWriter.TrySave(photo, path))
+                {
+                    DebugHelper.WriteLine("[HDR] Ultra HDR preview could not be written.");
+                    return;
+                }
+
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "[HDR] opening the HDR preview externally failed");
+            }
         }
 
         private static SKBitmap? LoadBundledHdrPhoto()

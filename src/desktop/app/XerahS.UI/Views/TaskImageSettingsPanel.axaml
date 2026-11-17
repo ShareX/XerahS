@@ -15,6 +15,13 @@
         <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter"/>
     </UserControl.Resources>
 
+    <UserControl.Styles>
+        <!-- A thicker thumb makes the scrollable comparison list obvious at a glance. -->
+        <Style Selector="ScrollViewer.hdr-scroll /template/ ScrollBar#PART_VerticalScrollBar">
+            <Setter Property="Width" Value="14"/>
+        </Style>
+    </UserControl.Styles>
+
     <Border Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}" Padding="16">
         <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
             <!-- Image Settings Tab -->
@@ -127,23 +134,35 @@
                                     <StackPanel Spacing="6">
                                         <TextBlock Text="{local:Localize TaskSettings_HdrPhotoPreview}" FontWeight="SemiBold"/>
                                         <TextBlock Text="{local:Localize TaskSettings_HdrPhotoLegend}"
-                                                   Opacity="0.75" FontSize="11" TextWrapping="Wrap" MaxWidth="560"
+                                                   Opacity="0.75" FontSize="11" TextWrapping="Wrap" MaxWidth="720"
                                                    HorizontalAlignment="Left"
                                                    AutomationProperties.Name="HDR photo tone mapping legend"/>
-                                        <!-- Pinned: the full HDR content through the recommended curve, so no highlight is lost -->
-                                        <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
-                                                CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left">
-                                            <Image Source="{Binding HdrPhotoHable}" Width="640" Height="320" Stretch="UniformToFill"
-                                                   AutomationProperties.Name="HDR photo with the recommended curve"/>
-                                        </Border>
-                                        <TextBlock Text="{local:Localize TaskSettings_HdrPhotoSource}" FontSize="12" Opacity="0.85"/>
-                                        <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto"
-                                                      HorizontalScrollBarVisibility="Disabled" Margin="0,4,0,0">
-                                            <StackPanel Spacing="12">
+                                        <Grid ColumnDefinitions="Auto, 16, *" Margin="0,4,0,0">
+                                            <!-- Pinned: the full HDR content through the recommended curve -->
+                                            <StackPanel Grid.Column="0" Width="600" Spacing="6">
+                                                <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                                                        CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left">
+                                                    <Image Source="{Binding HdrPhotoHable}" Width="600" Height="300" Stretch="UniformToFill"
+                                                           AutomationProperties.Name="HDR photo with the recommended curve"/>
+                                                </Border>
+                                                <TextBlock Text="{local:Localize TaskSettings_HdrPhotoSource}" FontSize="12" Opacity="0.85" TextWrapping="Wrap"/>
+                                                <Button Content="{local:Localize TaskSettings_HdrOpenPreview}"
+                                                        Command="{Binding OpenHdrPhotoCommand}"
+                                                        Margin="0,2,0,0"
+                                                        HorizontalAlignment="Left"
+                                                        AutomationProperties.Name="Open HDR preview in an external viewer"/>
+                                                <TextBlock Text="{local:Localize TaskSettings_HdrOpenPreviewHint}"
+                                                           FontSize="11" Opacity="0.75" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                            <!-- Comparison: the remaining methods, scrolled -->
+                                            <ScrollViewer Grid.Column="2" Classes="hdr-scroll" Height="300"
+                                                          VerticalScrollBarVisibility="Visible"
+                                                          HorizontalScrollBarVisibility="Disabled">
+                                                <StackPanel Spacing="10">
                                                 <StackPanel Spacing="4">
                                                     <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
                                                             CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left">
-                                                        <Image Source="{Binding HdrPhotoNone}" Width="640" Height="320" Stretch="UniformToFill"
+                                                        <Image Source="{Binding HdrPhotoNone}" Width="600" Height="300" Stretch="UniformToFill"
                                                                AutomationProperties.Name="HDR photo without conversion"/>
                                                     </Border>
                                                     <TextBlock Text="{local:Localize HdrToneMappingMode_None}" FontSize="12" Opacity="0.85" TextWrapping="Wrap"/>
@@ -151,7 +170,7 @@
                                                 <StackPanel Spacing="4">
                                                     <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
                                                             CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left">
-                                                        <Image Source="{Binding HdrPhotoReinhard}" Width="640" Height="320" Stretch="UniformToFill"
+                                                        <Image Source="{Binding HdrPhotoReinhard}" Width="600" Height="300" Stretch="UniformToFill"
                                                                AutomationProperties.Name="HDR photo with Reinhard curve"/>
                                                     </Border>
                                                     <TextBlock Text="{local:Localize HdrToneMappingMode_TonemapReinhard}" FontSize="12" Opacity="0.85" TextWrapping="Wrap"/>
@@ -159,7 +178,7 @@
                                                 <StackPanel Spacing="4">
                                                     <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
                                                             CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left">
-                                                        <Image Source="{Binding HdrPhotoAces}" Width="640" Height="320" Stretch="UniformToFill"
+                                                        <Image Source="{Binding HdrPhotoAces}" Width="600" Height="300" Stretch="UniformToFill"
                                                                AutomationProperties.Name="HDR photo with ACES curve"/>
                                                     </Border>
                                                     <TextBlock Text="{local:Localize HdrToneMappingMode_TonemapAces}" FontSize="12" Opacity="0.85" TextWrapping="Wrap"/>
@@ -167,13 +186,15 @@
                                                 <StackPanel Spacing="4">
                                                     <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
                                                             CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left">
-                                                        <Image Source="{Binding HdrPhotoBt2446C}" Width="640" Height="320" Stretch="UniformToFill"
+                                                        <Image Source="{Binding HdrPhotoBt2446C}" Width="600" Height="300" Stretch="UniformToFill"
                                                                AutomationProperties.Name="HDR photo with BT.2446 C curve"/>
                                                     </Border>
                                                     <TextBlock Text="{local:Localize HdrToneMappingMode_TonemapBt2446C}" FontSize="12" Opacity="0.85" TextWrapping="Wrap"/>
                                                 </StackPanel>
-                                            </StackPanel>
-                                        </ScrollViewer>                                    </StackPanel>
+                                                </StackPanel>
+                                            </ScrollViewer>
+                                        </Grid>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

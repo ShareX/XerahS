@@ -3550,8 +3550,14 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   <data name="TaskImage_Preview" xml:space="preserve">
     <value>Vorschau</value>
   </data>
+  <data name="TaskSettings_HdrOpenPreview" xml:space="preserve">
+    <value>In einem HDR-Betrachter öffnen</value>
+  </data>
+  <data name="TaskSettings_HdrOpenPreviewHint" xml:space="preserve">
+    <value>Das Fenster selbst ist SDR, daher sind die echten Lichter nur in einem HDR-fähigen Betrachter sichtbar. Die App speichert das Foto als Ultra-HDR-JPEG und öffnet es.</value>
+  </data>
   <data name="TaskSettings_HdrPhotoSource" xml:space="preserve">
-    <value>Oben: der volle HDR-Inhalt mit der empfohlenen Kurve – Details in den Lichtern bleiben erhalten statt abgeschnitten zu werden. Darunter werden die übrigen HDR→SDR-Methoden verglichen, beginnend mit dem beschnittenen SDR-Betrachter-Bild.</value>
+    <value>Links: der volle HDR-Inhalt mit der empfohlenen Kurve – Details in den Lichtern bleiben erhalten. Rechts: die übrigen Methoden, zum Vergleichen scrollen.</value>
   </data>
   <data name="Auto_Changes_save_automatically" xml:space="preserve">
     <value>Änderungen werden automatisch gespeichert</value>
