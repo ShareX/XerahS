@@ -110,19 +110,26 @@ internal static class DisplayConfigHelper
         return 1f;
     }
 
-    /// <summary>
-    /// How the output actually encodes pixels right now. Windows keeps advanced colour enabled
-    /// while the output can be presenting plain SDR, so the encoding - not the enabled flag - is
-    /// what decides whether HDR frames can be captured.
-    /// </summary>
-    internal enum AdvancedColorEncoding
+    /// <summary>DISPLAYCONFIG_COLOR_ENCODING: the signal encoding, not an SDR/HDR switch.</summary>
+    internal enum DisplayColorEncoding
     {
-        Sdr = 0,
-        Wcg = 1,
-        Hdr10 = 2
+        Rgb = 0,
+        YCbCr444 = 1,
+        YCbCr422 = 2,
+        YCbCr420 = 3,
+        Intensity = 4
     }
 
-    internal readonly record struct AdvancedColorState(bool Supported, bool Enabled, AdvancedColorEncoding Encoding);
+    /// <summary>
+    /// Advanced colour on this output. <see cref="Enabled"/> is what the HDR toggle controls:
+    /// when it is set Windows composites the desktop in scRGB and Desktop Duplication can hand
+    /// back fp16 frames. The encoding and bit depth describe the wire format.
+    /// </summary>
+    internal readonly record struct AdvancedColorState(
+        bool Supported,
+        bool Enabled,
+        DisplayColorEncoding Encoding,
+        int BitsPerChannel);
 
     /// <summary>
     /// Returns the advanced-colour state of the output whose GDI name matches
@@ -189,14 +196,26 @@ internal static class DisplayConfigHelper
                         return null;
                     }
 
-                    int encoding = (int)((info.Value >> 2) & 0x7);
+                    var encoding = info.ColorEncoding is <= 4
+                        ? (DisplayColorEncoding)info.ColorEncoding
+                        : DisplayColorEncoding.Rgb;
+                    int bitsPerChannel = info.BitsPerColorChannel switch
+                    {
+                        1 => 10,
+                        2 => 12,
+                        3 => 16,
+                        _ => 8
+                    };
+
                     var state = new AdvancedColorState(
                         (info.Value & 0x1) != 0,
                         ((info.Value >> 1) & 0x1) != 0,
-                        encoding is >= 0 and <= 2 ? (AdvancedColorEncoding)encoding : AdvancedColorEncoding.Sdr);
+                        encoding,
+                        bitsPerChannel);
 
                     XerahS.Common.DebugHelper.WriteLine(
-                        $"[HDR] {deviceName}: advanced colour supported={state.Supported} enabled={state.Enabled} encoding={state.Encoding}");
+                        $"[HDR] {deviceName}: advanced colour supported={state.Supported} enabled={state.Enabled} " +
+                        $"encoding={state.Encoding} bitsPerChannel={state.BitsPerChannel}");
                     return state;
                 }
             }

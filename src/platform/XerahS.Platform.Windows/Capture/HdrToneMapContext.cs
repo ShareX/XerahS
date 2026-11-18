@@ -86,11 +86,9 @@ internal readonly record struct HdrToneMapContext(float SdrWhiteScale, float Pea
             return false;
         }
 
-        // DXGI keeps reporting the PQ colour space while Windows actually composites the desktop in
-        // SDR encoding (advanced colour stays enabled, the output just is not presenting HDR10).
-        // That state is common: DuplicateOutput then delivers B8G8R8A8 frames and the fp16 overload
-        // is rejected, so treating the output as HDR would only buy an empty fp16 surface.
+        // The PQ colour space alone can survive an HDR toggle that Windows did not actually apply to
+        // the composition, so confirm it with the OS. When the query is unavailable, trust DXGI.
         DisplayConfigHelper.AdvancedColorState? state = DisplayConfigHelper.GetAdvancedColorState(description.DeviceName);
-        return state is null || state.Value.Encoding == DisplayConfigHelper.AdvancedColorEncoding.Hdr10;
+        return state is null || state.Value.Enabled;
     }
 }
