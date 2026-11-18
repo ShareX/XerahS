@@ -4018,4 +4018,28 @@
   <data name="Auto_Pin_to_Screen" xml:space="preserve">
     <value>Закрепить на экране</value>
   </data>
+  <data name="WatchFolder_FolderPath" xml:space="preserve">
+    <value>Путь к папке</value>
+  </data>
+  <data name="WatchFolder_FilterPattern" xml:space="preserve">
+    <value>Шаблон фильтра</value>
+  </data>
+  <data name="WatchFolder_FilterHint" xml:space="preserve">
+    <value>Разделяйте несколько шаблонов символом ';' (например: *.png;*.jpg).</value>
+  </data>
+  <data name="WatchFolder_IncludeSubfolders" xml:space="preserve">
+    <value>Включая подпапки</value>
+  </data>
+  <data name="WatchFolder_MoveFiles" xml:space="preserve">
+    <value>Перемещать файлы в папку снимков после обработки</value>
+  </data>
+  <data name="WatchFolder_ConvertMov" xml:space="preserve">
+    <value>Конвертировать .mov в .mp4 перед обработкой</value>
+  </data>
+  <data name="WatchFolder_Enable" xml:space="preserve">
+    <value>Включить эту папку наблюдения</value>
+  </data>
+  <data name="WatchFolder_Save" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
 </root>

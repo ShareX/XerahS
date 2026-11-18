@@ -4018,4 +4018,28 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   <data name="Auto_Pin_to_Screen" xml:space="preserve">
     <value>Auf dem Bildschirm anheften</value>
   </data>
+  <data name="WatchFolder_FolderPath" xml:space="preserve">
+    <value>Ordnerpfad</value>
+  </data>
+  <data name="WatchFolder_FilterPattern" xml:space="preserve">
+    <value>Filtermuster</value>
+  </data>
+  <data name="WatchFolder_FilterHint" xml:space="preserve">
+    <value>Mehrere Muster mit ';' trennen (Beispiel: *.png;*.jpg).</value>
+  </data>
+  <data name="WatchFolder_IncludeSubfolders" xml:space="preserve">
+    <value>Unterordner einbeziehen</value>
+  </data>
+  <data name="WatchFolder_MoveFiles" xml:space="preserve">
+    <value>Dateien nach der Verarbeitung in den Screenshot-Ordner verschieben</value>
+  </data>
+  <data name="WatchFolder_ConvertMov" xml:space="preserve">
+    <value>.mov-Dateien vor der Verarbeitung in .mp4 umwandeln</value>
+  </data>
+  <data name="WatchFolder_Enable" xml:space="preserve">
+    <value>Diesen Überwachungsordner aktivieren</value>
+  </data>
+  <data name="WatchFolder_Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
 </root>

@@ -3,6 +3,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:vm="using:XerahS.UI.ViewModels"
+        xmlns:local="using:XerahS.UI.Markup"
         mc:Ignorable="d"
         x:Class="XerahS.UI.Views.WatchFolderDialog"
         x:DataType="vm:WatchFolderEditViewModel"
@@ -16,14 +17,14 @@
         <TextBlock Text="{Binding Title}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
 
         <StackPanel Spacing="8">
-            <TextBlock Text="Folder path" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+            <TextBlock Text="{local:Localize WatchFolder_FolderPath}" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                 <TextBox Grid.Column="0"
                          Text="{Binding FolderPath, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="C:\Path\To\Folder"
                          AutomationProperties.Name="Folder Path Input"/>
                 <Button Grid.Column="1"
-                        Content="Browse..."
+                        Content="{local:Localize TaskSettings_Browse}"
                         Command="{Binding BrowseFolderCommand}"
                         AutomationProperties.Name="Browse Folder"/>
             </Grid>
@@ -34,11 +35,11 @@
         </StackPanel>
 
         <StackPanel Spacing="8">
-            <TextBlock Text="Filter Pattern" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+            <TextBlock Text="{local:Localize WatchFolder_FilterPattern}" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
             <TextBox Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}"
                      PlaceholderText="*.png;*.jpg"
                      AutomationProperties.Name="Filter Pattern Input"/>
-            <TextBlock Text="Separate multiple patterns with ';' (example: *.png;*.jpg)."
+            <TextBlock Text="{local:Localize WatchFolder_FilterHint}"
                        Theme="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
             <TextBlock Text="{Binding FilterError}"
@@ -48,7 +49,7 @@
         </StackPanel>
 
         <StackPanel Spacing="8">
-            <TextBlock Text="Workflow" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+            <TextBlock Text="{local:Localize Settings_WatchFolders_Column_Workflow}" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
             <ComboBox ItemsSource="{Binding Workflows}"
                       SelectedItem="{Binding SelectedWorkflow}"
                       DisplayMemberBinding="{Binding Name}"
@@ -62,22 +63,22 @@
 
         <StackPanel Spacing="8">
             <CheckBox IsChecked="{Binding IncludeSubdirectories}" 
-                      Content="Include subfolders"
+                      Content="{local:Localize WatchFolder_IncludeSubfolders}"
                       AutomationProperties.Name="Include Subfolders Checkbox"/>
             <CheckBox IsChecked="{Binding MoveFilesToScreenshotsFolder}" 
-                      Content="Move files to screenshots folder after processing"
+                      Content="{local:Localize WatchFolder_MoveFiles}"
                       AutomationProperties.Name="Move Files Checkbox"/>
             <CheckBox IsChecked="{Binding ConvertMovToMp4BeforeProcessing}"
-                      Content="Convert .mov files to .mp4 before processing"
+                      Content="{local:Localize WatchFolder_ConvertMov}"
                       AutomationProperties.Name="Convert MOV Files Checkbox"/>
             <CheckBox IsChecked="{Binding Enabled}" 
-                      Content="Enable this watch folder"
+                      Content="{local:Localize WatchFolder_Enable}"
                       AutomationProperties.Name="Enable Watch Folder Checkbox"/>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-            <Button Content="Cancel" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel"/>
-            <Button Content="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding CanSave}" Classes="accent" AutomationProperties.Name="Save"/>
+            <Button Content="{local:Localize SendToAction_Cancel}" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel"/>
+            <Button Content="{local:Localize WatchFolder_Save}" Command="{Binding SaveCommand}" IsEnabled="{Binding CanSave}" Classes="accent" AutomationProperties.Name="Save"/>
         </StackPanel>
     </StackPanel>
 </UserControl>

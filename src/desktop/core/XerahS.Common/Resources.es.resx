@@ -4018,4 +4018,28 @@ Esto eliminará permanentemente el archivo del almacenamiento remoto. Esta acci�
   <data name="Auto_Pin_to_Screen" xml:space="preserve">
     <value>Fijar en pantalla</value>
   </data>
+  <data name="WatchFolder_FolderPath" xml:space="preserve">
+    <value>Ruta de carpeta</value>
+  </data>
+  <data name="WatchFolder_FilterPattern" xml:space="preserve">
+    <value>Patrón de filtro</value>
+  </data>
+  <data name="WatchFolder_FilterHint" xml:space="preserve">
+    <value>Separe varios patrones con ';' (ejemplo: *.png;*.jpg).</value>
+  </data>
+  <data name="WatchFolder_IncludeSubfolders" xml:space="preserve">
+    <value>Incluir subcarpetas</value>
+  </data>
+  <data name="WatchFolder_MoveFiles" xml:space="preserve">
+    <value>Mover los archivos a la carpeta de capturas tras procesarlos</value>
+  </data>
+  <data name="WatchFolder_ConvertMov" xml:space="preserve">
+    <value>Convertir archivos .mov a .mp4 antes de procesar</value>
+  </data>
+  <data name="WatchFolder_Enable" xml:space="preserve">
+    <value>Activar esta carpeta vigilada</value>
+  </data>
+  <data name="WatchFolder_Save" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
 </root>

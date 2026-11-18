@@ -4018,4 +4018,28 @@
   <data name="Auto_Pin_to_Screen" xml:space="preserve">
     <value>固定到屏幕</value>
   </data>
+  <data name="WatchFolder_FolderPath" xml:space="preserve">
+    <value>文件夹路径</value>
+  </data>
+  <data name="WatchFolder_FilterPattern" xml:space="preserve">
+    <value>筛选模式</value>
+  </data>
+  <data name="WatchFolder_FilterHint" xml:space="preserve">
+    <value>使用 ';' 分隔多个模式（例如：*.png;*.jpg）。</value>
+  </data>
+  <data name="WatchFolder_IncludeSubfolders" xml:space="preserve">
+    <value>包含子文件夹</value>
+  </data>
+  <data name="WatchFolder_MoveFiles" xml:space="preserve">
+    <value>处理后把文件移到截图文件夹</value>
+  </data>
+  <data name="WatchFolder_ConvertMov" xml:space="preserve">
+    <value>处理前将 .mov 文件转换为 .mp4</value>
+  </data>
+  <data name="WatchFolder_Enable" xml:space="preserve">
+    <value>启用此监视文件夹</value>
+  </data>
+  <data name="WatchFolder_Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
 </root>
