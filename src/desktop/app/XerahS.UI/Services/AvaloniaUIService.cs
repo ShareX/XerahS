@@ -166,7 +166,7 @@ namespace XerahS.UI.Services
                 var editorWindow = new Views.EditorWindow();
 
                 // Create independent ViewModel for this editor instance
-                var editorOptions = ThemeService.CreateImageEditorOptions(showExitConfirmation: !taskMode);
+                var editorOptions = ThemeService.GetPersistedImageEditorOptions(showExitConfirmation: !taskMode);
                 var editorViewModel = new MainViewModel(editorOptions);
                 editorViewModel.ShowFileMenu = !taskMode;
                 editorViewModel.ShowTaskButtons = true;
@@ -263,6 +263,9 @@ namespace XerahS.UI.Services
                         tcs.TrySetResult(new EditorSessionOutcome(null, Cancelled: false));
                     }
                 };
+
+                // Remember tool settings (colours, sizes, fonts) for the next editor, as ShareX does.
+                editorWindow.Closed += (_, _) => _ = ThemeService.PersistImageEditorOptionsAsync();
 
                 // Show the window
                 editorWindow.Show();
