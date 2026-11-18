@@ -5,6 +5,7 @@
              xmlns:icons="using:ShareX.ImageEditor.Presentation.Theming"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:XerahS.UI.Markup"
              mc:Ignorable="d"
              x:Class="XerahS.UI.Views.MediaBrowserView"
              x:DataType="vm:MediaBrowserViewModel"
@@ -52,7 +53,7 @@
                 <TextBlock Grid.Column="0" Classes="glyph" FontSize="18"
                            Text="{x:Static icons:LucideIcons.cloud}"
                            Foreground="{DynamicResource AccentFillColorDefaultBrush}"/>
-                <TextBlock Grid.Column="1" Text="Media Browser" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="2,0,10,0"/>
+                <TextBlock Grid.Column="1" Text="{local:Localize MediaBrowser_Title}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="2,0,10,0"/>
                 <ComboBox Grid.Column="2"
                           MinWidth="280" MaxWidth="460"
                           ItemsSource="{Binding Sources}"
@@ -66,20 +67,20 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
                 <Button Grid.Column="3" IsEnabled="{Binding CanCreateFolder}" Command="{Binding CreateFolderCommand}"
-                        ToolTip.Tip="New folder" AutomationProperties.Name="New folder">
+                        ToolTip.Tip="{local:Localize MediaBrowser_NewFolder}" AutomationProperties.Name="New folder">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.folder_plus}"/>
-                        <TextBlock Text="New folder"/>
+                        <TextBlock Text="{local:Localize MediaBrowser_NewFolder}"/>
                     </StackPanel>
                 </Button>
                 <Button Grid.Column="4" Classes="accent" IsEnabled="{Binding CanUpload}" Click="OnUploadClick"
-                        ToolTip.Tip="Upload files here (or drop files onto the list)" AutomationProperties.Name="Upload">
+                        ToolTip.Tip="{local:Localize MediaBrowser_UploadHint}" AutomationProperties.Name="Upload">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.upload}"/>
-                        <TextBlock Text="Upload"/>
+                        <TextBlock Text="{local:Localize TaskSettings_Upload}"/>
                     </StackPanel>
                 </Button>
-                <Button Grid.Column="5" Classes="icon" Command="{Binding CloseCommand}" ToolTip.Tip="Close" AutomationProperties.Name="Close">
+                <Button Grid.Column="5" Classes="icon" Command="{Binding CloseCommand}" ToolTip.Tip="{local:Localize AfterUpload_Close}" AutomationProperties.Name="Close">
                     <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.x}"/>
                 </Button>
             </Grid>
@@ -90,16 +91,16 @@
                 Background="{DynamicResource LayerFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto" ColumnSpacing="6">
-                <Button Grid.Column="0" Classes="icon" IsEnabled="{Binding CanGoBack}" Command="{Binding GoBackCommand}" ToolTip.Tip="Back (Alt+Left)" AutomationProperties.Name="Back">
+                <Button Grid.Column="0" Classes="icon" IsEnabled="{Binding CanGoBack}" Command="{Binding GoBackCommand}" ToolTip.Tip="{local:Localize MediaBrowser_Back}" AutomationProperties.Name="Back">
                     <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.arrow_left}"/>
                 </Button>
-                <Button Grid.Column="1" Classes="icon" IsEnabled="{Binding CanGoForward}" Command="{Binding GoForwardCommand}" ToolTip.Tip="Forward (Alt+Right)" AutomationProperties.Name="Forward">
+                <Button Grid.Column="1" Classes="icon" IsEnabled="{Binding CanGoForward}" Command="{Binding GoForwardCommand}" ToolTip.Tip="{local:Localize MediaBrowser_Forward}" AutomationProperties.Name="Forward">
                     <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.arrow_right}"/>
                 </Button>
-                <Button Grid.Column="2" Classes="icon" IsEnabled="{Binding CanGoUp}" Command="{Binding GoUpCommand}" ToolTip.Tip="Up (Backspace)" AutomationProperties.Name="Up">
+                <Button Grid.Column="2" Classes="icon" IsEnabled="{Binding CanGoUp}" Command="{Binding GoUpCommand}" ToolTip.Tip="{local:Localize MediaBrowser_Up}" AutomationProperties.Name="Up">
                     <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.arrow_up}"/>
                 </Button>
-                <Button Grid.Column="3" Classes="icon" IsEnabled="{Binding !IsBusy}" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh (F5)" AutomationProperties.Name="Refresh">
+                <Button Grid.Column="3" Classes="icon" IsEnabled="{Binding !IsBusy}" Command="{Binding RefreshCommand}" ToolTip.Tip="{local:Localize MediaBrowser_Refresh}" AutomationProperties.Name="Refresh">
                     <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.refresh_cw}"/>
                 </Button>
 
@@ -133,7 +134,7 @@
                 <Grid Grid.Column="5" Width="220">
                     <TextBox x:Name="SearchBox"
                              Text="{Binding SearchText}"
-                             PlaceholderText="Search this folder (Ctrl+F)"
+                             PlaceholderText="{local:Localize MediaBrowser_Search}"
                              Padding="30,5,8,5"
                              VerticalContentAlignment="Center"
                              AutomationProperties.Name="Search this folder"/>
@@ -141,9 +142,9 @@
                                IsHitTestVisible="False" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </Grid>
                 <ComboBox Grid.Column="6" Width="120" ItemsSource="{Binding TypeFilters}" SelectedItem="{Binding TypeFilter}"
-                          ToolTip.Tip="Show only" AutomationProperties.Name="Type filter"/>
+                          ToolTip.Tip="{local:Localize MediaBrowser_ShowOnly}" AutomationProperties.Name="Type filter"/>
                 <Button Grid.Column="7" Classes="icon" Command="{Binding ToggleViewCommand}"
-                        ToolTip.Tip="Switch between list and thumbnails" AutomationProperties.Name="Toggle view">
+                        ToolTip.Tip="{local:Localize MediaBrowser_ToggleView}" AutomationProperties.Name="Toggle view">
                     <Panel>
                         <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.layout_grid}" IsVisible="{Binding !IsGridView}"/>
                         <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.list}" IsVisible="{Binding IsGridView}"/>
@@ -164,19 +165,19 @@
                     <Grid ColumnDefinitions="36,*,110,170" ColumnSpacing="8">
                         <Button Grid.Column="1" Classes="column" Command="{Binding SortByCommand}" CommandParameter="{x:Static vm:MediaBrowserSortColumn.Name}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <TextBlock Text="Name" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{local:Localize MediaBrowser_ColumnName}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Classes="glyph" Text="{Binding SortGlyph}" IsVisible="{Binding IsNameSorted}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                         </Button>
                         <Button Grid.Column="2" Classes="column" Command="{Binding SortByCommand}" CommandParameter="{x:Static vm:MediaBrowserSortColumn.Size}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <TextBlock Text="Size" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{local:Localize MediaBrowser_ColumnSize}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Classes="glyph" Text="{Binding SortGlyph}" IsVisible="{Binding IsSizeSorted}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                         </Button>
                         <Button Grid.Column="3" Classes="column" Command="{Binding SortByCommand}" CommandParameter="{x:Static vm:MediaBrowserSortColumn.Modified}">
                             <StackPanel Orientation="Horizontal" Spacing="6">
-                                <TextBlock Text="Modified" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{local:Localize MediaBrowser_ColumnModified}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Classes="glyph" Text="{Binding SortGlyph}" IsVisible="{Binding IsModifiedSorted}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                         </Button>
@@ -251,7 +252,7 @@
                         BorderBrush="{DynamicResource AccentFillColorDefaultBrush}" BorderThickness="2">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
                         <TextBlock Classes="glyph" FontSize="42" Text="{x:Static icons:LucideIcons.upload}" Foreground="{DynamicResource AccentFillColorDefaultBrush}"/>
-                        <TextBlock Text="Drop files to upload to this folder" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{local:Localize MediaBrowser_DropHint}" FontWeight="SemiBold" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Border>
 
@@ -263,7 +264,7 @@
                         <StackPanel Spacing="12" Width="260">
                             <ProgressBar IsIndeterminate="True"/>
                             <TextBlock Text="{Binding BusyText}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                            <Button Content="Cancel" HorizontalAlignment="Center" Command="{Binding CancelOperationCommand}"/>
+                            <Button Content="{local:Localize SendToAction_Cancel}" HorizontalAlignment="Center" Command="{Binding CancelOperationCommand}"/>
                         </StackPanel>
                     </Border>
                 </Border>
@@ -276,7 +277,7 @@
                 <Grid RowDefinitions="Auto,*,Auto" Margin="12">
                     <Grid ColumnDefinitions="*,Auto">
                         <TextBlock Text="{Binding PreviewItem.Name, FallbackValue=''}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-                        <Button Grid.Column="1" Classes="icon" Command="{Binding ClosePreviewCommand}" ToolTip.Tip="Close preview (Esc)">
+                        <Button Grid.Column="1" Classes="icon" Command="{Binding ClosePreviewCommand}" ToolTip.Tip="{local:Localize MediaBrowser_ClosePreview}">
                             <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.x}"/>
                         </Button>
                     </Grid>
@@ -290,19 +291,19 @@
                             <Button Margin="0,0,6,6" IsEnabled="{Binding CanDownload}" Click="OnDownloadClick">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.download}"/>
-                                    <TextBlock Text="Download"/>
+                                    <TextBlock Text="{local:Localize MediaBrowser_Download}"/>
                                 </StackPanel>
                             </Button>
                             <Button Margin="0,0,6,6" IsVisible="{Binding CanUseUrl}" Command="{Binding CopyUrlCommand}" CommandParameter="{x:Null}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.link}"/>
-                                    <TextBlock Text="Copy URL"/>
+                                    <TextBlock Text="{local:Localize MediaBrowser_CopyUrl}"/>
                                 </StackPanel>
                             </Button>
                             <Button Margin="0,0,6,6" IsVisible="{Binding CanUseUrl}" Command="{Binding OpenUrlCommand}" CommandParameter="{x:Null}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.external_link}"/>
-                                    <TextBlock Text="Open URL"/>
+                                    <TextBlock Text="{local:Localize MediaBrowser_OpenUrl}"/>
                                 </StackPanel>
                             </Button>
                         </WrapPanel>
@@ -315,7 +316,7 @@
         <Border Grid.Row="3" Classes="status-warning" Padding="12,8" BorderThickness="0,1,0,0" IsVisible="{Binding HasError}">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                 <SelectableTextBlock Text="{Binding ErrorText}" TextWrapping="Wrap" FontSize="12" MaxHeight="90"/>
-                <Button Grid.Column="1" Classes="icon" Command="{Binding DismissErrorCommand}" ToolTip.Tip="Dismiss">
+                <Button Grid.Column="1" Classes="icon" Command="{Binding DismissErrorCommand}" ToolTip.Tip="{local:Localize MediaBrowser_Dismiss}">
                     <TextBlock Classes="glyph" Text="{x:Static icons:LucideIcons.x}"/>
                 </Button>
             </Grid>
@@ -326,7 +327,7 @@
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                 <TextBlock Text="{Binding StatusText}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                <Button Grid.Column="1" Content="Load more" IsVisible="{Binding HasMoreItems}" IsEnabled="{Binding !IsBusy}" Command="{Binding LoadMoreCommand}"/>
+                <Button Grid.Column="1" Content="{local:Localize MediaBrowser_LoadMore}" IsVisible="{Binding HasMoreItems}" IsEnabled="{Binding !IsBusy}" Command="{Binding LoadMoreCommand}"/>
             </Grid>
         </Border>
     </Grid>

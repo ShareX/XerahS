@@ -3838,6 +3838,66 @@
   <data name="NetworkMonitor_NoEventsHint" xml:space="preserve">
     <value>Обрывы и переподключения появятся здесь.</value>
   </data>
+  <data name="MediaBrowser_Title" xml:space="preserve">
+    <value>Медиабраузер</value>
+  </data>
+  <data name="MediaBrowser_NewFolder" xml:space="preserve">
+    <value>Новая папка</value>
+  </data>
+  <data name="MediaBrowser_UploadHint" xml:space="preserve">
+    <value>Загрузите файлы сюда (или перетащите их в список)</value>
+  </data>
+  <data name="MediaBrowser_Back" xml:space="preserve">
+    <value>Назад (Alt+←)</value>
+  </data>
+  <data name="MediaBrowser_Forward" xml:space="preserve">
+    <value>Вперёд (Alt+→)</value>
+  </data>
+  <data name="MediaBrowser_Up" xml:space="preserve">
+    <value>Вверх (Backspace)</value>
+  </data>
+  <data name="MediaBrowser_Refresh" xml:space="preserve">
+    <value>Обновить (F5)</value>
+  </data>
+  <data name="MediaBrowser_Search" xml:space="preserve">
+    <value>Поиск в этой папке (Ctrl+F)</value>
+  </data>
+  <data name="MediaBrowser_ShowOnly" xml:space="preserve">
+    <value>Показывать только</value>
+  </data>
+  <data name="MediaBrowser_ToggleView" xml:space="preserve">
+    <value>Переключить список и миниатюры</value>
+  </data>
+  <data name="MediaBrowser_ColumnName" xml:space="preserve">
+    <value>Имя</value>
+  </data>
+  <data name="MediaBrowser_ColumnSize" xml:space="preserve">
+    <value>Размер</value>
+  </data>
+  <data name="MediaBrowser_ColumnModified" xml:space="preserve">
+    <value>Изменён</value>
+  </data>
+  <data name="MediaBrowser_DropHint" xml:space="preserve">
+    <value>Перетащите файлы, чтобы загрузить их в эту папку</value>
+  </data>
+  <data name="MediaBrowser_ClosePreview" xml:space="preserve">
+    <value>Закрыть предпросмотр (Esc)</value>
+  </data>
+  <data name="MediaBrowser_Download" xml:space="preserve">
+    <value>Скачать</value>
+  </data>
+  <data name="MediaBrowser_CopyUrl" xml:space="preserve">
+    <value>Копировать URL</value>
+  </data>
+  <data name="MediaBrowser_OpenUrl" xml:space="preserve">
+    <value>Открыть URL</value>
+  </data>
+  <data name="MediaBrowser_Dismiss" xml:space="preserve">
+    <value>Скрыть</value>
+  </data>
+  <data name="MediaBrowser_LoadMore" xml:space="preserve">
+    <value>Загрузить ещё</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>Сравнение на реальном HDR-фото</value>
   </data>

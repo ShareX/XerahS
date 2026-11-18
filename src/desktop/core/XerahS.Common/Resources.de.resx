@@ -3838,6 +3838,66 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   <data name="NetworkMonitor_NoEventsHint" xml:space="preserve">
     <value>Unterbrechungen und Wiederverbindungen erscheinen hier.</value>
   </data>
+  <data name="MediaBrowser_Title" xml:space="preserve">
+    <value>Medienbrowser</value>
+  </data>
+  <data name="MediaBrowser_NewFolder" xml:space="preserve">
+    <value>Neuer Ordner</value>
+  </data>
+  <data name="MediaBrowser_UploadHint" xml:space="preserve">
+    <value>Dateien hier hochladen (oder in die Liste ziehen)</value>
+  </data>
+  <data name="MediaBrowser_Back" xml:space="preserve">
+    <value>Zurück (Alt+Links)</value>
+  </data>
+  <data name="MediaBrowser_Forward" xml:space="preserve">
+    <value>Vorwärts (Alt+Rechts)</value>
+  </data>
+  <data name="MediaBrowser_Up" xml:space="preserve">
+    <value>Aufwärts (Rücktaste)</value>
+  </data>
+  <data name="MediaBrowser_Refresh" xml:space="preserve">
+    <value>Aktualisieren (F5)</value>
+  </data>
+  <data name="MediaBrowser_Search" xml:space="preserve">
+    <value>Diesen Ordner durchsuchen (Strg+F)</value>
+  </data>
+  <data name="MediaBrowser_ShowOnly" xml:space="preserve">
+    <value>Nur anzeigen</value>
+  </data>
+  <data name="MediaBrowser_ToggleView" xml:space="preserve">
+    <value>Zwischen Liste und Miniaturansichten wechseln</value>
+  </data>
+  <data name="MediaBrowser_ColumnName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="MediaBrowser_ColumnSize" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="MediaBrowser_ColumnModified" xml:space="preserve">
+    <value>Geändert</value>
+  </data>
+  <data name="MediaBrowser_DropHint" xml:space="preserve">
+    <value>Dateien hierher ziehen, um sie in diesen Ordner hochzuladen</value>
+  </data>
+  <data name="MediaBrowser_ClosePreview" xml:space="preserve">
+    <value>Vorschau schließen (Esc)</value>
+  </data>
+  <data name="MediaBrowser_Download" xml:space="preserve">
+    <value>Herunterladen</value>
+  </data>
+  <data name="MediaBrowser_CopyUrl" xml:space="preserve">
+    <value>URL kopieren</value>
+  </data>
+  <data name="MediaBrowser_OpenUrl" xml:space="preserve">
+    <value>URL öffnen</value>
+  </data>
+  <data name="MediaBrowser_Dismiss" xml:space="preserve">
+    <value>Ausblenden</value>
+  </data>
+  <data name="MediaBrowser_LoadMore" xml:space="preserve">
+    <value>Mehr laden</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>Vergleich an einem echten HDR-Foto</value>
   </data>

@@ -3838,6 +3838,66 @@
   <data name="NetworkMonitor_NoEventsHint" xml:space="preserve">
     <value>断开与重连将显示在这里。</value>
   </data>
+  <data name="MediaBrowser_Title" xml:space="preserve">
+    <value>媒体浏览器</value>
+  </data>
+  <data name="MediaBrowser_NewFolder" xml:space="preserve">
+    <value>新建文件夹</value>
+  </data>
+  <data name="MediaBrowser_UploadHint" xml:space="preserve">
+    <value>在此上传文件（或将文件拖到列表中）</value>
+  </data>
+  <data name="MediaBrowser_Back" xml:space="preserve">
+    <value>后退（Alt+左）</value>
+  </data>
+  <data name="MediaBrowser_Forward" xml:space="preserve">
+    <value>前进（Alt+右）</value>
+  </data>
+  <data name="MediaBrowser_Up" xml:space="preserve">
+    <value>上一级（Backspace）</value>
+  </data>
+  <data name="MediaBrowser_Refresh" xml:space="preserve">
+    <value>刷新（F5）</value>
+  </data>
+  <data name="MediaBrowser_Search" xml:space="preserve">
+    <value>搜索此文件夹（Ctrl+F）</value>
+  </data>
+  <data name="MediaBrowser_ShowOnly" xml:space="preserve">
+    <value>仅显示</value>
+  </data>
+  <data name="MediaBrowser_ToggleView" xml:space="preserve">
+    <value>在列表与缩略图之间切换</value>
+  </data>
+  <data name="MediaBrowser_ColumnName" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="MediaBrowser_ColumnSize" xml:space="preserve">
+    <value>大小</value>
+  </data>
+  <data name="MediaBrowser_ColumnModified" xml:space="preserve">
+    <value>修改时间</value>
+  </data>
+  <data name="MediaBrowser_DropHint" xml:space="preserve">
+    <value>拖放文件以上传到该文件夹</value>
+  </data>
+  <data name="MediaBrowser_ClosePreview" xml:space="preserve">
+    <value>关闭预览（Esc）</value>
+  </data>
+  <data name="MediaBrowser_Download" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="MediaBrowser_CopyUrl" xml:space="preserve">
+    <value>复制 URL</value>
+  </data>
+  <data name="MediaBrowser_OpenUrl" xml:space="preserve">
+    <value>打开 URL</value>
+  </data>
+  <data name="MediaBrowser_Dismiss" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="MediaBrowser_LoadMore" xml:space="preserve">
+    <value>加载更多</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>在真实 HDR 照片上对比</value>
   </data>
