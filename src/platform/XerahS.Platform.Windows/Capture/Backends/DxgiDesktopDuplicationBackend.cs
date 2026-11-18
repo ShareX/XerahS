@@ -235,7 +235,7 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
             using var desktopTexture = resource.QueryInterface<ID3D11Texture2D>();
             var sourceDesc = desktopTexture.Description;
             DebugHelper.WriteLine(
-                $"CaptureFullScreenDxgi: Output {output.DeviceName} frame source={sourceDesc.Width}x{sourceDesc.Height}, target={output.Bounds.Width}x{output.Bounds.Height}, rotation={output.Rotation}, dxgiRotation={output.DxgiRotation}");
+                $"CaptureFullScreenDxgi: Output {output.DeviceName} frame source={sourceDesc.Width}x{sourceDesc.Height}, format={sourceDesc.Format}, target={output.Bounds.Width}x{output.Bounds.Height}, rotation={output.Rotation}, dxgiRotation={output.DxgiRotation}");
 
             if (CanCopyVisibleRegionOnly(output, sourceDesc, destination))
             {
