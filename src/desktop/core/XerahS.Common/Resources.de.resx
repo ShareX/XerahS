@@ -4306,4 +4306,79 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   <data name="AfterCapture_Locked" xml:space="preserve">
     <value>Pflichtschritte bleiben an Ihr Ziel gebunden.</value>
   </data>
+  <data name="GifMaker_Title" xml:space="preserve">
+    <value>Animierter GIF-Ersteller</value>
+  </data>
+  <data name="GifMaker_Frames" xml:space="preserve">
+    <value>Frames (in Reihenfolge)</value>
+  </data>
+  <data name="GifMaker_Add" xml:space="preserve">
+    <value>Hinzufügen...</value>
+  </data>
+  <data name="GifMaker_Up" xml:space="preserve">
+    <value>Hoch</value>
+  </data>
+  <data name="GifMaker_Down" xml:space="preserve">
+    <value>Runter</value>
+  </data>
+  <data name="GifMaker_Delay" xml:space="preserve">
+    <value>Verzögerung (ms)</value>
+  </data>
+  <data name="GifMaker_LoopForever" xml:space="preserve">
+    <value>Endlos wiederholen</value>
+  </data>
+  <data name="GifMaker_Repeat" xml:space="preserve">
+    <value>Wiederholungen</value>
+  </data>
+  <data name="GifMaker_MaxSize" xml:space="preserve">
+    <value>Max. Größe (px)</value>
+  </data>
+  <data name="GifMaker_MaxSizeTip" xml:space="preserve">
+    <value>0 behält die Größe des ersten Bildes</value>
+  </data>
+  <data name="GifMaker_OutputPlaceholder" xml:space="preserve">
+    <value>Ausgabe-.gif</value>
+  </data>
+  <data name="GifMaker_OpenFolder" xml:space="preserve">
+    <value>Ordner öffnen</value>
+  </data>
+  <data name="GifMaker_Create" xml:space="preserve">
+    <value>GIF erstellen</value>
+  </data>
+  <data name="VideoConv_Title" xml:space="preserve">
+    <value>Videokonverter</value>
+  </data>
+  <data name="VideoConv_SelectPlaceholder" xml:space="preserve">
+    <value>Videodatei auswählen...</value>
+  </data>
+  <data name="VideoConv_Codec" xml:space="preserve">
+    <value>Codec:</value>
+  </data>
+  <data name="VideoConv_UseBitrate" xml:space="preserve">
+    <value>Bitrate verwenden</value>
+  </data>
+  <data name="VideoConv_QualityCrf" xml:space="preserve">
+    <value>Qualität (CRF):</value>
+  </data>
+  <data name="VideoConv_BitrateKbps" xml:space="preserve">
+    <value>Bitrate (kbit/s):</value>
+  </data>
+  <data name="VideoConv_UseCustomArgs" xml:space="preserve">
+    <value>Eigene FFmpeg-Argumente verwenden</value>
+  </data>
+  <data name="VideoConv_CustomArgsPlaceholder" xml:space="preserve">
+    <value>Eigene FFmpeg-Argumente...</value>
+  </data>
+  <data name="VideoConv_ArgsPreview" xml:space="preserve">
+    <value>Vorschau der FFmpeg-Argumente</value>
+  </data>
+  <data name="VideoConv_Output" xml:space="preserve">
+    <value>Ausgabe:</value>
+  </data>
+  <data name="VideoConv_Convert" xml:space="preserve">
+    <value>Konvertieren</value>
+  </data>
+  <data name="VideoConv_Stop" xml:space="preserve">
+    <value>Stoppen</value>
+  </data>
 </root>

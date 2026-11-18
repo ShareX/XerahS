@@ -4306,4 +4306,79 @@
   <data name="AfterCapture_Locked" xml:space="preserve">
     <value>Обязательные шаги закреплены за вашей целью.</value>
   </data>
+  <data name="GifMaker_Title" xml:space="preserve">
+    <value>Создание анимированного GIF</value>
+  </data>
+  <data name="GifMaker_Frames" xml:space="preserve">
+    <value>Кадры (по порядку)</value>
+  </data>
+  <data name="GifMaker_Add" xml:space="preserve">
+    <value>Добавить...</value>
+  </data>
+  <data name="GifMaker_Up" xml:space="preserve">
+    <value>Вверх</value>
+  </data>
+  <data name="GifMaker_Down" xml:space="preserve">
+    <value>Вниз</value>
+  </data>
+  <data name="GifMaker_Delay" xml:space="preserve">
+    <value>Задержка (мс)</value>
+  </data>
+  <data name="GifMaker_LoopForever" xml:space="preserve">
+    <value>Повторять бесконечно</value>
+  </data>
+  <data name="GifMaker_Repeat" xml:space="preserve">
+    <value>Повторы</value>
+  </data>
+  <data name="GifMaker_MaxSize" xml:space="preserve">
+    <value>Макс. размер (пикс.)</value>
+  </data>
+  <data name="GifMaker_MaxSizeTip" xml:space="preserve">
+    <value>0 — сохранить размер первого изображения</value>
+  </data>
+  <data name="GifMaker_OutputPlaceholder" xml:space="preserve">
+    <value>Выходной .gif</value>
+  </data>
+  <data name="GifMaker_OpenFolder" xml:space="preserve">
+    <value>Открыть папку</value>
+  </data>
+  <data name="GifMaker_Create" xml:space="preserve">
+    <value>Создать GIF</value>
+  </data>
+  <data name="VideoConv_Title" xml:space="preserve">
+    <value>Конвертер видео</value>
+  </data>
+  <data name="VideoConv_SelectPlaceholder" xml:space="preserve">
+    <value>Выберите видеофайл...</value>
+  </data>
+  <data name="VideoConv_Codec" xml:space="preserve">
+    <value>Кодек:</value>
+  </data>
+  <data name="VideoConv_UseBitrate" xml:space="preserve">
+    <value>Использовать битрейт</value>
+  </data>
+  <data name="VideoConv_QualityCrf" xml:space="preserve">
+    <value>Качество (CRF):</value>
+  </data>
+  <data name="VideoConv_BitrateKbps" xml:space="preserve">
+    <value>Битрейт (кбит/с):</value>
+  </data>
+  <data name="VideoConv_UseCustomArgs" xml:space="preserve">
+    <value>Использовать свои аргументы FFmpeg</value>
+  </data>
+  <data name="VideoConv_CustomArgsPlaceholder" xml:space="preserve">
+    <value>Свои аргументы FFmpeg...</value>
+  </data>
+  <data name="VideoConv_ArgsPreview" xml:space="preserve">
+    <value>Предпросмотр аргументов FFmpeg</value>
+  </data>
+  <data name="VideoConv_Output" xml:space="preserve">
+    <value>Вывод:</value>
+  </data>
+  <data name="VideoConv_Convert" xml:space="preserve">
+    <value>Конвертировать</value>
+  </data>
+  <data name="VideoConv_Stop" xml:space="preserve">
+    <value>Остановить</value>
+  </data>
 </root>

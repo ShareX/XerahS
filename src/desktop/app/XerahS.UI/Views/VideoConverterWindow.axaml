@@ -5,11 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:XerahS.UI.ViewModels"
         xmlns:media="using:XerahS.Media"
+        xmlns:local="using:XerahS.UI.Markup"
         mc:Ignorable="d"
         d:DesignWidth="600" d:DesignHeight="450"
         x:Class="XerahS.UI.Views.VideoConverterWindow"
         x:DataType="vm:VideoConverterViewModel"
-        Title="Video Converter"
+        Title="{local:Localize VideoConv_Title}"
         Width="600" Height="480"
         MinWidth="500" MinHeight="400"
         WindowStartupLocation="CenterOwner"
@@ -24,11 +25,11 @@
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
       <TextBox Grid.Column="0"
                Text="{Binding InputFilePath}"
-               PlaceholderText="Select a video file..."
+               PlaceholderText="{local:Localize VideoConv_SelectPlaceholder}"
                IsReadOnly="True"
                AutomationProperties.Name="Input file path" />
       <Button Grid.Column="1"
-              Content="Browse..."
+              Content="{local:Localize TaskSettings_Browse}"
               Command="{Binding BrowseInputCommand}"
               Classes="accent"
               Margin="8,0,0,0"
@@ -38,7 +39,7 @@
 
     <!-- Row 1: Codec -->
     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
-      <TextBlock Text="Codec:" VerticalAlignment="Center" />
+      <TextBlock Text="{local:Localize VideoConv_Codec}" VerticalAlignment="Center" />
       <ComboBox SelectedItem="{Binding SelectedCodec}"
                 MinWidth="180"
                 AutomationProperties.Name="Video codec">
@@ -64,14 +65,14 @@
 
     <!-- Row 2: Quality -->
     <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="16" Margin="0,0,0,12">
-      <CheckBox Content="Use bitrate"
+      <CheckBox Content="{local:Localize VideoConv_UseBitrate}"
                 IsChecked="{Binding VideoQualityUseBitrate}"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="Use bitrate mode" />
 
       <StackPanel Orientation="Horizontal" Spacing="6"
                   IsVisible="{Binding !VideoQualityUseBitrate}">
-        <TextBlock Text="Quality (CRF):" VerticalAlignment="Center" />
+        <TextBlock Text="{local:Localize VideoConv_QualityCrf}" VerticalAlignment="Center" />
         <NumericUpDown Value="{Binding VideoQuality}"
                        Minimum="0" Maximum="63" Increment="1"
                        MinWidth="80"
@@ -80,7 +81,7 @@
 
       <StackPanel Orientation="Horizontal" Spacing="6"
                   IsVisible="{Binding VideoQualityUseBitrate}">
-        <TextBlock Text="Bitrate (kbps):" VerticalAlignment="Center" />
+        <TextBlock Text="{local:Localize VideoConv_BitrateKbps}" VerticalAlignment="Center" />
         <NumericUpDown Value="{Binding VideoQualityBitrate}"
                        Minimum="100" Maximum="100000" Increment="100"
                        MinWidth="100"
@@ -90,11 +91,11 @@
 
     <!-- Row 3: Custom arguments -->
     <StackPanel Grid.Row="3" Margin="0,0,0,12">
-      <CheckBox Content="Use custom FFmpeg arguments"
+      <CheckBox Content="{local:Localize VideoConv_UseCustomArgs}"
                 IsChecked="{Binding UseCustomArguments}"
                 AutomationProperties.Name="Use custom arguments" />
       <TextBox Text="{Binding CustomArguments}"
-               PlaceholderText="Custom FFmpeg arguments..."
+               PlaceholderText="{local:Localize VideoConv_CustomArgsPlaceholder}"
                IsVisible="{Binding UseCustomArguments}"
                Margin="0,6,0,0"
                AutomationProperties.Name="Custom arguments" />
@@ -104,20 +105,20 @@
     <TextBox Grid.Row="4"
              Text="{Binding PreviewArgs}"
              IsReadOnly="True"
-             PlaceholderText="FFmpeg arguments preview"
+             PlaceholderText="{local:Localize VideoConv_ArgsPreview}"
              Margin="0,0,0,12"
              FontSize="11"
              AutomationProperties.Name="Arguments preview" />
 
     <!-- Row 5: Output -->
     <Grid Grid.Row="5" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
-      <TextBlock Grid.Column="0" Text="Output:" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <TextBlock Grid.Column="0" Text="{local:Localize VideoConv_Output}" VerticalAlignment="Center" Margin="0,0,8,0" />
       <TextBox Grid.Column="1"
                Text="{Binding OutputFolder}"
                IsReadOnly="True"
                AutomationProperties.Name="Output folder" />
       <Button Grid.Column="2"
-              Content="Browse..."
+              Content="{local:Localize TaskSettings_Browse}"
               Command="{Binding BrowseOutputCommand}"
               Classes="accent"
               Margin="8,0,0,0"
@@ -137,20 +138,20 @@
 
     <!-- Row 8: Buttons -->
     <StackPanel Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-      <Button Content="Convert"
+      <Button Content="{local:Localize VideoConv_Convert}"
               Command="{Binding ConvertCommand}"
               MinWidth="100"
               Classes="accent"
               IsVisible="{Binding !IsConverting}"
               IsEnabled="{Binding HasInput}"
               AutomationProperties.Name="Convert video" />
-      <Button Content="Stop"
+      <Button Content="{local:Localize VideoConv_Stop}"
               Command="{Binding StopCommand}"
               Classes="accent"
               MinWidth="100"
               IsVisible="{Binding IsConverting}"
               AutomationProperties.Name="Stop conversion" />
-      <Button Content="Close"
+      <Button Content="{local:Localize AfterUpload_Close}"
               Click="OnCloseClick"
               Classes="accent"
               MinWidth="80"

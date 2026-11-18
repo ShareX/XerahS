@@ -4306,4 +4306,79 @@
   <data name="AfterCapture_Locked" xml:space="preserve">
     <value>必需步骤会保持与你的目标锁定。</value>
   </data>
+  <data name="GifMaker_Title" xml:space="preserve">
+    <value>动画 GIF 制作器</value>
+  </data>
+  <data name="GifMaker_Frames" xml:space="preserve">
+    <value>帧（按顺序）</value>
+  </data>
+  <data name="GifMaker_Add" xml:space="preserve">
+    <value>添加...</value>
+  </data>
+  <data name="GifMaker_Up" xml:space="preserve">
+    <value>上移</value>
+  </data>
+  <data name="GifMaker_Down" xml:space="preserve">
+    <value>下移</value>
+  </data>
+  <data name="GifMaker_Delay" xml:space="preserve">
+    <value>延迟（毫秒）</value>
+  </data>
+  <data name="GifMaker_LoopForever" xml:space="preserve">
+    <value>无限循环</value>
+  </data>
+  <data name="GifMaker_Repeat" xml:space="preserve">
+    <value>重复次数</value>
+  </data>
+  <data name="GifMaker_MaxSize" xml:space="preserve">
+    <value>最大尺寸（像素）</value>
+  </data>
+  <data name="GifMaker_MaxSizeTip" xml:space="preserve">
+    <value>0 表示保持第一张图像的尺寸</value>
+  </data>
+  <data name="GifMaker_OutputPlaceholder" xml:space="preserve">
+    <value>输出 .gif</value>
+  </data>
+  <data name="GifMaker_OpenFolder" xml:space="preserve">
+    <value>打开文件夹</value>
+  </data>
+  <data name="GifMaker_Create" xml:space="preserve">
+    <value>创建 GIF</value>
+  </data>
+  <data name="VideoConv_Title" xml:space="preserve">
+    <value>视频转换器</value>
+  </data>
+  <data name="VideoConv_SelectPlaceholder" xml:space="preserve">
+    <value>选择视频文件...</value>
+  </data>
+  <data name="VideoConv_Codec" xml:space="preserve">
+    <value>编解码器：</value>
+  </data>
+  <data name="VideoConv_UseBitrate" xml:space="preserve">
+    <value>使用比特率</value>
+  </data>
+  <data name="VideoConv_QualityCrf" xml:space="preserve">
+    <value>质量（CRF）：</value>
+  </data>
+  <data name="VideoConv_BitrateKbps" xml:space="preserve">
+    <value>比特率（kbps）：</value>
+  </data>
+  <data name="VideoConv_UseCustomArgs" xml:space="preserve">
+    <value>使用自定义 FFmpeg 参数</value>
+  </data>
+  <data name="VideoConv_CustomArgsPlaceholder" xml:space="preserve">
+    <value>自定义 FFmpeg 参数...</value>
+  </data>
+  <data name="VideoConv_ArgsPreview" xml:space="preserve">
+    <value>FFmpeg 参数预览</value>
+  </data>
+  <data name="VideoConv_Output" xml:space="preserve">
+    <value>输出：</value>
+  </data>
+  <data name="VideoConv_Convert" xml:space="preserve">
+    <value>转换</value>
+  </data>
+  <data name="VideoConv_Stop" xml:space="preserve">
+    <value>停止</value>
+  </data>
 </root>
