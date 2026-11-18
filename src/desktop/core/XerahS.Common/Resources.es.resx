@@ -4042,4 +4042,109 @@ Esto eliminará permanentemente el archivo del almacenamiento remoto. Esta acci�
   <data name="WatchFolder_Save" xml:space="preserve">
     <value>Guardar</value>
   </data>
+  <data name="PluginInstaller_Title" xml:space="preserve">
+    <value>Instalar complemento</value>
+  </data>
+  <data name="PluginInstaller_Subtitle" xml:space="preserve">
+    <value>Instale complementos de la comunidad desde el registro o importe un paquete .xsdp local.</value>
+  </data>
+  <data name="PluginInstaller_Community" xml:space="preserve">
+    <value>Complementos de la comunidad</value>
+  </data>
+  <data name="PluginInstaller_Refresh" xml:space="preserve">
+    <value>Actualizar</value>
+  </data>
+  <data name="PluginInstaller_Empty" xml:space="preserve">
+    <value>Todavía no hay complementos de la comunidad. Actualizar consulta el registro oficial para buscar paquetes .xsdp verificados.</value>
+  </data>
+  <data name="PluginInstaller_LabelId" xml:space="preserve">
+    <value>ID:</value>
+  </data>
+  <data name="PluginInstaller_LabelCompatibility" xml:space="preserve">
+    <value>Compatibilidad:</value>
+  </data>
+  <data name="PluginInstaller_LabelDependencies" xml:space="preserve">
+    <value>Dependencias:</value>
+  </data>
+  <data name="PluginInstaller_LabelApi" xml:space="preserve">
+    <value>API:</value>
+  </data>
+  <data name="PluginInstaller_InstallRemote" xml:space="preserve">
+    <value>Descargar e instalar</value>
+  </data>
+  <data name="PluginInstaller_LocalTitle" xml:space="preserve">
+    <value>Instalar paquete de complemento local (.xsdp)</value>
+  </data>
+  <data name="PluginInstaller_LocalPlaceholder" xml:space="preserve">
+    <value>Seleccione un archivo .xsdp...</value>
+  </data>
+  <data name="PluginInstaller_Install" xml:space="preserve">
+    <value>Instalar</value>
+  </data>
+  <data name="ShareLogs_Title" xml:space="preserve">
+    <value>Compartir registros</value>
+  </data>
+  <data name="ShareLogs_Subtitle" xml:space="preserve">
+    <value>Envíe registros depurados y detalles del sistema a los desarrolladores de XerahS para ayudar a corregir fallos. No se envía nada hasta que pulse Enviar.</value>
+  </data>
+  <data name="ShareLogs_WhatShared" xml:space="preserve">
+    <value>Qué se compartirá</value>
+  </data>
+  <data name="ShareLogs_Item_Logs" xml:space="preserve">
+    <value>• Archivos de registro de XerahS del período seleccionado, tras eliminar los datos personales: nombres de usuario y equipo, direcciones de correo, direcciones IP, las rutas de los enlaces que subió (solo se conserva el nombre del sitio) y contraseñas, claves o tokens.</value>
+  </data>
+  <data name="ShareLogs_Item_App" xml:space="preserve">
+    <value>• Aplicación: versión de XerahS, tipo de compilación y versión de .NET.</value>
+  </data>
+  <data name="ShareLogs_Item_System" xml:space="preserve">
+    <value>• Sistema: sistema operativo y versión, arquitectura de la CPU (y si XerahS se ejecuta emulado), idioma de la interfaz y si XerahS se ejecuta como administrador o en un entorno aislado.</value>
+  </data>
+  <data name="ShareLogs_Item_Hardware" xml:space="preserve">
+    <value>• Hardware: modelo de procesador y número de núcleos, memoria (redondeada), adaptadores gráficos y versiones de controlador.</value>
+  </data>
+  <data name="ShareLogs_Item_Monitors" xml:space="preserve">
+    <value>• Monitores: cantidad, resolución, posición, escalado y cuál es el principal.</value>
+  </data>
+  <data name="ShareLogs_Item_Recording" xml:space="preserve">
+    <value>• Grabación: versión de FFmpeg, si está incluido y sus codificadores por hardware.</value>
+  </data>
+  <data name="ShareLogs_Item_Id" xml:space="preserve">
+    <value>• Un identificador aleatorio creado en este equipo para compartir, de modo que los informes puedan agruparse y eliminarse. No está vinculado a usted, a su cuenta ni a su hardware.</value>
+  </data>
+  <data name="ShareLogs_NeverShared" xml:space="preserve">
+    <value>Nunca se comparte</value>
+  </data>
+  <data name="ShareLogs_NeverSharedText" xml:space="preserve">
+    <value>Capturas, grabaciones, contenido del portapapeles, archivos de configuración, historial de subidas, credenciales de los servicios de subida, datos de la cuenta o su dirección IP.</value>
+  </data>
+  <data name="ShareLogs_History" xml:space="preserve">
+    <value>Historial de registros a incluir</value>
+  </data>
+  <data name="ShareLogs_Past24h" xml:space="preserve">
+    <value>Últimas 24 horas</value>
+  </data>
+  <data name="ShareLogs_PastWeek" xml:space="preserve">
+    <value>Última semana</value>
+  </data>
+  <data name="ShareLogs_WhatHappened" xml:space="preserve">
+    <value>¿Qué ocurrió? (opcional)</value>
+  </data>
+  <data name="ShareLogs_WhatHappenedHint" xml:space="preserve">
+    <value>Por ejemplo: XerahS se cierra cuando pulso Impr Pant con dos monitores.</value>
+  </data>
+  <data name="ShareLogs_Review" xml:space="preserve">
+    <value>Revise exactamente lo que se enviará</value>
+  </data>
+  <data name="ShareLogs_SaveCopy" xml:space="preserve">
+    <value>Guardar una copia…</value>
+  </data>
+  <data name="ShareLogs_CopyId" xml:space="preserve">
+    <value>Copiar ID del informe</value>
+  </data>
+  <data name="ShareLogs_DeleteLast" xml:space="preserve">
+    <value>Eliminar el último informe</value>
+  </data>
+  <data name="ShareLogs_Send" xml:space="preserve">
+    <value>Enviar</value>
+  </data>
 </root>

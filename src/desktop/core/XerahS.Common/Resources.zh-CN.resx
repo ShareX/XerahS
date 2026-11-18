@@ -4042,4 +4042,109 @@
   <data name="WatchFolder_Save" xml:space="preserve">
     <value>保存</value>
   </data>
+  <data name="PluginInstaller_Title" xml:space="preserve">
+    <value>安装插件</value>
+  </data>
+  <data name="PluginInstaller_Subtitle" xml:space="preserve">
+    <value>从注册表安装社区插件，或导入本地 .xsdp 包。</value>
+  </data>
+  <data name="PluginInstaller_Community" xml:space="preserve">
+    <value>社区插件</value>
+  </data>
+  <data name="PluginInstaller_Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="PluginInstaller_Empty" xml:space="preserve">
+    <value>暂时没有可用的社区插件。刷新会检查官方注册表中已验证的 .xsdp 包。</value>
+  </data>
+  <data name="PluginInstaller_LabelId" xml:space="preserve">
+    <value>ID：</value>
+  </data>
+  <data name="PluginInstaller_LabelCompatibility" xml:space="preserve">
+    <value>兼容性：</value>
+  </data>
+  <data name="PluginInstaller_LabelDependencies" xml:space="preserve">
+    <value>依赖项：</value>
+  </data>
+  <data name="PluginInstaller_LabelApi" xml:space="preserve">
+    <value>API：</value>
+  </data>
+  <data name="PluginInstaller_InstallRemote" xml:space="preserve">
+    <value>下载并安装</value>
+  </data>
+  <data name="PluginInstaller_LocalTitle" xml:space="preserve">
+    <value>安装本地插件包（.xsdp）</value>
+  </data>
+  <data name="PluginInstaller_LocalPlaceholder" xml:space="preserve">
+    <value>选择 .xsdp 文件...</value>
+  </data>
+  <data name="PluginInstaller_Install" xml:space="preserve">
+    <value>安装</value>
+  </data>
+  <data name="ShareLogs_Title" xml:space="preserve">
+    <value>共享日志</value>
+  </data>
+  <data name="ShareLogs_Subtitle" xml:space="preserve">
+    <value>将清理后的日志和系统详细信息发送给 XerahS 开发者，以帮助修复崩溃。在你按下“发送”之前不会发送任何内容。</value>
+  </data>
+  <data name="ShareLogs_WhatShared" xml:space="preserve">
+    <value>将共享的内容</value>
+  </data>
+  <data name="ShareLogs_Item_Logs" xml:space="preserve">
+    <value>• 所选时间段的 XerahS 日志文件，已移除个人数据：你的用户名和计算机名、电子邮件地址、IP 地址、你上传的链接路径（仅保留站点名称），以及密码、密钥或令牌。</value>
+  </data>
+  <data name="ShareLogs_Item_App" xml:space="preserve">
+    <value>• 应用：XerahS 版本、构建类型和 .NET 版本。</value>
+  </data>
+  <data name="ShareLogs_Item_System" xml:space="preserve">
+    <value>• 系统：操作系统及版本、CPU 架构（以及 XerahS 是否以模拟方式运行）、显示语言，以及 XerahS 是否以管理员身份或在沙盒中运行。</value>
+  </data>
+  <data name="ShareLogs_Item_Hardware" xml:space="preserve">
+    <value>• 硬件：处理器型号和核心数、内存（取整）、显卡和驱动程序版本。</value>
+  </data>
+  <data name="ShareLogs_Item_Monitors" xml:space="preserve">
+    <value>• 显示器：数量、分辨率、位置、缩放比例以及哪一个是主显示器。</value>
+  </data>
+  <data name="ShareLogs_Item_Recording" xml:space="preserve">
+    <value>• 录制：FFmpeg 版本、是否为内置版本以及其硬件编码器。</value>
+  </data>
+  <data name="ShareLogs_Item_Id" xml:space="preserve">
+    <value>• 在此计算机上生成的随机 ID，用于共享，以便对来自它的报告进行分组和删除。它与您、您的帐户或您的硬件无关。</value>
+  </data>
+  <data name="ShareLogs_NeverShared" xml:space="preserve">
+    <value>绝不共享</value>
+  </data>
+  <data name="ShareLogs_NeverSharedText" xml:space="preserve">
+    <value>屏幕截图、录制内容、剪贴板内容、设置文件、上传历史记录、上传服务凭据、帐户详细信息或您的 IP 地址。</value>
+  </data>
+  <data name="ShareLogs_History" xml:space="preserve">
+    <value>包含的日志时间范围</value>
+  </data>
+  <data name="ShareLogs_Past24h" xml:space="preserve">
+    <value>过去 24 小时</value>
+  </data>
+  <data name="ShareLogs_PastWeek" xml:space="preserve">
+    <value>过去一周</value>
+  </data>
+  <data name="ShareLogs_WhatHappened" xml:space="preserve">
+    <value>发生了什么？（可选）</value>
+  </data>
+  <data name="ShareLogs_WhatHappenedHint" xml:space="preserve">
+    <value>例如：使用双显示器时，我按下 Print Screen 后 XerahS 就会关闭。</value>
+  </data>
+  <data name="ShareLogs_Review" xml:space="preserve">
+    <value>查看将要发送的具体内容</value>
+  </data>
+  <data name="ShareLogs_SaveCopy" xml:space="preserve">
+    <value>保存副本…</value>
+  </data>
+  <data name="ShareLogs_CopyId" xml:space="preserve">
+    <value>复制报告 ID</value>
+  </data>
+  <data name="ShareLogs_DeleteLast" xml:space="preserve">
+    <value>删除上一份报告</value>
+  </data>
+  <data name="ShareLogs_Send" xml:space="preserve">
+    <value>发送</value>
+  </data>
 </root>

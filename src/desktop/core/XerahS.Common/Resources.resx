@@ -4042,4 +4042,109 @@ This will permanently remove the file from the remote storage. This cannot be un
   <data name="WatchFolder_Save" xml:space="preserve">
     <value>Save</value>
   </data>
+  <data name="PluginInstaller_Title" xml:space="preserve">
+    <value>Install Plugin</value>
+  </data>
+  <data name="PluginInstaller_Subtitle" xml:space="preserve">
+    <value>Install community plugins from the registry, or import a local .xsdp package.</value>
+  </data>
+  <data name="PluginInstaller_Community" xml:space="preserve">
+    <value>Community Plugins</value>
+  </data>
+  <data name="PluginInstaller_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="PluginInstaller_Empty" xml:space="preserve">
+    <value>No community plugins are available yet. Refresh checks the official registry for verified .xsdp packages.</value>
+  </data>
+  <data name="PluginInstaller_LabelId" xml:space="preserve">
+    <value>ID:</value>
+  </data>
+  <data name="PluginInstaller_LabelCompatibility" xml:space="preserve">
+    <value>Compatibility:</value>
+  </data>
+  <data name="PluginInstaller_LabelDependencies" xml:space="preserve">
+    <value>Dependencies:</value>
+  </data>
+  <data name="PluginInstaller_LabelApi" xml:space="preserve">
+    <value>API:</value>
+  </data>
+  <data name="PluginInstaller_InstallRemote" xml:space="preserve">
+    <value>Download and Install</value>
+  </data>
+  <data name="PluginInstaller_LocalTitle" xml:space="preserve">
+    <value>Install Local Plugin Package (.xsdp)</value>
+  </data>
+  <data name="PluginInstaller_LocalPlaceholder" xml:space="preserve">
+    <value>Select a .xsdp file...</value>
+  </data>
+  <data name="PluginInstaller_Install" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="ShareLogs_Title" xml:space="preserve">
+    <value>Share logs</value>
+  </data>
+  <data name="ShareLogs_Subtitle" xml:space="preserve">
+    <value>Send scrubbed logs and system details to the XerahS developers to help fix crashes. Nothing is sent until you press Send.</value>
+  </data>
+  <data name="ShareLogs_WhatShared" xml:space="preserve">
+    <value>What will be shared</value>
+  </data>
+  <data name="ShareLogs_Item_Logs" xml:space="preserve">
+    <value>• XerahS log files from the selected period, after removing personal data: your user and computer names, email addresses, IP addresses, the paths of links you uploaded (only the site name is kept), and passwords, keys or tokens.</value>
+  </data>
+  <data name="ShareLogs_Item_App" xml:space="preserve">
+    <value>• App: XerahS version, build type and .NET version.</value>
+  </data>
+  <data name="ShareLogs_Item_System" xml:space="preserve">
+    <value>• System: operating system and version, CPU architecture (and whether XerahS runs emulated), display language, and whether XerahS runs as administrator or in a sandbox.</value>
+  </data>
+  <data name="ShareLogs_Item_Hardware" xml:space="preserve">
+    <value>• Hardware: processor model and core count, memory (rounded), graphics adapters and driver versions.</value>
+  </data>
+  <data name="ShareLogs_Item_Monitors" xml:space="preserve">
+    <value>• Monitors: count, resolution, position, scaling and which one is primary.</value>
+  </data>
+  <data name="ShareLogs_Item_Recording" xml:space="preserve">
+    <value>• Recording: FFmpeg version, whether it is bundled, and its hardware encoders.</value>
+  </data>
+  <data name="ShareLogs_Item_Id" xml:space="preserve">
+    <value>• A random ID created on this computer for sharing, so reports from it can be grouped and deleted. It is not linked to you, your account, or your hardware.</value>
+  </data>
+  <data name="ShareLogs_NeverShared" xml:space="preserve">
+    <value>Never shared</value>
+  </data>
+  <data name="ShareLogs_NeverSharedText" xml:space="preserve">
+    <value>Screenshots, recordings, clipboard contents, settings files, upload history, uploader credentials, account details, or your IP address.</value>
+  </data>
+  <data name="ShareLogs_History" xml:space="preserve">
+    <value>Log history to include</value>
+  </data>
+  <data name="ShareLogs_Past24h" xml:space="preserve">
+    <value>Past 24 hours</value>
+  </data>
+  <data name="ShareLogs_PastWeek" xml:space="preserve">
+    <value>Past week</value>
+  </data>
+  <data name="ShareLogs_WhatHappened" xml:space="preserve">
+    <value>What happened? (optional)</value>
+  </data>
+  <data name="ShareLogs_WhatHappenedHint" xml:space="preserve">
+    <value>For example: XerahS closes when I press Print Screen with two monitors.</value>
+  </data>
+  <data name="ShareLogs_Review" xml:space="preserve">
+    <value>Review exactly what will be sent</value>
+  </data>
+  <data name="ShareLogs_SaveCopy" xml:space="preserve">
+    <value>Save a copy…</value>
+  </data>
+  <data name="ShareLogs_CopyId" xml:space="preserve">
+    <value>Copy report ID</value>
+  </data>
+  <data name="ShareLogs_DeleteLast" xml:space="preserve">
+    <value>Delete last report</value>
+  </data>
+  <data name="ShareLogs_Send" xml:space="preserve">
+    <value>Send</value>
+  </data>
 </root>

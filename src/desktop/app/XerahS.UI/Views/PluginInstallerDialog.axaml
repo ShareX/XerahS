@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:XerahS.UI.ViewModels"
         xmlns:plugins="using:XerahS.Uploaders.PluginSystem"
+        xmlns:local="using:XerahS.UI.Markup"
         x:Class="XerahS.UI.Views.PluginInstallerDialog"
         x:DataType="vm:PluginInstallerViewModel">
 
@@ -9,8 +10,8 @@
 
         <!-- Header -->
         <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,20">
-            <TextBlock Text="Install Plugin" Theme="{StaticResource TitleTextBlockStyle}"/>
-            <TextBlock Text="Install community plugins from the registry, or import a local .xsdp package."
+            <TextBlock Text="{local:Localize PluginInstaller_Title}" Theme="{StaticResource TitleTextBlockStyle}"/>
+            <TextBlock Text="{local:Localize PluginInstaller_Subtitle}"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        TextWrapping="Wrap"/>
         </StackPanel>
@@ -23,11 +24,11 @@
                 <StackPanel Spacing="10">
                     <Grid ColumnDefinitions="*, Auto" ColumnSpacing="8">
                         <StackPanel Grid.Column="0" Spacing="4">
-                            <TextBlock Text="Community Plugins" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+                            <TextBlock Text="{local:Localize PluginInstaller_Community}" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
                             <TextBlock Text="{Binding CommunityPluginSummary}" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         </StackPanel>
                         <Button Grid.Column="1"
-                                Content="Refresh"
+                                Content="{local:Localize PluginInstaller_Refresh}"
                                 Command="{Binding RefreshCommunityPluginsCommand}"
                                 IsEnabled="{Binding CanRefreshCommunityPlugins}"
                                 AutomationProperties.Name="Refresh Community Plugins"/>
@@ -43,7 +44,7 @@
                             CornerRadius="4"
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                             IsVisible="{Binding IsCommunityEmptyStateVisible}">
-                        <TextBlock Text="No community plugins are available yet. Refresh checks the official registry for verified .xsdp packages."
+                        <TextBlock Text="{local:Localize PluginInstaller_Empty}"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    TextWrapping="Wrap"/>
                     </Border>
@@ -90,13 +91,13 @@
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
 
                             <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto, Auto" RowSpacing="4" ColumnSpacing="12">
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ID:" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize PluginInstaller_LabelId}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedCommunityPlugin.PluginId}"/>
 
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Compatibility:" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="{local:Localize PluginInstaller_LabelCompatibility}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedCommunityPluginCompatibility}" TextWrapping="Wrap"/>
 
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Dependencies:" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Localize PluginInstaller_LabelDependencies}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                 <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedCommunityPluginDependencies}" TextWrapping="Wrap"/>
                             </Grid>
 
@@ -104,7 +105,7 @@
                                        TextWrapping="Wrap"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
 
-                            <Button Content="Download and Install"
+                            <Button Content="{local:Localize PluginInstaller_InstallRemote}"
                                     Command="{Binding InstallCommunityPluginCommand}"
                                     IsEnabled="{Binding CanInstallCommunityPlugin}"
                                     Classes="accent"
@@ -118,15 +119,15 @@
 
                 <!-- File Selection -->
                 <StackPanel Spacing="8">
-                    <TextBlock Text="Install Local Plugin Package (.xsdp)" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+                    <TextBlock Text="{local:Localize PluginInstaller_LocalTitle}" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
                     <Grid ColumnDefinitions="*, Auto" ColumnSpacing="8">
                         <TextBox Grid.Column="0"
                                  Text="{Binding PackageFilePath}"
                                  IsReadOnly="True"
-                                 PlaceholderText="Select a .xsdp file..."
+                                 PlaceholderText="{local:Localize PluginInstaller_LocalPlaceholder}"
                                  AutomationProperties.Name="Plugin Package Path"/>
                         <Button Grid.Column="1"
-                                Content="Browse"
+                                Content="{local:Localize IndexFolder_Browse}"
                                 Command="{Binding BrowsePackageCommand}"
                                 AutomationProperties.Name="Browse Plugin Package"/>
                     </Grid>
@@ -149,10 +150,10 @@
                         <Separator/>
 
                         <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto" RowSpacing="4" ColumnSpacing="12">
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="ID:" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize PluginInstaller_LabelId}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Manifest.PluginId}"/>
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="API:" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="{local:Localize PluginInstaller_LabelApi}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Manifest.ApiVersion}"/>
                         </Grid>
 
@@ -189,12 +190,12 @@
 
         <!-- Footer Actions -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,24,0,0">
-            <Button Content="Install"
+            <Button Content="{local:Localize PluginInstaller_Install}"
                     Command="{Binding InstallCommand}"
                     IsEnabled="{Binding CanInstall}"
                     Classes="accent"
                     AutomationProperties.Name="Install Plugin"/>
-            <Button Content="Cancel"
+            <Button Content="{local:Localize SendToAction_Cancel}"
                     Command="{Binding CancelCommand}"
                     AutomationProperties.Name="Cancel Installation"/>
         </StackPanel>

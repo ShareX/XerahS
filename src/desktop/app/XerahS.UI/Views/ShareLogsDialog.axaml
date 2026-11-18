@@ -3,6 +3,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:vm="using:XerahS.UI.ViewModels"
+        xmlns:local="using:XerahS.UI.Markup"
         mc:Ignorable="d" d:DesignWidth="680"
         x:Class="XerahS.UI.Views.ShareLogsDialog"
         x:DataType="vm:ShareLogsViewModel"
@@ -16,8 +17,8 @@
 
             <!-- Header -->
             <StackPanel Spacing="4">
-                <TextBlock Text="Share logs" Theme="{StaticResource TitleTextBlockStyle}"/>
-                <TextBlock Text="Send scrubbed logs and system details to the XerahS developers to help fix crashes. Nothing is sent until you press Send."
+                <TextBlock Text="{local:Localize ShareLogs_Title}" Theme="{StaticResource TitleTextBlockStyle}"/>
+                <TextBlock Text="{local:Localize ShareLogs_Subtitle}"
                            Theme="{StaticResource CaptionTextBlockStyle}"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            TextWrapping="Wrap"/>
@@ -26,19 +27,19 @@
             <!-- Privacy disclosure -->
             <Border Theme="{StaticResource CardBorderTheme}" Padding="20">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="What will be shared" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
-                    <TextBlock TextWrapping="Wrap" Text="• XerahS log files from the selected period, after removing personal data: your user and computer names, email addresses, IP addresses, the paths of links you uploaded (only the site name is kept), and passwords, keys or tokens."/>
-                    <TextBlock TextWrapping="Wrap" Text="• App: XerahS version, build type and .NET version."/>
-                    <TextBlock TextWrapping="Wrap" Text="• System: operating system and version, CPU architecture (and whether XerahS runs emulated), display language, and whether XerahS runs as administrator or in a sandbox."/>
-                    <TextBlock TextWrapping="Wrap" Text="• Hardware: processor model and core count, memory (rounded), graphics adapters and driver versions."/>
-                    <TextBlock TextWrapping="Wrap" Text="• Monitors: count, resolution, position, scaling and which one is primary."/>
-                    <TextBlock TextWrapping="Wrap" Text="• Recording: FFmpeg version, whether it is bundled, and its hardware encoders."/>
-                    <TextBlock TextWrapping="Wrap" Text="• A random ID created on this computer for sharing, so reports from it can be grouped and deleted. It is not linked to you, your account, or your hardware."/>
+                    <TextBlock Text="{local:Localize ShareLogs_WhatShared}" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+                    <TextBlock TextWrapping="Wrap" Text="{local:Localize ShareLogs_Item_Logs}"/>
+                    <TextBlock TextWrapping="Wrap" Text="{local:Localize ShareLogs_Item_App}"/>
+                    <TextBlock TextWrapping="Wrap" Text="{local:Localize ShareLogs_Item_System}"/>
+                    <TextBlock TextWrapping="Wrap" Text="{local:Localize ShareLogs_Item_Hardware}"/>
+                    <TextBlock TextWrapping="Wrap" Text="{local:Localize ShareLogs_Item_Monitors}"/>
+                    <TextBlock TextWrapping="Wrap" Text="{local:Localize ShareLogs_Item_Recording}"/>
+                    <TextBlock TextWrapping="Wrap" Text="{local:Localize ShareLogs_Item_Id}"/>
 
-                    <TextBlock Text="Never shared" Theme="{StaticResource BodyStrongTextBlockStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="{local:Localize ShareLogs_NeverShared}" Theme="{StaticResource BodyStrongTextBlockStyle}" Margin="0,8,0,0"/>
                     <TextBlock TextWrapping="Wrap"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                               Text="Screenshots, recordings, clipboard contents, settings files, upload history, uploader credentials, account details, or your IP address."/>
+                               Text="{local:Localize ShareLogs_NeverSharedText}"/>
                 </StackPanel>
             </Border>
 
@@ -46,7 +47,7 @@
             <Border Theme="{StaticResource CardBorderTheme}" Padding="20">
                 <StackPanel Spacing="8">
                     <Grid ColumnDefinitions="*,Auto">
-                        <TextBlock Text="Log history to include" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+                        <TextBlock Text="{local:Localize ShareLogs_History}" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
                         <TextBlock Grid.Column="1" Text="{Binding WindowLabel}"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </Grid>
@@ -55,8 +56,8 @@
                             Value="{Binding WindowIndex}"
                             AutomationProperties.Name="Log history to include"/>
                     <Grid ColumnDefinitions="*,*">
-                        <TextBlock Text="Past 24 hours" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        <TextBlock Grid.Column="1" Text="Past week" HorizontalAlignment="Right"
+                        <TextBlock Text="{local:Localize ShareLogs_Past24h}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Grid.Column="1" Text="{local:Localize ShareLogs_PastWeek}" HorizontalAlignment="Right"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </Grid>
                     <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
@@ -72,22 +73,22 @@
 
             <!-- Optional note -->
             <StackPanel Spacing="6">
-                <TextBlock Text="What happened? (optional)" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
+                <TextBlock Text="{local:Localize ShareLogs_WhatHappened}" Theme="{StaticResource BodyStrongTextBlockStyle}"/>
                 <TextBox Text="{Binding Comment}" AcceptsReturn="True" TextWrapping="Wrap"
                          MinHeight="72" MaxLength="2000"
-                         PlaceholderText="For example: XerahS closes when I press Print Screen with two monitors."
+                         PlaceholderText="{local:Localize ShareLogs_WhatHappenedHint}"
                          AutomationProperties.Name="What happened"/>
             </StackPanel>
 
             <!-- Exact payload -->
-            <Expander Header="Review exactly what will be sent" HorizontalAlignment="Stretch">
+            <Expander Header="{local:Localize ShareLogs_Review}" HorizontalAlignment="Stretch">
                 <StackPanel Spacing="8">
                     <TextBox Text="{Binding PreviewText}" IsReadOnly="True" TextWrapping="NoWrap"
                              FontFamily="monospace" FontSize="12" Height="280" AcceptsReturn="True"
                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"
                              AutomationProperties.Name="Report preview"/>
-                    <Button Content="Save a copy…" Command="{Binding SaveCopyCommand}"
+                    <Button Content="{local:Localize ShareLogs_SaveCopy}" Command="{Binding SaveCopyCommand}"
                             HorizontalAlignment="Left"
                             AutomationProperties.Name="Save a copy of the report"/>
                 </StackPanel>
@@ -104,16 +105,16 @@
                 </TextBlock.Styles>
             </TextBlock>
             <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" ColumnSpacing="8">
-                <Button Grid.Column="0" Content="Copy report ID" Command="{Binding CopyReportIdCommand}"
+                <Button Grid.Column="0" Content="{local:Localize ShareLogs_CopyId}" Command="{Binding CopyReportIdCommand}"
                         IsVisible="{Binding HasSentReport}"
                         AutomationProperties.Name="Copy report ID"/>
-                <Button Grid.Column="1" Content="Delete last report" Command="{Binding DeleteLastReportCommand}"
+                <Button Grid.Column="1" Content="{local:Localize ShareLogs_DeleteLast}" Command="{Binding DeleteLastReportCommand}"
                         IsVisible="{Binding HasSentReport}"
                         AutomationProperties.Name="Delete the last report sent from this computer"/>
-                <Button Grid.Column="3" Content="Close" Command="{Binding CloseCommand}" MinWidth="88"
+                <Button Grid.Column="3" Content="{local:Localize AfterUpload_Close}" Command="{Binding CloseCommand}" MinWidth="88"
                         IsCancel="True"
                         AutomationProperties.Name="Close"/>
-                <Button Grid.Column="4" Content="Send" Command="{Binding SendCommand}" MinWidth="88"
+                <Button Grid.Column="4" Content="{local:Localize ShareLogs_Send}" Command="{Binding SendCommand}" MinWidth="88"
                         IsDefault="True"
                         AutomationProperties.Name="Send logs"/>
             </Grid>

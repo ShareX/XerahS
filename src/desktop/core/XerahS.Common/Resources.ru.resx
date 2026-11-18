@@ -4042,4 +4042,109 @@
   <data name="WatchFolder_Save" xml:space="preserve">
     <value>Сохранить</value>
   </data>
+  <data name="PluginInstaller_Title" xml:space="preserve">
+    <value>Установка плагина</value>
+  </data>
+  <data name="PluginInstaller_Subtitle" xml:space="preserve">
+    <value>Устанавливайте плагины сообщества из реестра или импортируйте локальный пакет .xsdp.</value>
+  </data>
+  <data name="PluginInstaller_Community" xml:space="preserve">
+    <value>Плагины сообщества</value>
+  </data>
+  <data name="PluginInstaller_Refresh" xml:space="preserve">
+    <value>Обновить</value>
+  </data>
+  <data name="PluginInstaller_Empty" xml:space="preserve">
+    <value>Плагинов сообщества пока нет. Обновление проверяет официальный реестр на наличие проверенных пакетов .xsdp.</value>
+  </data>
+  <data name="PluginInstaller_LabelId" xml:space="preserve">
+    <value>ID:</value>
+  </data>
+  <data name="PluginInstaller_LabelCompatibility" xml:space="preserve">
+    <value>Совместимость:</value>
+  </data>
+  <data name="PluginInstaller_LabelDependencies" xml:space="preserve">
+    <value>Зависимости:</value>
+  </data>
+  <data name="PluginInstaller_LabelApi" xml:space="preserve">
+    <value>API:</value>
+  </data>
+  <data name="PluginInstaller_InstallRemote" xml:space="preserve">
+    <value>Скачать и установить</value>
+  </data>
+  <data name="PluginInstaller_LocalTitle" xml:space="preserve">
+    <value>Установка локального пакета плагина (.xsdp)</value>
+  </data>
+  <data name="PluginInstaller_LocalPlaceholder" xml:space="preserve">
+    <value>Выберите файл .xsdp...</value>
+  </data>
+  <data name="PluginInstaller_Install" xml:space="preserve">
+    <value>Установить</value>
+  </data>
+  <data name="ShareLogs_Title" xml:space="preserve">
+    <value>Отправка журналов</value>
+  </data>
+  <data name="ShareLogs_Subtitle" xml:space="preserve">
+    <value>Отправьте очищенные журналы и сведения о системе разработчикам XerahS, чтобы помочь исправить сбои. Ничего не отправляется, пока вы не нажмёте «Отправить».</value>
+  </data>
+  <data name="ShareLogs_WhatShared" xml:space="preserve">
+    <value>Что будет отправлено</value>
+  </data>
+  <data name="ShareLogs_Item_Logs" xml:space="preserve">
+    <value>• Журналы XerahS за выбранный период после удаления личных данных: имён пользователя и компьютера, адресов электронной почты, IP-адресов, путей отправленных вами ссылок (остаётся только имя сайта), а также паролей, ключей и токенов.</value>
+  </data>
+  <data name="ShareLogs_Item_App" xml:space="preserve">
+    <value>• Приложение: версия XerahS, тип сборки и версия .NET.</value>
+  </data>
+  <data name="ShareLogs_Item_System" xml:space="preserve">
+    <value>• Система: операционная система и её версия, архитектура процессора (и запускается ли XerahS в режиме эмуляции), язык интерфейса, а также работает ли XerahS от имени администратора или в песочнице.</value>
+  </data>
+  <data name="ShareLogs_Item_Hardware" xml:space="preserve">
+    <value>• Аппаратное обеспечение: модель процессора и число ядер, объём памяти (округлённо), видеоадаптеры и версии драйверов.</value>
+  </data>
+  <data name="ShareLogs_Item_Monitors" xml:space="preserve">
+    <value>• Мониторы: количество, разрешение, положение, масштабирование и какой из них основной.</value>
+  </data>
+  <data name="ShareLogs_Item_Recording" xml:space="preserve">
+    <value>• Запись: версия FFmpeg, встроен ли он и какие аппаратные кодировщики доступны.</value>
+  </data>
+  <data name="ShareLogs_Item_Id" xml:space="preserve">
+    <value>• Случайный идентификатор, созданный на этом компьютере для отправки, чтобы отчёты с него можно было группировать и удалять. Он не связан с вами, вашей учётной записью или оборудованием.</value>
+  </data>
+  <data name="ShareLogs_NeverShared" xml:space="preserve">
+    <value>Никогда не отправляется</value>
+  </data>
+  <data name="ShareLogs_NeverSharedText" xml:space="preserve">
+    <value>Снимки экрана, записи, содержимое буфера обмена, файлы настроек, история отправок, учётные данные загрузчиков, данные учётной записи и ваш IP-адрес.</value>
+  </data>
+  <data name="ShareLogs_History" xml:space="preserve">
+    <value>Период журналов</value>
+  </data>
+  <data name="ShareLogs_Past24h" xml:space="preserve">
+    <value>Последние 24 часа</value>
+  </data>
+  <data name="ShareLogs_PastWeek" xml:space="preserve">
+    <value>Последняя неделя</value>
+  </data>
+  <data name="ShareLogs_WhatHappened" xml:space="preserve">
+    <value>Что произошло? (необязательно)</value>
+  </data>
+  <data name="ShareLogs_WhatHappenedHint" xml:space="preserve">
+    <value>Например: XerahS закрывается, когда я нажимаю Print Screen с двумя мониторами.</value>
+  </data>
+  <data name="ShareLogs_Review" xml:space="preserve">
+    <value>Проверьте, что именно будет отправлено</value>
+  </data>
+  <data name="ShareLogs_SaveCopy" xml:space="preserve">
+    <value>Сохранить копию…</value>
+  </data>
+  <data name="ShareLogs_CopyId" xml:space="preserve">
+    <value>Скопировать ID отчёта</value>
+  </data>
+  <data name="ShareLogs_DeleteLast" xml:space="preserve">
+    <value>Удалить последний отчёт</value>
+  </data>
+  <data name="ShareLogs_Send" xml:space="preserve">
+    <value>Отправить</value>
+  </data>
 </root>
