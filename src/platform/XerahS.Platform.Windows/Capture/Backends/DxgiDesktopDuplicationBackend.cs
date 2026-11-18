@@ -29,6 +29,7 @@ using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using XerahS.Common;
+using XerahS.Common.Helpers;
 using XerahS.Platform.Abstractions;
 using XerahS.Platform.Windows.Capture.Engine;
 
@@ -114,7 +115,10 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
     {
         var targetOutputs = outputs.Where(output => output.Bounds.IntersectsWith(targetBounds)).ToList();
 
-        var bitmap = new SKBitmap(targetBounds.Width, targetBounds.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+        // An HDR output contributes values above 1.0, so the combined surface must be fp16 scRGB.
+        // SDR outputs drawn onto it are converted by Skia and still land on 1.0 == SDR white.
+        bool hdrSurface = targetOutputs.Any(output => HdrToneMapContext.IsHdrOutput(output.Output));
+        SKBitmap bitmap = CreateDestinationBitmap(targetBounds, hdrSurface);
         using (var canvas = new SKCanvas(bitmap))
         {
             canvas.Clear(SKColors.Black);
@@ -233,7 +237,7 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
             DebugHelper.WriteLine(
                 $"CaptureFullScreenDxgi: Output {output.DeviceName} frame source={sourceDesc.Width}x{sourceDesc.Height}, target={output.Bounds.Width}x{output.Bounds.Height}, rotation={output.Rotation}, dxgiRotation={output.DxgiRotation}");
 
-            if (CanCopyVisibleRegionOnly(output, sourceDesc))
+            if (CanCopyVisibleRegionOnly(output, sourceDesc, destination))
             {
                 CopyVisibleRegion(duplication.Device, desktopTexture, output.Bounds, targetBounds, destination);
                 return true;
@@ -259,7 +263,8 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
     /// An unrotated SDR surface maps 1:1 onto the desktop, so the visible part can be cropped on the GPU.
     /// Rotated and HDR outputs go through the whole-output path.
     /// </summary>
-    private static bool CanCopyVisibleRegionOnly(DxgiOutputInfo output, Texture2DDescription sourceDesc) =>
+    private static bool CanCopyVisibleRegionOnly(DxgiOutputInfo output, Texture2DDescription sourceDesc, SKBitmap destination) =>
+        destination.ColorType == SKColorType.Bgra8888 &&
         DxgiOutputEnumerator.ToClockwiseDegrees(output.Rotation) == 0 &&
         !DxgiHdrToneMapper.IsHdrFormat(sourceDesc.Format) &&
         sourceDesc.Format == Format.B8G8R8A8_UNorm &&
@@ -319,11 +324,17 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
             SKBitmap? sourceBitmap;
             if (DxgiHdrToneMapper.IsHdrFormat(sourceDesc.Format))
             {
-                sourceBitmap = DxgiHdrToneMapper.TryConvertToBgra(dataBox, sourceDesc, duplication.HdrContext);
+                // Keep the frame in linear scRGB whenever the destination is fp16. Tone-mapping here
+                // would throw away the HDR range before the editor, the preview and the 16-bit encoder
+                // ever see it; the tone curves belong to the save step, not to the capture backend.
+                sourceBitmap = destination.ColorType == SKColorType.RgbaF16
+                    ? ReadHdrFrame(dataBox, sourceDesc, output.DeviceName)
+                    : DxgiHdrToneMapper.TryConvertToBgra(dataBox, sourceDesc, duplication.HdrContext);
+
                 if (sourceBitmap == null)
                 {
                     DebugHelper.WriteLine(
-                        $"CaptureFullScreenDxgi: HDR tone-map failed for {output.DeviceName} ({sourceDesc.Format}).");
+                        $"CaptureFullScreenDxgi: HDR conversion failed for {output.DeviceName} ({sourceDesc.Format}).");
                     return false;
                 }
             }
@@ -367,9 +378,54 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
         }
     }
 
+    /// <summary>
+    /// fp16 scRGB is the only surface that can carry values above 1.0 (HDR highlights), so it is
+    /// used as soon as one captured output is HDR. Everything else stays 8-bit sRGB.
+    /// </summary>
+    private static SKBitmap CreateDestinationBitmap(Rectangle bounds, bool hdrSurface) =>
+        hdrSurface
+            ? new SKBitmap(new SKImageInfo(bounds.Width, bounds.Height, SKColorType.RgbaF16, SKAlphaType.Premul,
+                SKColorSpace.CreateSrgbLinear()))
+            : new SKBitmap(new SKImageInfo(bounds.Width, bounds.Height, SKColorType.Bgra8888, SKAlphaType.Premul,
+                SKColorSpace.CreateSrgb()));
+
+    /// <summary>
+    /// Copies an fp16 scRGB frame and rescales it so that 1.0 means SDR white. Desktop Duplication
+    /// delivers scRGB where 1.0 == 80 cd/m² by definition, while Windows composites SDR content at
+    /// the user's SDR white level (typically 2.5-3.75 in scRGB). Without the rescale a normal desktop
+    /// sits far above 1.0 and every downstream stage clamps it, which is what made SDR screenshots
+    /// blow out to white and shifted the tone-mapped palette.
+    /// </summary>
+    private static SKBitmap ReadHdrFrame(MappedSubresource dataBox, Texture2DDescription sourceDesc, string deviceName)
+    {
+        int width = (int)sourceDesc.Width;
+        int height = (int)sourceDesc.Height;
+        var bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.RgbaF16, SKAlphaType.Premul,
+            SKColorSpace.CreateSrgbLinear()));
+
+        BgraRowCopyHelper.CopyRows(
+            dataBox.DataPointer,
+            (int)dataBox.RowPitch,
+            bitmap.GetPixels(),
+            bitmap.RowBytes,
+            width * 8,
+            height);
+
+        float sdrWhite = DisplayConfigHelper.GetSdrWhiteScale(deviceName);
+        if (HdrSdrWhiteNormalizer.NormalizeToSdrWhite(bitmap, sdrWhite))
+        {
+            DebugHelper.WriteLine(
+                $"CaptureFullScreenDxgi: normalized scRGB to SDR white for {deviceName} (divisor {sdrWhite:F3})");
+        }
+
+        bitmap.NotifyPixelsChanged();
+        return bitmap;
+    }
+
     private static SKBitmap Crop(SKBitmap source, SKRectI cropRect)
     {
-        var cropped = new SKBitmap(cropRect.Width, cropRect.Height);
+        var cropped = new SKBitmap(new SKImageInfo(cropRect.Width, cropRect.Height, source.ColorType,
+            source.AlphaType, source.ColorSpace));
         using var canvas = new SKCanvas(cropped);
         canvas.DrawBitmap(source, cropRect, new SKRect(0, 0, cropRect.Width, cropRect.Height), SKSamplingOptions.Default);
         return cropped;

@@ -53,7 +53,10 @@ public static class BitmapRotationHelper
             targetHeight = source.Width;
         }
 
-        var result = new SKBitmap(targetWidth, targetHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
+        // Preserve the source pixel format: an fp16 scRGB capture must stay fp16 through the
+        // rotation, otherwise HDR highlights are silently clipped here.
+        var result = new SKBitmap(new SKImageInfo(targetWidth, targetHeight, source.ColorType,
+            source.AlphaType, source.ColorSpace));
         using var canvas = new SKCanvas(result);
         canvas.Clear(SKColors.Black);
 
