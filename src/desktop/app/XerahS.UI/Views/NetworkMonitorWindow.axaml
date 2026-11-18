@@ -4,6 +4,7 @@
                   xmlns:controls="using:XerahS.UI.Controls"
                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:XerahS.UI.Markup"
                   xmlns:vm="using:XerahS.UI.ViewModels"
                   mc:Ignorable="d"
                   d:DesignWidth="1080"
@@ -99,7 +100,7 @@
           </Grid>
 
           <StackPanel Grid.Column="1" Spacing="3">
-            <TextBlock Classes="metric-label" Text="Target" />
+            <TextBlock Classes="metric-label" Text="{local:Localize NetworkMonitor_Target}" />
             <ComboBox Width="235"
                       ItemsSource="{Binding TargetOptions}"
                       SelectedItem="{Binding SelectedTarget}"
@@ -113,12 +114,12 @@
             <TextBox Width="235"
                      IsVisible="{Binding IsCustomTarget}"
                      Text="{Binding CustomHosts}"
-                     PlaceholderText="example.com or 1.1.1.1"
+                     PlaceholderText="{local:Localize NetworkMonitor_TargetPlaceholder}"
                      AutomationProperties.Name="Custom monitoring host" />
           </StackPanel>
 
           <StackPanel Grid.Column="2" Spacing="3">
-            <TextBlock Classes="metric-label" Text="Check every" />
+            <TextBlock Classes="metric-label" Text="{local:Localize NetworkMonitor_Interval}" />
             <ComboBox Width="82"
                       ItemsSource="{Binding IntervalOptions}"
                       SelectedItem="{Binding SelectedInterval}"
@@ -132,14 +133,14 @@
           </StackPanel>
 
           <Button Grid.Column="3"
-                  Content="Start"
+                  Content="{local:Localize AutoCapture_Start}"
                   Command="{Binding StartCommand}"
                   IsVisible="{Binding !IsMonitoring}"
                   MinWidth="88"
                   VerticalAlignment="Bottom"
                   AutomationProperties.Name="Start monitoring" />
           <Button Grid.Column="3"
-                  Content="Pause"
+                  Content="{local:Localize NetworkMonitor_Pause}"
                   Command="{Binding StopCommand}"
                   IsVisible="{Binding IsMonitoring}"
                   MinWidth="88"
@@ -151,25 +152,25 @@
       <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
         <Border Grid.Column="0" Classes="metric-card">
           <StackPanel Spacing="2">
-            <TextBlock Classes="metric-label" Text="Current latency" />
+            <TextBlock Classes="metric-label" Text="{local:Localize NetworkMonitor_CurrentLatency}" />
             <TextBlock Classes="metric-value" Text="{Binding CurrentLatencyText}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="1" Classes="metric-card">
           <StackPanel Spacing="2">
-            <TextBlock Classes="metric-label" Text="Average latency" />
+            <TextBlock Classes="metric-label" Text="{local:Localize NetworkMonitor_AverageLatency}" />
             <TextBlock Classes="metric-value" Text="{Binding AverageLatencyText}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="2" Classes="metric-card">
           <StackPanel Spacing="2">
-            <TextBlock Classes="metric-label" Text="Availability" />
+            <TextBlock Classes="metric-label" Text="{local:Localize NetworkMonitor_Availability}" />
             <TextBlock Classes="metric-value" Text="{Binding AvailabilityText}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="3" Classes="metric-card">
           <StackPanel Spacing="2">
-            <TextBlock Classes="metric-label" Text="Disconnects" />
+            <TextBlock Classes="metric-label" Text="{local:Localize NetworkMonitor_Disconnects}" />
             <TextBlock Classes="metric-value" Text="{Binding DisconnectCountText}" />
           </StackPanel>
         </Border>
@@ -188,12 +189,12 @@
                         Orientation="Horizontal"
                         Spacing="12"
                         VerticalAlignment="Center">
-              <TextBlock Classes="section-heading" Text="Latency history" />
+              <TextBlock Classes="section-heading" Text="{local:Localize NetworkMonitor_LatencyHistory}" />
               <TextBlock Classes="metric-label" Text="{Binding LongestOutageText}" />
             </StackPanel>
             <TextBlock Grid.Column="1"
                        Classes="metric-label"
-                       Text="Range"
+                       Text="{local:Localize NetworkMonitor_Range}"
                        VerticalAlignment="Center" />
             <ComboBox Grid.Column="2"
                       Width="160"
@@ -210,7 +211,7 @@
           <controls:ConnectivityChartControl Grid.Row="1"
                                              Margin="10,0,10,10"
                                              Points="{Binding ChartPoints}"
-                                             EmptyText="No samples yet. Latency and outages will appear while monitoring."
+                                             EmptyText="{local:Localize NetworkMonitor_NoSamples}"
                                              AutomationProperties.Name="Connectivity and latency chart" />
         </Grid>
       </Border>
@@ -226,11 +227,11 @@
                 ColumnSpacing="8">
             <TextBlock Grid.Column="0"
                        Classes="section-heading"
-                       Text="Connection events"
+                       Text="{local:Localize NetworkMonitor_Events}"
                        VerticalAlignment="Center" />
             <TextBlock Grid.Column="1"
                        Classes="metric-label"
-                       Text="Show"
+                       Text="{local:Localize NetworkMonitor_Show}"
                        VerticalAlignment="Center" />
             <ComboBox Grid.Column="2"
                       Width="140"
@@ -244,26 +245,26 @@
               </ComboBox.ItemTemplate>
             </ComboBox>
             <Button Grid.Column="3"
-                    Content="Copy all"
+                    Content="{local:Localize NetworkMonitor_CopyAll}"
                     Command="{Binding CopyAllCommand}"
                     IsEnabled="{Binding HasEvents}"
                     AutomationProperties.Name="Copy all events" />
             <Button Grid.Column="4"
-                    Content="Export..."
+                    Content="{local:Localize TaskImage_Export}"
                     Command="{Binding ExportCommand}"
                     IsEnabled="{Binding HasEvents}"
                     AutomationProperties.Name="Export events" />
             <Button Grid.Column="5"
-                    Content="Open log"
+                    Content="{local:Localize NetworkMonitor_OpenLog}"
                     Command="{Binding OpenLogCommand}"
                     IsEnabled="{Binding CanOpenLog}"
                     AutomationProperties.Name="Open event log" />
             <Button Grid.Column="6"
-                    Content="Clear list"
+                    Content="{local:Localize NetworkMonitor_Clear}"
                     Command="{Binding ClearCommand}"
                     IsEnabled="{Binding CanClear}"
                     AutomationProperties.Name="Clear events"
-                    ToolTip.Tip="Clears the on-screen list. The outage log file is kept." />
+                    ToolTip.Tip="{local:Localize NetworkMonitor_ClearHint}" />
           </Grid>
           <TextBlock Grid.Row="1"
                      Margin="12,0,12,8"
@@ -285,10 +286,10 @@
                       BorderThickness="0,1,0,0"
                       AutomationProperties.Name="Connection events">
               <DataGrid.Columns>
-                <DataGridTextColumn Header="Date / Time"
+                <DataGridTextColumn Header="{local:Localize NetworkMonitor_DateTime}"
                                     Binding="{Binding TimestampText}"
                                     Width="180" />
-                <DataGridTemplateColumn Header="Status" Width="140">
+                <DataGridTemplateColumn Header="{local:Localize Settings_WatchFolders_Column_Status}" Width="140">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate x:DataType="vm:NetworkStatusEventItem">
                       <TextBlock Text="{Binding StatusText}"
@@ -299,10 +300,10 @@
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Duration"
+                <DataGridTextColumn Header="{local:Localize NetworkMonitor_Duration}"
                                     Binding="{Binding DurationText}"
                                     Width="120" />
-                <DataGridTextColumn Header="Latency"
+                <DataGridTextColumn Header="{local:Localize NetworkMonitor_Latency}"
                                     Binding="{Binding LatencyText}"
                                     Width="100" />
               </DataGrid.Columns>
@@ -313,11 +314,11 @@
                         VerticalAlignment="Center"
                         Spacing="6"
                         IsHitTestVisible="False">
-              <TextBlock Text="No connection changes in this range"
+              <TextBlock Text="{local:Localize NetworkMonitor_NoEvents}"
                          FontSize="15"
                          FontWeight="SemiBold"
                          HorizontalAlignment="Center" />
-              <TextBlock Text="Disconnects and reconnects will appear here."
+              <TextBlock Text="{local:Localize NetworkMonitor_NoEventsHint}"
                          Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                          HorizontalAlignment="Center" />
             </StackPanel>

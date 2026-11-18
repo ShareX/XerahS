@@ -3664,6 +3664,180 @@
   <data name="Settings_BackupRestore" xml:space="preserve">
     <value>从文件恢复...</value>
   </data>
+  <data name="Recording_Title" xml:space="preserve">
+    <value>屏幕录制</value>
+  </data>
+  <data name="Recording_Controls" xml:space="preserve">
+    <value>录制控制</value>
+  </data>
+  <data name="Recording_MoveRegionResume" xml:space="preserve">
+    <value>移动区域并继续</value>
+  </data>
+  <data name="Recording_MoveRegionResumeHint" xml:space="preserve">
+    <value>选择新的左上角位置。录制尺寸保持不变。</value>
+  </data>
+  <data name="Recording_OutputFile" xml:space="preserve">
+    <value>输出文件：</value>
+  </data>
+  <data name="Recording_Settings" xml:space="preserve">
+    <value>录制设置</value>
+  </data>
+  <data name="Recording_VideoCodec" xml:space="preserve">
+    <value>视频编解码器：</value>
+  </data>
+  <data name="Recording_FrameRate" xml:space="preserve">
+    <value>帧率（FPS）：</value>
+  </data>
+  <data name="Recording_Bitrate" xml:space="preserve">
+    <value>比特率（kbps）：</value>
+  </data>
+  <data name="Recording_ShowCursor" xml:space="preserve">
+    <value>显示光标：</value>
+  </data>
+  <data name="Recording_ShowCursorHint" xml:space="preserve">
+    <value>在录制中包含鼠标光标</value>
+  </data>
+  <data name="Recording_SystemAudio" xml:space="preserve">
+    <value>系统音频：</value>
+  </data>
+  <data name="Recording_SystemAudioHint" xml:space="preserve">
+    <value>捕获系统音频输出</value>
+  </data>
+  <data name="Recording_Microphone" xml:space="preserve">
+    <value>麦克风：</value>
+  </data>
+  <data name="Recording_MicrophoneHint" xml:space="preserve">
+    <value>捕获麦克风输入</value>
+  </data>
+  <data name="Recording_Intent" xml:space="preserve">
+    <value>录制用途：</value>
+  </data>
+  <data name="Recording_NativeSettings" xml:space="preserve">
+    <value>Windows 原生录制设置</value>
+  </data>
+  <data name="Recording_Display" xml:space="preserve">
+    <value>显示器（全屏录制）</value>
+  </data>
+  <data name="Recording_SystemAudioDevice" xml:space="preserve">
+    <value>系统音频设备</value>
+  </data>
+  <data name="Recording_SystemAudioGain" xml:space="preserve">
+    <value>系统音频增益（1 = 正常音量）</value>
+  </data>
+  <data name="Recording_MicrophoneDevice" xml:space="preserve">
+    <value>麦克风设备</value>
+  </data>
+  <data name="Recording_MicrophoneGain" xml:space="preserve">
+    <value>麦克风增益（1 = 正常音量）</value>
+  </data>
+  <data name="Recording_WindowMode" xml:space="preserve">
+    <value>窗口录制模式</value>
+  </data>
+  <data name="Recording_WindowModeHint" xml:space="preserve">
+    <value>IncludePopups 录制窗口下方的桌面（含菜单）。WindowOnly 即使窗口被遮挡也录制该窗口，但不含弹出菜单。</value>
+  </data>
+  <data name="Recording_RequireHardwareEncoder" xml:space="preserve">
+    <value>要求硬件视频编码器</value>
+  </data>
+  <data name="Recording_LowLatency" xml:space="preserve">
+    <value>使用低延迟编码和麦克风捕获</value>
+  </data>
+  <data name="Recording_HideCaptureBorder" xml:space="preserve">
+    <value>在允许时隐藏 Windows 捕获边框</value>
+  </data>
+  <data name="Recording_UseFfmpeg" xml:space="preserve">
+    <value>使用 FFmpeg 录制</value>
+  </data>
+  <data name="Recording_FfmpegHint" xml:space="preserve">
+    <value>音频设备与增益适用于原生录制。不勾选 FFmpeg 时使用带音频的原生 H.264；其他编解码器会自动使用 FFmpeg。</value>
+  </data>
+  <data name="Recording_SizeNote" xml:space="preserve">
+    <value>注意：更高的比特率和帧率会产生更大的文件。若可用，会自动使用硬件编码。音频捕获取决于当前录制后端和系统音频设备。</value>
+  </data>
+  <data name="Recording_LinuxDiagnostics" xml:space="preserve">
+    <value>Linux 录制诊断</value>
+  </data>
+  <data name="Recording_RunLinuxDiagnostics" xml:space="preserve">
+    <value>运行 Linux 录制诊断</value>
+  </data>
+  <data name="Recording_HowTo" xml:space="preserve">
+    <value>如何录制</value>
+  </data>
+  <data name="Recording_HowToStep1" xml:space="preserve">
+    <value>1. 点击“开始”录制主显示器</value>
+  </data>
+  <data name="Recording_HowToStep2" xml:space="preserve">
+    <value>2. 执行要录制的操作</value>
+  </data>
+  <data name="Recording_HowToStep3" xml:space="preserve">
+    <value>3. 点击“停止”结束录制并保存视频</value>
+  </data>
+  <data name="NetworkMonitor_Target" xml:space="preserve">
+    <value>目标</value>
+  </data>
+  <data name="NetworkMonitor_TargetPlaceholder" xml:space="preserve">
+    <value>example.com 或 1.1.1.1</value>
+  </data>
+  <data name="NetworkMonitor_Interval" xml:space="preserve">
+    <value>检查间隔</value>
+  </data>
+  <data name="NetworkMonitor_Pause" xml:space="preserve">
+    <value>暂停</value>
+  </data>
+  <data name="NetworkMonitor_CurrentLatency" xml:space="preserve">
+    <value>当前延迟</value>
+  </data>
+  <data name="NetworkMonitor_AverageLatency" xml:space="preserve">
+    <value>平均延迟</value>
+  </data>
+  <data name="NetworkMonitor_Availability" xml:space="preserve">
+    <value>可用性</value>
+  </data>
+  <data name="NetworkMonitor_Disconnects" xml:space="preserve">
+    <value>断开次数</value>
+  </data>
+  <data name="NetworkMonitor_LatencyHistory" xml:space="preserve">
+    <value>延迟历史</value>
+  </data>
+  <data name="NetworkMonitor_Range" xml:space="preserve">
+    <value>范围</value>
+  </data>
+  <data name="NetworkMonitor_NoSamples" xml:space="preserve">
+    <value>暂无采样。监控期间将显示延迟和中断。</value>
+  </data>
+  <data name="NetworkMonitor_Events" xml:space="preserve">
+    <value>连接事件</value>
+  </data>
+  <data name="NetworkMonitor_Show" xml:space="preserve">
+    <value>显示</value>
+  </data>
+  <data name="NetworkMonitor_CopyAll" xml:space="preserve">
+    <value>全部复制</value>
+  </data>
+  <data name="NetworkMonitor_OpenLog" xml:space="preserve">
+    <value>打开日志</value>
+  </data>
+  <data name="NetworkMonitor_Clear" xml:space="preserve">
+    <value>清空列表</value>
+  </data>
+  <data name="NetworkMonitor_ClearHint" xml:space="preserve">
+    <value>清空屏幕上的列表，中断日志文件会保留。</value>
+  </data>
+  <data name="NetworkMonitor_DateTime" xml:space="preserve">
+    <value>日期/时间</value>
+  </data>
+  <data name="NetworkMonitor_Duration" xml:space="preserve">
+    <value>持续时间</value>
+  </data>
+  <data name="NetworkMonitor_Latency" xml:space="preserve">
+    <value>延迟</value>
+  </data>
+  <data name="NetworkMonitor_NoEvents" xml:space="preserve">
+    <value>该范围内没有连接变化</value>
+  </data>
+  <data name="NetworkMonitor_NoEventsHint" xml:space="preserve">
+    <value>断开与重连将显示在这里。</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>在真实 HDR 照片上对比</value>
   </data>

@@ -3664,6 +3664,180 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   <data name="Settings_BackupRestore" xml:space="preserve">
     <value>Aus Datei wiederherstellen...</value>
   </data>
+  <data name="Recording_Title" xml:space="preserve">
+    <value>Bildschirmaufnahme</value>
+  </data>
+  <data name="Recording_Controls" xml:space="preserve">
+    <value>Aufnahmesteuerung</value>
+  </data>
+  <data name="Recording_MoveRegionResume" xml:space="preserve">
+    <value>Bereich verschieben und fortsetzen</value>
+  </data>
+  <data name="Recording_MoveRegionResumeHint" xml:space="preserve">
+    <value>Wählen Sie eine neue Position oben links. Die Aufnahme behält ihre Abmessungen.</value>
+  </data>
+  <data name="Recording_OutputFile" xml:space="preserve">
+    <value>Ausgabedatei:</value>
+  </data>
+  <data name="Recording_Settings" xml:space="preserve">
+    <value>Aufnahmeeinstellungen</value>
+  </data>
+  <data name="Recording_VideoCodec" xml:space="preserve">
+    <value>Videocodec:</value>
+  </data>
+  <data name="Recording_FrameRate" xml:space="preserve">
+    <value>Bildrate (FPS):</value>
+  </data>
+  <data name="Recording_Bitrate" xml:space="preserve">
+    <value>Bitrate (kbit/s):</value>
+  </data>
+  <data name="Recording_ShowCursor" xml:space="preserve">
+    <value>Cursor anzeigen:</value>
+  </data>
+  <data name="Recording_ShowCursorHint" xml:space="preserve">
+    <value>Mauszeiger in die Aufnahme einbeziehen</value>
+  </data>
+  <data name="Recording_SystemAudio" xml:space="preserve">
+    <value>Systemton:</value>
+  </data>
+  <data name="Recording_SystemAudioHint" xml:space="preserve">
+    <value>Systemtonausgabe aufnehmen</value>
+  </data>
+  <data name="Recording_Microphone" xml:space="preserve">
+    <value>Mikrofon:</value>
+  </data>
+  <data name="Recording_MicrophoneHint" xml:space="preserve">
+    <value>Mikrofoneingang aufnehmen</value>
+  </data>
+  <data name="Recording_Intent" xml:space="preserve">
+    <value>Aufnahmezweck:</value>
+  </data>
+  <data name="Recording_NativeSettings" xml:space="preserve">
+    <value>Native Windows-Aufnahmeeinstellungen</value>
+  </data>
+  <data name="Recording_Display" xml:space="preserve">
+    <value>Anzeige (Vollbildaufnahmen)</value>
+  </data>
+  <data name="Recording_SystemAudioDevice" xml:space="preserve">
+    <value>Systemaudiogerät</value>
+  </data>
+  <data name="Recording_SystemAudioGain" xml:space="preserve">
+    <value>Systemton-Verstärkung (1 = normale Lautstärke)</value>
+  </data>
+  <data name="Recording_MicrophoneDevice" xml:space="preserve">
+    <value>Mikrofongerät</value>
+  </data>
+  <data name="Recording_MicrophoneGain" xml:space="preserve">
+    <value>Mikrofonverstärkung (1 = normale Lautstärke)</value>
+  </data>
+  <data name="Recording_WindowMode" xml:space="preserve">
+    <value>Fensteraufnahmemodus</value>
+  </data>
+  <data name="Recording_WindowModeHint" xml:space="preserve">
+    <value>IncludePopups zeichnet den Desktop unter dem Fenster auf, einschließlich Menüs. WindowOnly nimmt das Fenster auch verdeckt auf und schließt Popups aus.</value>
+  </data>
+  <data name="Recording_RequireHardwareEncoder" xml:space="preserve">
+    <value>Hardware-Videoencoder erzwingen</value>
+  </data>
+  <data name="Recording_LowLatency" xml:space="preserve">
+    <value>Kodierung und Mikrofonaufnahme mit geringer Latenz</value>
+  </data>
+  <data name="Recording_HideCaptureBorder" xml:space="preserve">
+    <value>Windows-Aufnahmerahmen ausblenden, wenn erlaubt</value>
+  </data>
+  <data name="Recording_UseFfmpeg" xml:space="preserve">
+    <value>FFmpeg für die Aufnahme verwenden</value>
+  </data>
+  <data name="Recording_FfmpegHint" xml:space="preserve">
+    <value>Gerätewahl und Verstärkung gelten für die native Aufnahme. Ohne FFmpeg wird natives H.264 mit Ton verwendet. Andere Codecs nutzen automatisch FFmpeg.</value>
+  </data>
+  <data name="Recording_SizeNote" xml:space="preserve">
+    <value>Hinweis: Höhere Bitraten und Bildraten erzeugen größere Dateien. Hardware-Kodierung wird automatisch genutzt, wenn verfügbar. Die Audioaufnahme hängt vom aktiven Aufnahme-Backend und den Systemaudiogeräten ab.</value>
+  </data>
+  <data name="Recording_LinuxDiagnostics" xml:space="preserve">
+    <value>Linux-Aufnahmediagnose</value>
+  </data>
+  <data name="Recording_RunLinuxDiagnostics" xml:space="preserve">
+    <value>Linux-Aufnahmediagnose starten</value>
+  </data>
+  <data name="Recording_HowTo" xml:space="preserve">
+    <value>Aufnahme-Anleitung</value>
+  </data>
+  <data name="Recording_HowToStep1" xml:space="preserve">
+    <value>1. Klicken Sie auf „Start“, um den Hauptmonitor aufzunehmen</value>
+  </data>
+  <data name="Recording_HowToStep2" xml:space="preserve">
+    <value>2. Führen Sie die gewünschten Aktionen aus</value>
+  </data>
+  <data name="Recording_HowToStep3" xml:space="preserve">
+    <value>3. Klicken Sie auf „Stopp“, um die Aufnahme zu beenden und das Video zu speichern</value>
+  </data>
+  <data name="NetworkMonitor_Target" xml:space="preserve">
+    <value>Ziel</value>
+  </data>
+  <data name="NetworkMonitor_TargetPlaceholder" xml:space="preserve">
+    <value>example.com oder 1.1.1.1</value>
+  </data>
+  <data name="NetworkMonitor_Interval" xml:space="preserve">
+    <value>Prüfen alle</value>
+  </data>
+  <data name="NetworkMonitor_Pause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="NetworkMonitor_CurrentLatency" xml:space="preserve">
+    <value>Aktuelle Latenz</value>
+  </data>
+  <data name="NetworkMonitor_AverageLatency" xml:space="preserve">
+    <value>Durchschnittliche Latenz</value>
+  </data>
+  <data name="NetworkMonitor_Availability" xml:space="preserve">
+    <value>Verfügbarkeit</value>
+  </data>
+  <data name="NetworkMonitor_Disconnects" xml:space="preserve">
+    <value>Unterbrechungen</value>
+  </data>
+  <data name="NetworkMonitor_LatencyHistory" xml:space="preserve">
+    <value>Latenzverlauf</value>
+  </data>
+  <data name="NetworkMonitor_Range" xml:space="preserve">
+    <value>Bereich</value>
+  </data>
+  <data name="NetworkMonitor_NoSamples" xml:space="preserve">
+    <value>Noch keine Messwerte. Latenz und Ausfälle erscheinen während der Überwachung.</value>
+  </data>
+  <data name="NetworkMonitor_Events" xml:space="preserve">
+    <value>Verbindungsereignisse</value>
+  </data>
+  <data name="NetworkMonitor_Show" xml:space="preserve">
+    <value>Anzeigen</value>
+  </data>
+  <data name="NetworkMonitor_CopyAll" xml:space="preserve">
+    <value>Alle kopieren</value>
+  </data>
+  <data name="NetworkMonitor_OpenLog" xml:space="preserve">
+    <value>Protokoll öffnen</value>
+  </data>
+  <data name="NetworkMonitor_Clear" xml:space="preserve">
+    <value>Liste leeren</value>
+  </data>
+  <data name="NetworkMonitor_ClearHint" xml:space="preserve">
+    <value>Leert die Bildschirmliste. Die Ausfall-Protokolldatei bleibt erhalten.</value>
+  </data>
+  <data name="NetworkMonitor_DateTime" xml:space="preserve">
+    <value>Datum / Uhrzeit</value>
+  </data>
+  <data name="NetworkMonitor_Duration" xml:space="preserve">
+    <value>Dauer</value>
+  </data>
+  <data name="NetworkMonitor_Latency" xml:space="preserve">
+    <value>Latenz</value>
+  </data>
+  <data name="NetworkMonitor_NoEvents" xml:space="preserve">
+    <value>Keine Verbindungsänderungen in diesem Bereich</value>
+  </data>
+  <data name="NetworkMonitor_NoEventsHint" xml:space="preserve">
+    <value>Unterbrechungen und Wiederverbindungen erscheinen hier.</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>Vergleich an einem echten HDR-Foto</value>
   </data>

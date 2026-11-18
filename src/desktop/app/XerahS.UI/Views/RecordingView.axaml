@@ -4,6 +4,7 @@
                 xmlns:views="using:XerahS.UI.Views"
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:XerahS.UI.Markup"
                 xmlns:theming="clr-namespace:XerahS.UI.Theming"
                 xmlns:platform="using:XerahS.Platform.Abstractions"
                 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
@@ -19,7 +20,7 @@
         
         <!-- Header -->
         <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,24">
-            <TextBlock Text="Screen Recording" Theme="{StaticResource TitleTextBlockStyle}"/>
+            <TextBlock Text="{local:Localize Recording_Title}" Theme="{StaticResource TitleTextBlockStyle}"/>
             <TextBlock Text="{Binding FeatureDescription}"
                        Theme="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
@@ -32,15 +33,15 @@
                 <!-- Recording Controls Card -->
                 <Border Theme="{StaticResource CardBorderTheme}" Padding="24">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Recording Controls" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                        <TextBlock Text="{local:Localize Recording_Controls}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
                         
                         <!-- Inline Recording Toolbar -->
                         <views:RecordingToolbarView DataContext="{Binding}"/>
-                        <Button Content="Move region and resume"
+                        <Button Content="{local:Localize Recording_MoveRegionResume}"
                                 Command="{Binding MoveRecordingRegionCommand}"
                                 IsVisible="{Binding CanMoveRecordingRegion}"
                                 HorizontalAlignment="Left"
-                                ToolTip.Tip="Select a new top-left position. The recording keeps its current dimensions."/>
+                                ToolTip.Tip="{local:Localize Recording_MoveRegionResumeHint}"/>
                         
                         <!-- Last Error Display -->
                         <Border IsVisible="{Binding LastError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
@@ -57,7 +58,7 @@
                         <!-- Output File Path -->
                         <StackPanel IsVisible="{Binding OutputFilePath, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                     Spacing="4">
-                            <TextBlock Text="Output File:"
+                            <TextBlock Text="{local:Localize Recording_OutputFile}"
                                        Theme="{StaticResource CaptionTextBlockStyle}"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             <TextBlock Text="{Binding OutputFilePath}"
@@ -70,12 +71,12 @@
                 <!-- Recording Settings Card -->
                 <Border Theme="{StaticResource CardBorderTheme}" Padding="24">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Recording Settings" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                        <TextBlock Text="{local:Localize Recording_Settings}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
 
                         <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="16" ColumnSpacing="24">
 
                             <!-- Codec -->
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Video Codec:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="{local:Localize Recording_VideoCodec}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Row="0" Grid.Column="1"
                                       ItemsSource="{Binding AvailableCodecs}"
                                       SelectedItem="{Binding Codec}"
@@ -84,7 +85,7 @@
                                       AutomationProperties.Name="Video Codec Selection"/>
 
                             <!-- FPS -->
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Frame Rate (FPS):" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="{local:Localize Recording_FrameRate}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Row="1" Grid.Column="1"
                                       ItemsSource="{Binding AvailableFPS}"
                                       SelectedItem="{Binding Fps}"
@@ -93,7 +94,7 @@
                                       AutomationProperties.Name="Frame Rate Selection"/>
 
                             <!-- Bitrate -->
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Bitrate (kbps):" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="{local:Localize Recording_Bitrate}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Row="2" Grid.Column="1"
                                       ItemsSource="{Binding AvailableBitrates}"
                                       SelectedItem="{Binding BitrateKbps}"
@@ -102,31 +103,31 @@
                                       AutomationProperties.Name="Bitrate Selection"/>
 
                             <!-- Show Cursor -->
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Show Cursor:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="{local:Localize Recording_ShowCursor}" VerticalAlignment="Center"/>
                             <CheckBox Grid.Row="3" Grid.Column="1"
                                       IsChecked="{Binding ShowCursor}"
                                       IsEnabled="{Binding !IsRecording}"
-                                      Content="Include mouse cursor in recording"
+                                      Content="{local:Localize Recording_ShowCursorHint}"
                                       AutomationProperties.Name="Include Mouse Cursor Checkbox"/>
 
                             <!-- System Audio -->
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="System Audio:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="{local:Localize Recording_SystemAudio}" VerticalAlignment="Center"/>
                             <CheckBox Grid.Row="4" Grid.Column="1"
                                       IsChecked="{Binding CaptureSystemAudio}"
                                       IsEnabled="{Binding !IsRecording}"
-                                      Content="Capture system audio output"
+                                      Content="{local:Localize Recording_SystemAudioHint}"
                                       AutomationProperties.Name="Capture System Audio Checkbox"/>
 
                             <!-- Microphone -->
-                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Microphone:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="{local:Localize Recording_Microphone}" VerticalAlignment="Center"/>
                             <CheckBox Grid.Row="5" Grid.Column="1"
                                       IsChecked="{Binding CaptureMicrophone}"
                                       IsEnabled="{Binding !IsRecording}"
-                                      Content="Capture microphone input"
+                                      Content="{local:Localize Recording_MicrophoneHint}"
                                       AutomationProperties.Name="Capture Microphone Checkbox"/>
 
                             <!-- Recording Intent -->
-                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Recording Intent:" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="{local:Localize Recording_Intent}" VerticalAlignment="Center"/>
                             <ComboBox Grid.Row="6" Grid.Column="1"
                                       ItemsSource="{Binding AvailableRecordingIntents}"
                                       SelectedItem="{Binding RecordingIntent}"
@@ -136,38 +137,38 @@
 
                         </Grid>
 
-                        <Expander Header="Native Windows recording settings" IsVisible="{Binding HasNativeRecordingSettings}">
+                        <Expander Header="{local:Localize Recording_NativeSettings}" IsVisible="{Binding HasNativeRecordingSettings}">
                             <StackPanel Spacing="12" Margin="0,12,0,0" IsEnabled="{Binding CanStart}">
-                                <TextBlock Text="Display (full-screen recordings)"/>
+                                <TextBlock Text="{local:Localize Recording_Display}"/>
                                 <ComboBox ItemsSource="{Binding RecordingDisplays}" SelectedItem="{Binding SelectedRecordingDisplay}" HorizontalAlignment="Stretch">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="platform:ScreenInfo"><TextBlock Text="{Binding DeviceName}"/></DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <TextBlock Text="System audio device"/>
+                                <TextBlock Text="{local:Localize Recording_SystemAudioDevice}"/>
                                 <ComboBox ItemsSource="{Binding SystemAudioDevices}" SelectedItem="{Binding SelectedSystemAudioDevice}" HorizontalAlignment="Stretch">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="platform:RecordingDevice"><TextBlock Text="{Binding Name}"/></DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <TextBlock Text="System audio gain (1 = normal volume)"/>
+                                <TextBlock Text="{local:Localize Recording_SystemAudioGain}"/>
                                 <NumericUpDown Value="{Binding SystemAudioGain}" Minimum="0" Maximum="4" Increment="0.1"/>
-                                <TextBlock Text="Microphone device"/>
+                                <TextBlock Text="{local:Localize Recording_MicrophoneDevice}"/>
                                 <ComboBox ItemsSource="{Binding MicrophoneDevices}" SelectedItem="{Binding SelectedMicrophoneDevice}" HorizontalAlignment="Stretch">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="platform:RecordingDevice"><TextBlock Text="{Binding Name}"/></DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <TextBlock Text="Microphone gain (1 = normal volume)"/>
+                                <TextBlock Text="{local:Localize Recording_MicrophoneGain}"/>
                                 <NumericUpDown Value="{Binding MicrophoneGain}" Minimum="0" Maximum="4" Increment="0.1"/>
-                                <TextBlock Text="Window recording mode"/>
+                                <TextBlock Text="{local:Localize Recording_WindowMode}"/>
                                 <ComboBox ItemsSource="{Binding WindowRecordingModes}" SelectedItem="{Binding WindowRecordingMode}" HorizontalAlignment="Stretch"/>
-                                <TextBlock Text="IncludePopups records the desktop under the window, including menus. WindowOnly captures the window while covered and excludes popups." TextWrapping="Wrap"/>
-                                <CheckBox Content="Require a hardware video encoder" IsChecked="{Binding RequireHardwareEncoder}"/>
-                                <CheckBox Content="Use low-latency encoding and microphone capture" IsChecked="{Binding LowLatency}"/>
-                                <CheckBox Content="Hide the Windows capture border when permitted" IsChecked="{Binding HideCaptureBorder}"/>
-                                <CheckBox Content="Use FFmpeg for recording" IsChecked="{Binding ForceFfmpeg}"/>
-                                <TextBlock Text="Audio device choices and gains apply to native recording. Leave FFmpeg unchecked to use native H.264 with audio. Other codecs use FFmpeg automatically." TextWrapping="Wrap"/>
+                                <TextBlock Text="{local:Localize Recording_WindowModeHint}" TextWrapping="Wrap"/>
+                                <CheckBox Content="{local:Localize Recording_RequireHardwareEncoder}" IsChecked="{Binding RequireHardwareEncoder}"/>
+                                <CheckBox Content="{local:Localize Recording_LowLatency}" IsChecked="{Binding LowLatency}"/>
+                                <CheckBox Content="{local:Localize Recording_HideCaptureBorder}" IsChecked="{Binding HideCaptureBorder}"/>
+                                <CheckBox Content="{local:Localize Recording_UseFfmpeg}" IsChecked="{Binding ForceFfmpeg}"/>
+                                <TextBlock Text="{local:Localize Recording_FfmpegHint}" TextWrapping="Wrap"/>
                                 <TextBlock Text="{Binding RecordingDeviceError}" TextWrapping="Wrap" IsVisible="{Binding RecordingDeviceError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
                             </StackPanel>
                         </Expander>
@@ -178,7 +179,7 @@
                                    TextWrapping="Wrap"
                                    IsVisible="{Binding CodecAvailabilityMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 
-                        <TextBlock Text="Note: Higher bitrates and frame rates will result in larger file sizes. Hardware encoding may be used automatically if available. Audio capture depends on the active recording backend and appropriate system audio devices."
+                        <TextBlock Text="{local:Localize Recording_SizeNote}"
                                    Theme="{StaticResource CaptionTextBlockStyle}"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    TextWrapping="Wrap"/>
@@ -209,9 +210,9 @@
                                 CornerRadius="4"
                                 Padding="12,8">
                             <StackPanel Spacing="8">
-                                <TextBlock Text="Linux Recording Diagnostics"
+                                <TextBlock Text="{local:Localize Recording_LinuxDiagnostics}"
                                            Theme="{StaticResource CaptionTextBlockStyle}"/>
-                                <Button Content="Run Linux Recording Diagnostics"
+                                <Button Content="{local:Localize Recording_RunLinuxDiagnostics}"
                                         Command="{Binding RunLinuxRecordingDiagnosticsCommand}"
                                         HorizontalAlignment="Left"/>
                                 <TextBlock Text="{Binding LinuxRecordingDiagnosticsStatusText}"
@@ -227,12 +228,12 @@
                 <!-- Instructions Card -->
                 <Border Theme="{StaticResource CardBorderTheme}" Padding="24">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="How to Record" Theme="{StaticResource SubtitleTextBlockStyle}"/>
+                        <TextBlock Text="{local:Localize Recording_HowTo}" Theme="{StaticResource SubtitleTextBlockStyle}"/>
                         
                         <StackPanel Spacing="8">
-                            <TextBlock Text="1. Click 'Start' to begin recording your primary monitor" Theme="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock Text="2. Perform actions you want to capture" Theme="{StaticResource BodyTextBlockStyle}"/>
-                            <TextBlock Text="3. Click 'Stop' to end recording and save the video" Theme="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock Text="{local:Localize Recording_HowToStep1}" Theme="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock Text="{local:Localize Recording_HowToStep2}" Theme="{StaticResource BodyTextBlockStyle}"/>
+                            <TextBlock Text="{local:Localize Recording_HowToStep3}" Theme="{StaticResource BodyTextBlockStyle}"/>
                         </StackPanel>
 
                         <TextBlock Text="{Binding UsageNotes}"

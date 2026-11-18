@@ -3664,6 +3664,180 @@
   <data name="Settings_BackupRestore" xml:space="preserve">
     <value>Восстановить из файла...</value>
   </data>
+  <data name="Recording_Title" xml:space="preserve">
+    <value>Запись экрана</value>
+  </data>
+  <data name="Recording_Controls" xml:space="preserve">
+    <value>Управление записью</value>
+  </data>
+  <data name="Recording_MoveRegionResume" xml:space="preserve">
+    <value>Переместить область и продолжить</value>
+  </data>
+  <data name="Recording_MoveRegionResumeHint" xml:space="preserve">
+    <value>Выберите новое положение левого верхнего угла. Размеры записи сохраняются.</value>
+  </data>
+  <data name="Recording_OutputFile" xml:space="preserve">
+    <value>Файл результата:</value>
+  </data>
+  <data name="Recording_Settings" xml:space="preserve">
+    <value>Параметры записи</value>
+  </data>
+  <data name="Recording_VideoCodec" xml:space="preserve">
+    <value>Видеокодек:</value>
+  </data>
+  <data name="Recording_FrameRate" xml:space="preserve">
+    <value>Частота кадров (FPS):</value>
+  </data>
+  <data name="Recording_Bitrate" xml:space="preserve">
+    <value>Битрейт (кбит/с):</value>
+  </data>
+  <data name="Recording_ShowCursor" xml:space="preserve">
+    <value>Показывать курсор:</value>
+  </data>
+  <data name="Recording_ShowCursorHint" xml:space="preserve">
+    <value>Включать курсор мыши в запись</value>
+  </data>
+  <data name="Recording_SystemAudio" xml:space="preserve">
+    <value>Системный звук:</value>
+  </data>
+  <data name="Recording_SystemAudioHint" xml:space="preserve">
+    <value>Записывать системный звук</value>
+  </data>
+  <data name="Recording_Microphone" xml:space="preserve">
+    <value>Микрофон:</value>
+  </data>
+  <data name="Recording_MicrophoneHint" xml:space="preserve">
+    <value>Записывать микрофон</value>
+  </data>
+  <data name="Recording_Intent" xml:space="preserve">
+    <value>Назначение записи:</value>
+  </data>
+  <data name="Recording_NativeSettings" xml:space="preserve">
+    <value>Настройки нативной записи Windows</value>
+  </data>
+  <data name="Recording_Display" xml:space="preserve">
+    <value>Дисплей (запись полного экрана)</value>
+  </data>
+  <data name="Recording_SystemAudioDevice" xml:space="preserve">
+    <value>Устройство системного звука</value>
+  </data>
+  <data name="Recording_SystemAudioGain" xml:space="preserve">
+    <value>Усиление системного звука (1 = обычная громкость)</value>
+  </data>
+  <data name="Recording_MicrophoneDevice" xml:space="preserve">
+    <value>Устройство микрофона</value>
+  </data>
+  <data name="Recording_MicrophoneGain" xml:space="preserve">
+    <value>Усиление микрофона (1 = обычная громкость)</value>
+  </data>
+  <data name="Recording_WindowMode" xml:space="preserve">
+    <value>Режим записи окна</value>
+  </data>
+  <data name="Recording_WindowModeHint" xml:space="preserve">
+    <value>IncludePopups записывает рабочий стол под окном, включая меню. WindowOnly снимает окно даже перекрытым, но без всплывающих меню.</value>
+  </data>
+  <data name="Recording_RequireHardwareEncoder" xml:space="preserve">
+    <value>Требовать аппаратный видеокодер</value>
+  </data>
+  <data name="Recording_LowLatency" xml:space="preserve">
+    <value>Малая задержка кодирования и захвата микрофона</value>
+  </data>
+  <data name="Recording_HideCaptureBorder" xml:space="preserve">
+    <value>Скрывать рамку захвата Windows, когда возможно</value>
+  </data>
+  <data name="Recording_UseFfmpeg" xml:space="preserve">
+    <value>Использовать FFmpeg для записи</value>
+  </data>
+  <data name="Recording_FfmpegHint" xml:space="preserve">
+    <value>Настройки и усиление звука относятся к нативной записи. Без FFmpeg используется нативный H.264 со звуком. Остальные кодеки идут через FFmpeg автоматически.</value>
+  </data>
+  <data name="Recording_SizeNote" xml:space="preserve">
+    <value>Примечание: выше битрейт и частота кадров — больше файл. Аппаратное кодирование применяется автоматически, если доступно. Захват звука зависит от активного бэкенда записи и системных аудиоустройств.</value>
+  </data>
+  <data name="Recording_LinuxDiagnostics" xml:space="preserve">
+    <value>Диагностика записи в Linux</value>
+  </data>
+  <data name="Recording_RunLinuxDiagnostics" xml:space="preserve">
+    <value>Запустить диагностику записи Linux</value>
+  </data>
+  <data name="Recording_HowTo" xml:space="preserve">
+    <value>Как записывать</value>
+  </data>
+  <data name="Recording_HowToStep1" xml:space="preserve">
+    <value>1. Нажмите «Старт», чтобы начать запись основного монитора</value>
+  </data>
+  <data name="Recording_HowToStep2" xml:space="preserve">
+    <value>2. Выполните действия, которые нужно записать</value>
+  </data>
+  <data name="Recording_HowToStep3" xml:space="preserve">
+    <value>3. Нажмите «Стоп», чтобы завершить запись и сохранить видео</value>
+  </data>
+  <data name="NetworkMonitor_Target" xml:space="preserve">
+    <value>Цель</value>
+  </data>
+  <data name="NetworkMonitor_TargetPlaceholder" xml:space="preserve">
+    <value>example.com или 1.1.1.1</value>
+  </data>
+  <data name="NetworkMonitor_Interval" xml:space="preserve">
+    <value>Проверять каждые</value>
+  </data>
+  <data name="NetworkMonitor_Pause" xml:space="preserve">
+    <value>Пауза</value>
+  </data>
+  <data name="NetworkMonitor_CurrentLatency" xml:space="preserve">
+    <value>Текущая задержка</value>
+  </data>
+  <data name="NetworkMonitor_AverageLatency" xml:space="preserve">
+    <value>Средняя задержка</value>
+  </data>
+  <data name="NetworkMonitor_Availability" xml:space="preserve">
+    <value>Доступность</value>
+  </data>
+  <data name="NetworkMonitor_Disconnects" xml:space="preserve">
+    <value>Обрывы</value>
+  </data>
+  <data name="NetworkMonitor_LatencyHistory" xml:space="preserve">
+    <value>История задержек</value>
+  </data>
+  <data name="NetworkMonitor_Range" xml:space="preserve">
+    <value>Диапазон</value>
+  </data>
+  <data name="NetworkMonitor_NoSamples" xml:space="preserve">
+    <value>Пока нет данных. Задержка и обрывы появятся во время мониторинга.</value>
+  </data>
+  <data name="NetworkMonitor_Events" xml:space="preserve">
+    <value>События соединения</value>
+  </data>
+  <data name="NetworkMonitor_Show" xml:space="preserve">
+    <value>Показывать</value>
+  </data>
+  <data name="NetworkMonitor_CopyAll" xml:space="preserve">
+    <value>Копировать всё</value>
+  </data>
+  <data name="NetworkMonitor_OpenLog" xml:space="preserve">
+    <value>Открыть журнал</value>
+  </data>
+  <data name="NetworkMonitor_Clear" xml:space="preserve">
+    <value>Очистить список</value>
+  </data>
+  <data name="NetworkMonitor_ClearHint" xml:space="preserve">
+    <value>Очищает список на экране. Файл журнала обрывов сохраняется.</value>
+  </data>
+  <data name="NetworkMonitor_DateTime" xml:space="preserve">
+    <value>Дата / время</value>
+  </data>
+  <data name="NetworkMonitor_Duration" xml:space="preserve">
+    <value>Длительность</value>
+  </data>
+  <data name="NetworkMonitor_Latency" xml:space="preserve">
+    <value>Задержка</value>
+  </data>
+  <data name="NetworkMonitor_NoEvents" xml:space="preserve">
+    <value>В этом диапазоне изменений соединения нет</value>
+  </data>
+  <data name="NetworkMonitor_NoEventsHint" xml:space="preserve">
+    <value>Обрывы и переподключения появятся здесь.</value>
+  </data>
   <data name="TaskSettings_HdrPhotoPreview" xml:space="preserve">
     <value>Сравнение на реальном HDR-фото</value>
   </data>
