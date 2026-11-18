@@ -30,7 +30,7 @@ export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
 export PATH="$JAVA_HOME/bin:$PATH"
 dotnet build src/mobile-experimental/XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj \
   -t:InstallAndroidDependencies \
-  -f net10.0-android \
+  -f net11.0-android \
   "-p:AndroidSdkDirectory=/home/$USER/Android/Sdk" \
   "-p:AcceptAndroidSDKLicenses=true"
 ```
@@ -49,12 +49,12 @@ export PATH="$JAVA_HOME/bin:$PATH"
 
 #### XerahS.Mobile.Ava (Avalonia Android)
 ```bash
-dotnet build src/mobile-experimental/XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj -f net10.0-android
+dotnet build src/mobile-experimental/XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj -f net11.0-android
 ```
 
 #### XerahS.Mobile.Maui (Android Target)
 ```bash
-dotnet build src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net10.0-android
+dotnet build src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mobile.Maui.csproj -f net11.0-android
 ```
 
 ### Build Script
@@ -71,8 +71,8 @@ The MAUI project has been configured to build only Android targets on Linux:
 
 ```xml
 <!-- On macOS build both Android and iOS, on Linux only Android -->
-<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">net10.0-android;net10.0-ios</TargetFrameworks>
-<TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('osx'))">net10.0-android</TargetFrameworks>
+<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">net11.0-android;net11.0-ios</TargetFrameworks>
+<TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('osx'))">net11.0-android</TargetFrameworks>
 ```
 
 This allows the project to build on Linux without iOS workload dependencies, while still supporting both platforms on macOS.
@@ -135,7 +135,7 @@ Install Android dependencies:
 ```bash
 dotnet build src/mobile-experimental/XerahS.Mobile.Ava/XerahS.Mobile.Ava.csproj \
   -t:InstallAndroidDependencies \
-  -f net10.0-android \
+  -f net11.0-android \
   "-p:AcceptAndroidSDKLicenses=true"
 ```
 

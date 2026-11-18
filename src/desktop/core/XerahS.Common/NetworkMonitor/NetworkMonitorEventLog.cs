@@ -31,7 +31,7 @@ namespace XerahS.Common.NetworkMonitor;
 public sealed class NetworkMonitorEventLog
 {
     private static readonly Encoding Utf8NoBom = new UTF8Encoding(false);
-    private readonly object _sync = new();
+    private readonly Lock _sync = new();
     private readonly Func<string?> _filePathProvider;
 
     public NetworkMonitorEventLog(string? filePath)

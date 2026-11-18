@@ -32,11 +32,14 @@ namespace XerahS.Core;
 /// <summary>A file on GitHub, named by a github.com blob/raw link or a raw.githubusercontent.com link.</summary>
 public sealed record GitHubFileReference(string Owner, string Repository, string Ref, string Path);
 
-public sealed record UrlDownloadResult(bool Success, string? FilePath, string? ErrorMessage, bool GitHubTokenRequired = false)
-{
-    public static UrlDownloadResult Downloaded(string filePath) => new(true, filePath, null);
-    public static UrlDownloadResult Failed(string message, bool gitHubTokenRequired = false) => new(false, null, message, gitHubTokenRequired);
-}
+/// <summary>The URL was saved to <paramref name="FilePath"/>.</summary>
+public sealed record UrlDownloaded(string FilePath);
+
+/// <summary>The download did not complete; <paramref name="GitHubTokenRequired"/> asks the caller to prompt for a GitHub token and retry.</summary>
+public sealed record UrlDownloadFailed(string Message, bool GitHubTokenRequired = false);
+
+/// <summary>Outcome of a URL download: exactly one of <see cref="UrlDownloaded"/> or <see cref="UrlDownloadFailed"/>.</summary>
+public union UrlDownloadResult(UrlDownloaded, UrlDownloadFailed);
 
 /// <summary>
 /// Downloads a URL to a local file so Upload Content can upload it like any other file.
@@ -147,7 +150,7 @@ public static class UrlDownloadHelper
     {
         if (!TryParseDownloadUrl(url, out Uri uri))
         {
-            return UrlDownloadResult.Failed("Enter an http or https URL.");
+            return new UrlDownloadFailed("Enter an http or https URL.");
         }
 
         GitHubFileReference? gitHubFile = ParseGitHubFile(uri);
@@ -174,17 +177,17 @@ public static class UrlDownloadHelper
                 {
                     // GitHub answers 404 for private files it will not show this caller.
                     return useGitHubApi
-                        ? UrlDownloadResult.Failed($"GitHub refused the token for {gitHubFile.Owner}/{gitHubFile.Repository} ({(int)response.StatusCode}).", gitHubTokenRequired: true)
-                        : UrlDownloadResult.Failed("This GitHub file is private or does not exist.", gitHubTokenRequired: true);
+                        ? new UrlDownloadFailed($"GitHub refused the token for {gitHubFile.Owner}/{gitHubFile.Repository} ({(int)response.StatusCode}).", GitHubTokenRequired: true)
+                        : new UrlDownloadFailed("This GitHub file is private or does not exist.", GitHubTokenRequired: true);
                 }
 
-                return UrlDownloadResult.Failed($"Download failed: {(int)response.StatusCode} {response.ReasonPhrase}");
+                return new UrlDownloadFailed($"Download failed: {(int)response.StatusCode} {response.ReasonPhrase}");
             }
 
             long? length = response.Content.Headers.ContentLength;
             if (length > MaxDownloadBytes)
             {
-                return UrlDownloadResult.Failed($"The file is larger than {MaxDownloadBytes / (1024 * 1024)} MB.");
+                return new UrlDownloadFailed($"The file is larger than {MaxDownloadBytes / (1024 * 1024)} MB.");
             }
 
             ContentDispositionHeaderValue? disposition = response.Content.Headers.ContentDisposition;
@@ -215,7 +218,7 @@ public static class UrlDownloadHelper
                     }
                 }
 
-                return UrlDownloadResult.Downloaded(filePath);
+                return new UrlDownloaded(filePath);
             }
             catch
             {
@@ -225,11 +228,11 @@ public static class UrlDownloadHelper
         }
         catch (InvalidDataException ex)
         {
-            return UrlDownloadResult.Failed(ex.Message);
+            return new UrlDownloadFailed(ex.Message);
         }
         catch (HttpRequestException ex)
         {
-            return UrlDownloadResult.Failed($"Download failed: {ex.Message}");
+            return new UrlDownloadFailed($"Download failed: {ex.Message}");
         }
     }
 

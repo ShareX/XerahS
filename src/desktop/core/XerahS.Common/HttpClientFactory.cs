@@ -35,7 +35,7 @@ namespace XerahS.Common
     /// </summary>
     public static class HttpClientFactory
     {
-        private static readonly object lockObject = new object();
+        private static readonly Lock lockObject = new();
         private static readonly Dictionary<(bool AllowAutoRedirect, bool InfiniteTimeout), HttpClient> clients = new();
         private static string? proxyKey;
 

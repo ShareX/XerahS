@@ -1,5 +1,33 @@
-using XerahS.McpServer.Server;
+#region License Information (GPL v3)
+
+/*
+    XerahS - The Avalonia UI implementation of ShareX
+    Copyright (c) 2007-2026 ShareX Team
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+    Optionally you can also view the license at <http://www.gnu.org/licenses/>.
+*/
+
+#endregion License Information (GPL v3)
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using XerahS.McpServer.Runtime;
+using XerahS.McpServer.Server;
 using XerahS.McpServer.Transport;
 
 namespace XerahS.McpServer;
@@ -44,8 +72,16 @@ public class Program
         try
         {
             var runtime = new XerahSMcpRuntime();
-            var mcpServer = new XerahSMcpServer(runtime);
-            using var stdioServer = new StdioServer(mcpServer);
+
+            // stdout carries only MCP JSON lines; host logging, if any, goes to stderr.
+            var builder = Host.CreateEmptyApplicationBuilder(settings: null);
+            builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
+            builder.Logging.SetMinimumLevel(LogLevel.Warning);
+            // The SDK logs every handler exception; XerahS reports those to the client as JSON-RPC errors instead.
+            builder.Logging.AddFilter("ModelContextProtocol", LogLevel.Critical);
+            XerahSMcpHost.AddXerahSMcp(builder.Services, runtime).WithStdioServerTransport();
+
+            using var host = builder.Build();
             var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, e) =>
             {
@@ -53,8 +89,8 @@ public class Program
                 cts.Cancel();
             };
 
-            await stdioServer.RunAsync(cts.Token);
-            
+            await host.RunAsync(cts.Token);
+
             return 0;
         }
         catch (OperationCanceledException)
@@ -73,8 +109,7 @@ public class Program
         try
         {
             var runtime = new XerahSMcpRuntime();
-            var mcpServer = new XerahSMcpServer(runtime);
-            using var httpServer = new HttpServer(mcpServer, runtime, port);
+            using var httpServer = new HttpServer(runtime, port);
             var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, e) =>
             {
@@ -83,7 +118,7 @@ public class Program
             };
 
             Console.WriteLine($"XerahS MCP HTTP Server starting on port {port}...");
-            Console.WriteLine($"  POST /mcp/       - JSON-RPC requests");
+            Console.WriteLine($"  POST /mcp/       - MCP requests (JSON-RPC 2.0)");
             Console.WriteLine($"  GET  /mcp/events/ - SSE stream");
             Console.WriteLine($"  GET  /health     - Health check");
             Console.WriteLine("Press Ctrl+C to stop.");

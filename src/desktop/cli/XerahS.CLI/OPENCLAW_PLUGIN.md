@@ -34,7 +34,7 @@ From the XerahS repository root:
 
 ```powershell
 dotnet build -m:1
-.\src\desktop\cli\XerahS.CLI\bin\Debug\net10.0-windows10.0.26100.0\xerahscli.exe openclaw plugin export --output .\.artifacts\openclaw\xerahs-plugin --force
+.\src\desktop\cli\XerahS.CLI\bin\Debug\net11.0-windows10.0.26100.0\xerahscli.exe openclaw plugin export --output .\.artifacts\openclaw\xerahs-plugin --force
 ```
 
 If `xerahscli` is already on `PATH`, this shorter form is enough:
@@ -84,7 +84,7 @@ openclaw config set plugins.entries.xerahs.config.timeoutMs 120000
 If OpenClaw cannot find `xerahscli`, point it at the executable built by this repository:
 
 ```powershell
-openclaw config set plugins.entries.xerahs.config.command "C:\Users\liveu\source\repos\ShareX Team\XerahS\src\desktop\cli\XerahS.CLI\bin\Debug\net10.0-windows10.0.26100.0\xerahscli.exe"
+openclaw config set plugins.entries.xerahs.config.command "C:\Users\liveu\source\repos\ShareX Team\XerahS\src\desktop\cli\XerahS.CLI\bin\Debug\net11.0-windows10.0.26100.0\xerahscli.exe"
 openclaw config set plugins.entries.xerahs.config.timeoutMs 120000
 ```
 

@@ -10,7 +10,7 @@
 ## Build Guardrails
 
 - `Directory.Build.props` enforces `TreatWarningsAsErrors=true`.
-- Desktop projects use `net10.0-windows10.0.26100.0` for Windows targets and `net10.0` for cross-platform builds.
+- Desktop projects use `net11.0-windows10.0.26100.0` for Windows targets and `net11.0` for cross-platform builds.
 - `SkiaSharp` is centrally managed from `Directory.Packages.props` and currently resolves to `3.119.3-preview.1.1`.
 
 ## Repository Map

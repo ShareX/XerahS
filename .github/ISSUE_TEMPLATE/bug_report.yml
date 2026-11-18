@@ -109,7 +109,7 @@ body:
     id: dotnet
     attributes:
       label: .NET SDK Version
-      placeholder: 10.0.100
+      placeholder: 11.0.100
     validations:
       required: false
 

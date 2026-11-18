@@ -39,7 +39,7 @@ internal sealed class EvdevHotkeyMatcher
     private const long DefaultDebounceMs = 250;
 
     private readonly Dictionary<ushort, long> _lastFireTicks = new();
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
 
     public long DebounceMs { get; set; } = DefaultDebounceMs;
 

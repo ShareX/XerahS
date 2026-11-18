@@ -381,7 +381,7 @@ create_dmg_and_notarize() {
 publish_and_package() {
     local arch="$1"
     local rid="osx-$arch"
-    local publish_dir="$ROOT/src/desktop/app/XerahS.App/bin/Release/net10.0/$rid/publish"
+    local publish_dir="$ROOT/src/desktop/app/XerahS.App/bin/Release/net11.0/$rid/publish"
     local app_bundle_path="$publish_dir/XerahS.app"
     local plugins_dir="$app_bundle_path/Contents/MacOS/Plugins"
     local tar_name="XerahS-$VERSION-mac-$arch.tar.gz"

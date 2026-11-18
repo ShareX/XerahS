@@ -455,7 +455,7 @@ modules:
         </configuration>
         NUGETCONFIG
         ./build/linux/package-linux.sh
-        publish_dir="src/desktop/app/XerahS.App/bin/Release/net10.0/\${XERAHS_ARCHITECTURES}/publish"
+        publish_dir="src/desktop/app/XerahS.App/bin/Release/net11.0/\${XERAHS_ARCHITECTURES}/publish"
         test -f "\${publish_dir}/XerahS"
         test -f "\${publish_dir}/xerahs-watchfolder-daemon"
         ls "\${publish_dir}"/libopenal.so* >/dev/null

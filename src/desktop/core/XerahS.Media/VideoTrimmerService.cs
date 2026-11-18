@@ -36,8 +36,11 @@ namespace XerahS.Media;
 /// the exact boundaries. Output is staged next to the destination and moved into place only
 /// after FFmpeg succeeds, so a failure or cancel never clobbers an existing file.
 /// </summary>
-public sealed class VideoTrimmerService
+public sealed partial class VideoTrimmerService
 {
+    [GeneratedRegex(@"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", RegexOptions.CultureInvariant)]
+    private static partial Regex ProbeDurationAsyncRegex();
+
     private readonly string _ffmpegPath;
 
     public VideoTrimmerService(string ffmpegPath)
@@ -125,7 +128,7 @@ public sealed class VideoTrimmerService
     public async Task<double?> ProbeDurationAsync(string input, CancellationToken token = default)
     {
         var (_, log) = await RunAsync(["-i", input], token, allowFailure: true);
-        Match match = Regex.Match(log, @"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", RegexOptions.CultureInvariant);
+        Match match = ProbeDurationAsyncRegex().Match(log);
         if (!match.Success)
         {
             return null;

@@ -47,7 +47,7 @@ public class ScreenRecorderService : IRecordingService
     private string? _activeOutputPath;
     private RecordingStatus _status = RecordingStatus.Idle;
     private readonly Stopwatch _stopwatch = new();
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private bool _disposed;
 
     /// <summary>
@@ -99,7 +99,7 @@ public class ScreenRecorderService : IRecordingService
     private static bool _debugFrameDumped = false;
     private static int _debugFrameIndex = 0;
     private static int _debugFramesDumped = 0;
-    private static readonly object DebugConfigLock = new();
+    private static readonly Lock DebugConfigLock = new();
     private static bool _debugConfigInitialized = false;
 
     public event EventHandler<RecordingErrorEventArgs>? ErrorOccurred;

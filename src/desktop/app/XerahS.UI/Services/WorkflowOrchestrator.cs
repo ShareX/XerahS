@@ -43,7 +43,7 @@ namespace XerahS.UI.Services;
 
 public sealed class WorkflowOrchestrator : IWorkflowOrchestrator
 {
-    private readonly object _uploadTitleLock = new();
+    private readonly Lock _uploadTitleLock = new();
     private readonly IDesktopTaskManager _taskManager;
     private readonly IScreenRecordingCoordinator _screenRecordingCoordinator;
     private IClassicDesktopStyleApplicationLifetime? _desktop;

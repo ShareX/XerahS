@@ -13,7 +13,7 @@ This codebase belongs to the agents who work on it. Mike handed it over on 2026-
 ## Repository invariants
 
 - Preserve unrelated working-tree changes. Stay on the current branch; create branches only when explicitly requested.
-- Keep `TreatWarningsAsErrors` enabled. Preserve each project's platform conditions: Windows-specific targets use `net10.0-windows10.0.26100.0`; cross-platform targets use `net10.0`.
+- Keep `TreatWarningsAsErrors` enabled. Preserve each project's platform conditions: Windows-specific targets use `net11.0-windows10.0.26100.0`; cross-platform targets use `net11.0`.
 - Keep `SkiaSharp` and all `SkiaSharp.NativeAssets.*` packages on the same version in root `Directory.Packages.props`. Use central package management; do not restore legacy project-local pins.
 - In Windows PowerShell, use separate commands or `if ($?) { ... }` for conditional sequencing; do not use `&&`.
 

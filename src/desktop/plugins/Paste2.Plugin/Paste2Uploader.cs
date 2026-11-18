@@ -31,8 +31,11 @@ namespace ShareX.Paste2.Plugin;
 /// <summary>
 /// Paste2 uploader - supports basic text uploads
 /// </summary>
-public sealed class Paste2Uploader : TextUploader
+public sealed partial class Paste2Uploader : TextUploader
 {
+    [GeneratedRegex("href\\s*=\\s*[\\\"'](?<url>[^\\\"']+)[\\\"']", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex TryExtractDeletionUrlRegex();
+
     private readonly Paste2ConfigModel _config;
 
     public Paste2Uploader(Paste2ConfigModel config)
@@ -88,7 +91,7 @@ public sealed class Paste2Uploader : TextUploader
             return null;
         }
 
-        foreach (Match match in Regex.Matches(responseInfo.ResponseText, "href\\s*=\\s*[\\\"'](?<url>[^\\\"']+)[\\\"']", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        foreach (Match match in TryExtractDeletionUrlRegex().Matches(responseInfo.ResponseText))
         {
             string candidate = match.Groups["url"].Value;
             if (!candidate.Contains("delete", StringComparison.OrdinalIgnoreCase) &&

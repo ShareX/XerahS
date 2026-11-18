@@ -49,7 +49,7 @@ public sealed class WaylandPortalHotkeyService : IHotkeyService
     private readonly SemaphoreSlim _bindSemaphore = new(1, 1);
     private readonly ManualResetEventSlim _rebindIdle = new(initialState: true);
     private readonly Func<Task>? _testRebindAction;
-    private readonly object _hotkeyLock = new();
+    private readonly Lock _hotkeyLock = new();
     private readonly ConcurrentDictionary<string, long> _hotkeyDebounceTimes = new();
     private readonly Dictionary<ushort, HotkeyInfo> _registered = new();
     private Dictionary<string, HotkeyInfo> _shortcutMap = new();

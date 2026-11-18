@@ -5,7 +5,7 @@ Before finishing a new plugin:
 1. Existing repo support was audited before writing the new plugin.
 2. Official API docs were reviewed, and the native-vs-compatibility choice is justified.
 3. Folder path is `src/desktop/plugins/<Name>.Plugin/`.
-4. `.csproj` targets `net10.0` and references `XerahS.Uploaders` and `XerahS.Common` with runtime assets excluded.
+4. `.csproj` targets `net11.0` and references `XerahS.Uploaders` and `XerahS.Common` with runtime assets excluded.
 5. `plugin.json` `pluginId`, `entryPoint`, and `assemblyFileName` match the actual code.
 6. Provider `ProviderId` matches `plugin.json` `pluginId`.
 7. Config model serializes only non-secret settings.

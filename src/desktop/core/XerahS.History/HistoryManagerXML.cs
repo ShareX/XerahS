@@ -32,7 +32,7 @@ namespace XerahS.History
 {
     public class HistoryManagerXML : HistoryManager
     {
-        private static readonly object thisLock = new object();
+        private static readonly Lock thisLock = new();
 
         public HistoryManagerXML(string filePath) : base(filePath)
         {

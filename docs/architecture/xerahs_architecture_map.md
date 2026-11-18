@@ -16,7 +16,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 2. **Plugin-Based Extensibility**: Dynamic uploader plugin system with assembly isolation
 3. **MVVM UI Architecture**: Clear separation of concerns using Avalonia + ReactiveUI
 4. **Service Locator Pattern**: Centralized platform service registration
-5. **Cross-Platform Core**: Business logic targets `net10.0`, platform code targets Windows-specific TFM
+5. **Cross-Platform Core**: Business logic targets `net11.0`, platform code targets Windows-specific TFM
 
 ---
 
@@ -25,7 +25,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 ### 1.1 XerahS.App (Desktop Application)
 - **File**: [Program.cs](../../src/desktop/app/XerahS.App/Program.cs)
 - **Purpose**: Main GUI application with full Avalonia UI
-- **Target Framework**: `net10.0-windows10.0.26100.0`
+- **Target Framework**: `net11.0-windows10.0.26100.0`
 - **Initialization Flow**:
   1. Initialize logging to `Documents/XerahS/Logs/`
   2. Detect and initialize platform services (Windows/macOS/Linux)
@@ -37,7 +37,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 ### 1.2 XerahS.CLI (Command-Line Interface)
 - **File**: [Program.cs](../../src/desktop/cli/XerahS.CLI/Program.cs)
 - **Purpose**: Headless CLI for automation and scripting
-- **Target Framework**: `net10.0-windows10.0.26100.0`
+- **Target Framework**: `net11.0-windows10.0.26100.0`
 - **Commands**:
   - `workflow run <id>` - Execute workflow by ID
   - `record` - Screen recording
@@ -198,7 +198,7 @@ XerahS is a cross-platform screen capture and upload application built on Avalon
 
 ### 3.3 Platform-Specific Considerations
 - **Conditional Compilation**: `#if WINDOWS`, `#if MACOS`, `#if LINUX` preprocessor directives
-- **TFM Strategy**: `net10.0-windows10.0.26100.0` for Windows projects, `net10.0` for cross-platform
+- **TFM Strategy**: `net11.0-windows10.0.26100.0` for Windows projects, `net11.0` for cross-platform
 - **P/Invoke Isolation**: All native Win32 calls confined to Platform.Windows
 - **Unsafe Code**: Allowed in Platform.Windows and Common (performance-critical bitmap operations)
 
@@ -543,8 +543,8 @@ Located in [XerahS.UI/Services](../../src/desktop/app/XerahS.UI/Services/)
 ## 10. Build & Deployment
 
 ### 10.1 Target Frameworks
-- **Windows-specific**: `net10.0-windows10.0.26100.0`
-- **Cross-platform**: `net10.0`
+- **Windows-specific**: `net11.0-windows10.0.26100.0`
+- **Cross-platform**: `net11.0`
 
 ### 10.2 Key NuGet Dependencies
 - **Avalonia**: 12.0.0 (UI framework)

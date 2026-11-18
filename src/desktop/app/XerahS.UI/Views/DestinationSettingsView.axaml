@@ -30,11 +30,18 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
+                <TextBlock Text="Routing" FontWeight="SemiBold"/>
+                <Button Content="File type overrides"
+                        Command="{Binding OpenOverridesCommand}"
+                        HorizontalAlignment="Stretch"
+                        Classes.accent="{Binding ShowOverrides}"
+                        ToolTip.Tip="Send every file with an extension to one uploader, whether it is uploaded as text or as a file"
+                        AutomationProperties.Name="File type overrides"/>
             </StackPanel>
         </Border>
 
         <!-- Main Content -->
-        <Grid Grid.Column="1" RowDefinitions="Auto, *" Margin="24">
+        <Grid Grid.Column="1" RowDefinitions="Auto, *" Margin="24" IsVisible="{Binding !ShowOverrides}">
             
             <!-- Header -->
             <Grid Grid.Row="0" ColumnDefinitions="*, 16, Auto" Margin="0,0,0,24">
@@ -311,5 +318,54 @@
 
             </Grid>
         </Grid>
+
+        <!-- File type overrides -->
+        <ScrollViewer Grid.Column="1" Margin="24" IsVisible="{Binding ShowOverrides}">
+            <StackPanel Spacing="16" MaxWidth="760" HorizontalAlignment="Left">
+                <TextBlock Text="File type overrides" FontSize="26" FontWeight="SemiBold"/>
+                <TextBlock TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Text="Files with these extensions always go to the uploader chosen here, whether they are uploaded as text or as files, and before the workflow's destination and each uploader's file type settings. An uploader you pick for one upload still wins. If the chosen uploader fails, the upload fails rather than going somewhere else."/>
+                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="4" Padding="16">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="No overrides yet. Files follow each category's destinations."
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   IsVisible="{Binding !Overrides.HasRows}"/>
+                        <ItemsControl ItemsSource="{Binding Overrides.Rows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:FileTypeOverrideRowViewModel">
+                                    <Grid ColumnDefinitions="110, 12, *, 12, Auto" Margin="0,0,0,8">
+                                        <TextBlock Grid.Column="0" Text="{Binding ExtensionLabel}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <ComboBox Grid.Column="2" HorizontalAlignment="Stretch"
+                                                  ItemsSource="{Binding Targets}"
+                                                  SelectedItem="{Binding Target}"
+                                                  PlaceholderText="(uploader removed: choose another)"
+                                                  AutomationProperties.Name="{Binding ExtensionLabel, StringFormat='Uploader for {0} files'}"/>
+                                        <Button Grid.Column="4" Content="Remove" Command="{Binding RemoveCommand}"
+                                                AutomationProperties.Name="{Binding ExtensionLabel, StringFormat='Remove the override for {0}'}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Separator/>
+                        <TextBlock Text="Add an override" FontWeight="SemiBold"/>
+                        <Grid ColumnDefinitions="110, 12, *, 12, Auto">
+                            <TextBox Grid.Column="0" Text="{Binding Overrides.NewExtension}" PlaceholderText="md"
+                                     AutomationProperties.Name="Extension"/>
+                            <ComboBox Grid.Column="2" HorizontalAlignment="Stretch"
+                                      ItemsSource="{Binding Overrides.Targets}"
+                                      SelectedItem="{Binding Overrides.NewTarget}"
+                                      AutomationProperties.Name="Uploader for the new extension"/>
+                            <Button Grid.Column="4" Content="Add" Classes="accent" Command="{Binding Overrides.AddCommand}"
+                                    AutomationProperties.Name="Add override"/>
+                        </Grid>
+                        <TextBlock Text="{Binding Overrides.Message}" TextWrapping="Wrap"
+                                   IsVisible="{Binding Overrides.Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </views:PageView>

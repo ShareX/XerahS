@@ -56,7 +56,7 @@ This creates:
 ## Required Conventions
 
 1. Keep the plugin under `src/desktop/plugins/<Name>.Plugin/`.
-2. Target `net10.0`.
+2. Target `net11.0`.
 3. Reuse `src/desktop/plugins/Directory.Build.props`.
 4. Use `ShareX.<Name>.Plugin` namespaces and `XerahS.<Name>.Plugin` assembly/project names.
 5. Exclude Avalonia/runtime-shared dependencies from plugin output with `ExcludeAssets=runtime`.

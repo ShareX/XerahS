@@ -44,7 +44,7 @@ public class WindowsHotkeyService : IHotkeyService
 
     private readonly Dictionary<ushort, HotkeyInfo> _registeredHotkeys = new();
     private readonly ConcurrentQueue<Action> _actionQueue = new();
-    private readonly object _lock = new(); // Only for accessing _registeredHotkeys if needed from other threads
+    private readonly Lock _lock = new(); // Only for accessing _registeredHotkeys if needed from other threads
     private ushort _nextId = 1;
     private bool _disposed;
     private IntPtr _hwnd;

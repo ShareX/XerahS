@@ -8,8 +8,8 @@
     <IsWindowsDesktopBuild Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '' And '$(CrossCompile)' != 'true')">true</IsWindowsDesktopBuild>
     <IsMacOSDesktopBuild Condition="$(RuntimeIdentifier.StartsWith('osx')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('OSX')))">true</IsMacOSDesktopBuild>
     <IsLinuxDesktopBuild Condition="$(RuntimeIdentifier.StartsWith('linux')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('Linux')))">true</IsLinuxDesktopBuild>
-    <TargetFramework>net10.0</TargetFramework>
-    <TargetFramework Condition="'$(IsWindowsDesktopBuild)' == 'true'">net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework Condition="'$(IsWindowsDesktopBuild)' == 'true'">net11.0-windows10.0.26100.0</TargetFramework>
     <OutputType Condition="'$(IsWindowsDesktopBuild)' == 'true'">WinExe</OutputType>
     <OutputType Condition="'$(IsWindowsDesktopBuild)' == 'true' And '$(Configuration)' == 'Debug'">Exe</OutputType>
     <OutputType Condition="'$(IsWindowsDesktopBuild)' != 'true'">Exe</OutputType>

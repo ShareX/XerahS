@@ -69,7 +69,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
 
       - name: Install Inno Setup
         shell: pwsh
@@ -151,7 +151,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
 
       # With these repository secrets the app is signed with Developer ID (hardened runtime) and the
       # app and DMG are notarized and stapled: MACOS_CERTIFICATE (Developer ID Application .p12,
@@ -310,7 +310,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
 
       - name: Install Linux packaging tools
         shell: bash
@@ -440,7 +440,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
 
       - name: Install Flatpak & flatpak-builder
         shell: bash

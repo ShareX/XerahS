@@ -46,11 +46,11 @@ namespace XerahS.Platform.Linux.Services;
 public sealed class EvdevGlobalHotkeyService : IHotkeyService
 {
     private readonly Dictionary<ushort, HotkeyInfo> _registered = new();
-    private readonly object _registrationLock = new();
+    private readonly Lock _registrationLock = new();
     private readonly ModifierStateTracker _modifierTracker = new();
     private readonly EvdevHotkeyMatcher _matcher = new();
     private readonly List<EvdevReader> _readers = new();
-    private readonly object _readerLock = new();
+    private readonly Lock _readerLock = new();
     private ushort _nextId = 1;
     private bool _listening;
     private bool _disposed;

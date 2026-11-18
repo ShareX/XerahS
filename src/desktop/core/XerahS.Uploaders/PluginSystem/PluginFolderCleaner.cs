@@ -36,7 +36,7 @@ internal static class PluginFolderCleaner
     private const string ManifestFileName = "plugin.json";
     private const string QuarantineDirectoryName = "_quarantine";
 
-    private static readonly object _scheduleLock = new();
+    private static readonly Lock _scheduleLock = new();
     private static readonly HashSet<string> _pendingRoots = new(StringComparer.OrdinalIgnoreCase);
     private static Task? _backgroundTask;
 

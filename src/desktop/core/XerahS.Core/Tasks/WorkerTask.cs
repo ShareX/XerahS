@@ -104,7 +104,7 @@ namespace XerahS.Core.Tasks
         private bool _hasImageOutput;
         private bool _disposeRequested;
         private bool _disposed;
-        private readonly object _lifetimeLock = new();
+        private readonly Lock _lifetimeLock = new();
         private volatile bool _hasFinished;
         internal bool HasFinished => _hasFinished;
 

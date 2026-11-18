@@ -33,7 +33,7 @@ public static class ProviderContextManager
 {
     private static IProviderContext? _context;
     private static string? _contextSecretsPath;
-    private static readonly object _lock = new();
+    private static readonly Lock _lock = new();
 
     public static IProviderContext? Current => _context;
 

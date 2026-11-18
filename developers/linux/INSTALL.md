@@ -93,7 +93,7 @@ cat > ~/.local/share/applications/xerahs.desktop <<'EOF'
 [Desktop Entry]
 Type=Application
 Name=XerahS
-Exec=/path/to/xerahs/src/desktop/app/XerahS.App/bin/Debug/net10.0/XerahS.App
+Exec=/path/to/xerahs/src/desktop/app/XerahS.App/bin/Debug/net11.0/XerahS.App
 Icon=xerahs
 Terminal=false
 Categories=Utility;

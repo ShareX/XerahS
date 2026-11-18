@@ -28,8 +28,11 @@ using System.Text.RegularExpressions;
 
 namespace XerahS.Common
 {
-    public static class StringExtensions
+    public static partial class StringExtensions
     {
+        [GeneratedRegex(@"\r\n?|\n")]
+        private static partial Regex ReplaceNewLinesRegex();
+
         public static bool Contains(this string str, string value, StringComparison comparisonType)
         {
             return str.IndexOf(value, comparisonType) >= 0;
@@ -286,7 +289,7 @@ namespace XerahS.Common
 
         public static string ReplaceNewLines(this string text, string replacement = "\r\n")
         {
-            return Regex.Replace(text, @"\r\n?|\n", replacement);
+            return ReplaceNewLinesRegex().Replace(text, replacement);
         }
 
         public static IEnumerable<Tuple<string, string>> ForEachBetween(this string text, string front, string back)

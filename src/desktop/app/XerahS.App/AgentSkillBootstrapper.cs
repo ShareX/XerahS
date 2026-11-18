@@ -56,29 +56,21 @@ namespace XerahS.App
 
             try
             {
-                using var process = Process.Start(new ProcessStartInfo(omaxerahs)
-                {
-                    ArgumentList = { "skill", "install", "--json" },
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false
-                });
+                ProcessTextOutput result = Process.RunAndCaptureText(
+                    new ProcessStartInfo(omaxerahs)
+                    {
+                        ArgumentList = { "skill", "install", "--json" },
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false
+                    },
+                    TimeSpan.FromSeconds(30));
 
-                if (process == null)
-                {
-                    return;
-                }
-
-                string output = process.StandardOutput.ReadToEnd();
-                process.StandardError.ReadToEnd();
-                if (!process.WaitForExit(30_000))
-                {
-                    process.Kill();
-                    XerahS.Common.DebugHelper.WriteLine("Agent skill: omaxerahs skill install timed out.");
-                    return;
-                }
-
-                XerahS.Common.DebugHelper.WriteLine($"Agent skill: omaxerahs skill install exited {process.ExitCode}: {output.Trim()}");
+                XerahS.Common.DebugHelper.WriteLine($"Agent skill: omaxerahs skill install exited {result.ExitStatus.ExitCode}: {result.StandardOutput.Trim()}");
+            }
+            catch (TimeoutException)
+            {
+                XerahS.Common.DebugHelper.WriteLine("Agent skill: omaxerahs skill install timed out.");
             }
             catch (Exception ex)
             {

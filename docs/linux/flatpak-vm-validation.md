@@ -78,7 +78,7 @@ XERAHS_ARCHITECTURES=linux-arm64 XERAHS_PLUGIN_JOBS=2 ./build/linux/package-linu
 The publish output should be under:
 
 ```text
-src/desktop/app/XerahS.App/bin/Release/net10.0/linux-arm64/publish
+src/desktop/app/XerahS.App/bin/Release/net11.0/linux-arm64/publish
 ```
 
 ## 5. Prepare Current Local Flatpak Staging
@@ -94,7 +94,7 @@ Prepare it from the ARM64 publish output:
 ```bash
 rm -rf dist/xerahs-flatpak-staging
 mkdir -p dist/xerahs-flatpak-staging
-cp -a src/desktop/app/XerahS.App/bin/Release/net10.0/linux-arm64/publish/. dist/xerahs-flatpak-staging/
+cp -a src/desktop/app/XerahS.App/bin/Release/net11.0/linux-arm64/publish/. dist/xerahs-flatpak-staging/
 ```
 
 Check required files:

@@ -63,7 +63,7 @@ $version = $version.Trim()
 Write-Host "Building XerahS version $version for Linux..."
 
 # 1. Clean & Publish
-$publishDir = Join-Path $root "src\desktop\app\XerahS.App\bin\Release\net10.0\linux-x64\publish"
+$publishDir = Join-Path $root "src\desktop\app\XerahS.App\bin\Release\net11.0\linux-x64\publish"
 if (Test-Path $publishDir) { Remove-Item -Recurse -Force $publishDir }
 
 Invoke-DotNet -Description "Running dotnet publish (linux-x64)..." -Arguments @(

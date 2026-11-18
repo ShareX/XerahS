@@ -45,7 +45,7 @@ public class WindowsGraphicsCaptureSource : ICaptureSource
     private ID3D11Device? _d3dDevice;
     private ID3D11Texture2D? _stagingTexture;
     private WD3D.IDirect3DDevice? _device;
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private bool _isCapturing;
     private bool _disposed;
     private int _frameCount = 0;

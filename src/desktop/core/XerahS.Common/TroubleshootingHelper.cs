@@ -34,7 +34,7 @@ namespace XerahS.Common
     public static class TroubleshootingHelper
     {
 #if DEBUG
-        private static readonly object _lock = new();
+        private static readonly Lock _lock = new();
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, StreamWriter> _writers = new();
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> _logPaths = new();
 #endif

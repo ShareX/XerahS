@@ -1,0 +1,9 @@
+{
+  // Reverse proxy that fronts a user-run `xerahs-mcp --mcp-server --transport http` backend as https://mcp.xerahs.com.
+  // Deployed to the ShareX Cloudflare account. Set MCP_BACKEND_URL (and optionally MCP_BEARER_TOKEN) as Worker
+  // variables/secrets; keep_vars stops a deploy from clearing values set in the dashboard.
+  "name": "xerahs-mcp-worker",
+  "main": "worker.js",
+  "compatibility_date": "2026-05-09",
+  "keep_vars": true
+}

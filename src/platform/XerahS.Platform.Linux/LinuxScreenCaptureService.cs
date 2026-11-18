@@ -48,7 +48,7 @@ namespace XerahS.Platform.Linux
     public class LinuxScreenCaptureService : IScreenCaptureService, ILinuxCaptureRuntime, ILinuxRegionCaptureCapabilityProvider, ILinuxRegionSelectorDiagnosticsProvider
     {
         private readonly LinuxCaptureCoordinator _captureCoordinator;
-        private readonly object _linuxRegionSelectorDecisionLock = new();
+        private readonly Lock _linuxRegionSelectorDecisionLock = new();
         private LinuxRegionSelectorRuntimeDecision? _lastLinuxRegionSelectorDecision;
 
         public LinuxScreenCaptureService()

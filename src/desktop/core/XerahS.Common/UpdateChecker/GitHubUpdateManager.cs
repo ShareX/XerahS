@@ -43,7 +43,7 @@ namespace XerahS.Common
         public Func<UpdateChecker, Task<bool>>? ShowUpdateDialogCallback { get; set; }
 
         private Timer? updateTimer = null;
-        private readonly object updateTimerLock = new object();
+        private readonly Lock updateTimerLock = new();
 
         public GitHubUpdateManager()
         {

@@ -42,12 +42,12 @@ MOBILE_MAUI_PROJECT="$ROOT/src/mobile-experimental/XerahS.Mobile.Maui/XerahS.Mob
 echo "=========================================="
 echo "Building XerahS.Mobile.Ava (Avalonia Android)"
 echo "=========================================="
-dotnet build "$MOBILE_AVA_PROJECT" -c Release -f net10.0-android
+dotnet build "$MOBILE_AVA_PROJECT" -c Release -f net11.0-android
 if [ $? -eq 0 ]; then
     echo "✅ XerahS.Mobile.Ava built successfully"
     
     # Copy APK to dist if it exists
-    APK_SOURCE="$ROOT/src/mobile-experimental/XerahS.Mobile.Ava/bin/Release/net10.0-android/com.getsharex.xerahs-Signed.apk"
+    APK_SOURCE="$ROOT/src/mobile-experimental/XerahS.Mobile.Ava/bin/Release/net11.0-android/com.getsharex.xerahs-Signed.apk"
     if [ -f "$APK_SOURCE" ]; then
         cp "$APK_SOURCE" "$OUTPUT_DIR/XerahS-$VERSION-Android.apk"
         echo "   APK copied to: $OUTPUT_DIR/XerahS-$VERSION-Android.apk"
@@ -61,12 +61,12 @@ echo ""
 echo "=========================================="
 echo "Building XerahS.Mobile.Maui (Android)"
 echo "=========================================="
-dotnet build "$MOBILE_MAUI_PROJECT" -c Release -f net10.0-android
+dotnet build "$MOBILE_MAUI_PROJECT" -c Release -f net11.0-android
 if [ $? -eq 0 ]; then
     echo "✅ XerahS.Mobile.Maui (Android) built successfully"
     
     # Copy MAUI APK to dist if it exists
-    MAUI_APK_SOURCE="$ROOT/src/mobile-experimental/XerahS.Mobile.Maui/bin/Release/net10.0-android/com.getsharex.xerahs-Signed.apk"
+    MAUI_APK_SOURCE="$ROOT/src/mobile-experimental/XerahS.Mobile.Maui/bin/Release/net11.0-android/com.getsharex.xerahs-Signed.apk"
     if [ -f "$MAUI_APK_SOURCE" ]; then
         cp "$MAUI_APK_SOURCE" "$OUTPUT_DIR/XerahS-$VERSION-MAUI-Android.apk"
         echo "   APK copied to: $OUTPUT_DIR/XerahS-$VERSION-MAUI-Android.apk"

@@ -8,8 +8,8 @@
     <IsWindowsCliBuild Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '')">true</IsWindowsCliBuild>
     <IsMacOSCliBuild Condition="$(RuntimeIdentifier.StartsWith('osx')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('OSX')))">true</IsMacOSCliBuild>
     <IsLinuxCliBuild Condition="$(RuntimeIdentifier.StartsWith('linux')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('Linux')))">true</IsLinuxCliBuild>
-    <TargetFramework>net10.0</TargetFramework>
-    <TargetFramework Condition="'$(IsWindowsCliBuild)' == 'true'">net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework Condition="'$(IsWindowsCliBuild)' == 'true'">net11.0-windows10.0.26100.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <AssemblyName>xerahscli</AssemblyName>
     <Nullable>enable</Nullable>

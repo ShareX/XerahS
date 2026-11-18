@@ -258,7 +258,7 @@ public class AmazonS3Uploader : FileUploader
 
         ProgressManager progressManager = new ProgressManager(fileInfo.Length);
         long reportedBytes = 0;
-        object progressSync = new object();
+        Lock progressSync = new();
 
         try
         {

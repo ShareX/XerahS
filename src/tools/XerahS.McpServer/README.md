@@ -26,4 +26,6 @@ xerahs-mcp --mcp-server --transport http --port 7890
 ```
 
 HTTP mode still requires an interactive desktop session and the required OS capture, clipboard, and accessibility permissions.
+
+The protocol layer (JSON-RPC, the initialize handshake, stdio and Streamable HTTP transports) is the official `ModelContextProtocol` C# SDK. `Server/XerahSMcpHost.cs` maps SDK requests onto the XerahS runtime (tools, resources, prompts) and maps domain exceptions to the error codes listed in [docs/mcp/usage-guide.md](../../../docs/mcp/usage-guide.md). `Transport/HttpServer.cs` adds the Bearer API key, CORS, the `/mcp/events/` heartbeat stream, `/health`, and plain-JSON replies for clients that do not accept SSE.
 ---

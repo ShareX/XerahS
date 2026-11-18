@@ -34,12 +34,12 @@ namespace XerahS.Uploaders.PluginSystem;
 /// <summary>
 /// Manages uploader instances - lifecycle, persistence, default selection
 /// </summary>
-public class InstanceManager
+public partial class InstanceManager
 {
     private static readonly Lazy<InstanceManager> _instance = new(() => new InstanceManager());
     public static InstanceManager Instance => _instance.Value;
 
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private InstanceConfiguration _configuration;
 
     internal const string ConfigFileName = "uploader-instances.json";
@@ -51,6 +51,7 @@ public class InstanceManager
     {
         Directory.CreateDirectory(PathsManager.SettingsFolder);
         _configuration = LoadConfiguration();
+        MarkOverridesSaved();
     }
 
     public void MigrateSecretsIfNeeded()
@@ -130,6 +131,7 @@ public class InstanceManager
     {
         lock (_lock)
         {
+            SyncFileTypeOverridesIfChanged();
             return JsonConvert.SerializeObject(_configuration, Formatting.Indented);
         }
     }
@@ -148,7 +150,8 @@ public class InstanceManager
         lock (_lock)
         {
             _configuration = configuration;
-            SaveConfiguration(throwOnError: true);
+            // The imported overrides are the ones to keep, not whatever is on disk.
+            SaveConfiguration(throwOnError: true, overridesChanged: true);
         }
     }
 
@@ -160,6 +163,7 @@ public class InstanceManager
         lock (_lock)
         {
             _configuration = LoadConfiguration();
+            MarkOverridesSaved();
         }
     }
 
@@ -275,7 +279,10 @@ public class InstanceManager
                     LogStaleDefaultRemoved(category, instanceId, "instance was removed");
                 }
 
-                SaveConfiguration();
+                using var configLock = AcquireConfigLock();
+                ReadFileTypeOverridesWhileLocked();
+                RemoveFileTypeOverridesFor(instanceId);
+                SaveConfigurationWhileLocked(throwOnError: false, overridesChanged: true);
             }
         }
     }
@@ -678,6 +685,7 @@ public class InstanceManager
     {
         configuration.Instances ??= new List<UploaderInstance>();
         configuration.DefaultInstances ??= new Dictionary<UploaderCategory, string>();
+        configuration.FileTypeOverrides = NormalizeFileTypeOverrides(configuration.FileTypeOverrides);
 
         foreach (var instance in configuration.Instances)
         {
@@ -695,6 +703,11 @@ public class InstanceManager
     {
         instance.FileTypeRouting ??= new FileTypeScope();
         instance.FileTypeRouting.FileExtensions = NormalizeFileExtensions(instance.FileTypeRouting.FileExtensions);
+        if (instance.FileTypeRouting.TextFileExceptions != null)
+        {
+            // Older saves doubled this list (see FileTypeScope.ShouldSerializeEffectiveTextFileExceptions).
+            instance.FileTypeRouting.TextFileExceptions = NormalizeFileExtensions(instance.FileTypeRouting.TextFileExceptions);
+        }
     }
 
     private static List<string> NormalizeFileExtensions(IEnumerable<string>? fileExtensions)
@@ -751,17 +764,32 @@ public class InstanceManager
         DebugHelper.WriteLine($"[Uploaders] Removed stale default {category} uploader '{instanceId}': {reason}.");
     }
 
-    private void SaveConfiguration(bool throwOnError = false)
+    /// <param name="overridesChanged">True when the caller read the overrides from disk and changed them
+    /// under this same lock, so the in-memory list is the one to write.</param>
+    private void SaveConfiguration(bool throwOnError = false, bool overridesChanged = false)
     {
         using var configLock = AcquireConfigLock();
+        SaveConfigurationWhileLocked(throwOnError, overridesChanged);
+    }
+
+    /// <summary>Writes the configuration. The caller holds the cross-process config lock.</summary>
+    private void SaveConfigurationWhileLocked(bool throwOnError, bool overridesChanged)
+    {
         try
         {
+            // Keep overrides another process wrote since we last read them.
+            if (!overridesChanged)
+            {
+                ReadFileTypeOverridesWhileLocked();
+            }
+
             var json = JsonConvert.SerializeObject(_configuration, Formatting.Indented);
             string configFilePath = ConfigFilePath;
             Directory.CreateDirectory(Path.GetDirectoryName(configFilePath) ?? PathsManager.SettingsFolder);
             string tempFilePath = configFilePath + ".temp";
             File.WriteAllText(tempFilePath, json);
             File.Move(tempFilePath, configFilePath, overwrite: true);
+            MarkOverridesSaved();
         }
         catch (Exception ex)
         {

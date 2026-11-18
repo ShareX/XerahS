@@ -57,7 +57,7 @@ public class DropboxProvider : UploaderProviderBase, IUploaderExplorer, IInstanc
     private const string UrlGetThumbnail = UrlContent + "/files/get_thumbnail";
 
     private static SysHttpClient ExplorerHttpClient => HttpClientFactory.Create();
-    private readonly object _latestSettingsLock = new();
+    private readonly Lock _latestSettingsLock = new();
     private string? _latestSettingsJson;
 
     public override string ProviderId => "dropbox";

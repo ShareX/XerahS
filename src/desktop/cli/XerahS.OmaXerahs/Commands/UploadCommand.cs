@@ -402,6 +402,9 @@ internal static class UploadCommand
         settings.AfterCaptureJob = AfterCaptureTasks.None;
         settings.AfterUploadJob = AfterUploadTasks.None;
         settings.DestinationInstanceId = instance.InstanceId;
+        // OmaXerahs reports this destination before uploading (and its inspection already applies file
+        // type overrides), so it is the destination for this one upload.
+        settings.DestinationChosenForThisUpload = true;
         settings.AllowCrossCategoryFallback = false;
         settings.RoutedImageFileDestinationId = instance.Category == UploaderCategory.File ? instance.InstanceId : null;
         settings.GeneralSettings.ShowToastNotificationAfterTaskCompleted = false;

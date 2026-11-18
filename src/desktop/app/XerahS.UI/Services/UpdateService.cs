@@ -42,7 +42,7 @@ namespace XerahS.UI.Services;
 public class UpdateService : IDisposable
 {
     private static UpdateService? _instance;
-    private static readonly object _lock = new();
+    private static readonly Lock _lock = new();
     private const string DefaultReleaseOwner = "ShareX";
     private const string DefaultPreReleaseOwner = "KovaForge";
     private const string DefaultRepo = "XerahS";

@@ -185,7 +185,8 @@ namespace XerahS.Core.Tasks.Processors
 
             try
             {
-                string extension = Path.GetExtension(info.FilePath);
+                // Keep a multi-part extension an override matches (".tar.gz"), so renaming does not change the route.
+                string extension = InstanceManager.Instance.GetExtensionToKeep(info.FilePath);
                 string newName = TaskHelpers.GetFileName(info.TaskSettings, extension, info.Metadata);
                 if (!string.IsNullOrWhiteSpace(newName))
                 {
@@ -281,6 +282,23 @@ namespace XerahS.Core.Tasks.Processors
                     $"default=\"{defaultTextInstance?.DisplayName ?? "(none)"}\", list={textInstanceSummary}");
             }
 
+            // A file type override (an extension sent to one instance, whatever the category) comes before
+            // the task's destination and per-instance routing. It does not fall back to other uploaders when
+            // it fails: the user chose where these files go, so they never land somewhere else silently.
+            var overrideInstance = ResolveFileTypeOverride(instanceManager, info);
+            if (overrideInstance != null)
+            {
+                var overrideResult = await TryUploadWithInstanceAsync(overrideInstance, info, token).ConfigureAwait(false);
+                if (!info.PrivacyReviewRequired && !IsSuccessfulUploadResult(overrideResult))
+                {
+                    DebugHelper.WriteLine(
+                        $"File type override upload to '{overrideInstance.DisplayName}' failed " +
+                        $"({overrideResult?.Errors?.ToString() ?? overrideResult?.Response ?? "unknown error"}); not trying other uploaders.");
+                }
+
+                return overrideResult;
+            }
+
             UploaderInstance? targetInstance = null;
 
             if (!string.IsNullOrEmpty(targetInstanceId))
@@ -358,6 +376,50 @@ namespace XerahS.Core.Tasks.Processors
             return IsSuccessfulUploadResult(fallbackResult) ? fallbackResult : fallbackResult ?? primaryResult;
         }
 
+        /// <summary>
+        /// The instance a file type override sends this upload to, or null. Skipped when the user picked the
+        /// destination for this one upload, and for Auto instances. Privacy review shows and confirms this same
+        /// destination (PrivacyUploadGuard.ResolveInitialDestination), so the override applies after it too.
+        /// </summary>
+        /// <param name="fileName">The name to match, when the upload will carry a different one than the task
+        /// has now (privacy review uploads a flattened PNG); null uses <see cref="GetRoutingFileName"/>.</param>
+        internal static UploaderInstance? ResolveFileTypeOverride(InstanceManager instanceManager, TaskInfo info, string? fileName = null)
+        {
+            if (info.TaskSettings?.DestinationChosenForThisUpload == true)
+            {
+                return null;
+            }
+
+            fileName ??= GetRoutingFileName(info);
+            var match = instanceManager.FindFileTypeOverride(fileName);
+            if (match == null || InstanceManager.IsAutoProvider(match.Value.Instance.ProviderId))
+            {
+                return null;
+            }
+
+            DebugHelper.WriteLine(
+                $"File type override: '{fileName}' (.{match.Value.Override.Extension}) goes to " +
+                $"{match.Value.Instance.DisplayName} ({match.Value.Instance.InstanceId}).");
+            return match.Value.Instance;
+        }
+
+        /// <summary>
+        /// The name the upload will carry, for matching overrides: the task's file name, else its file's, else
+        /// for text content the configured text extension (so clipboard text follows a .txt override).
+        /// </summary>
+        internal static string? GetRoutingFileName(TaskInfo info)
+        {
+            if (!string.IsNullOrWhiteSpace(info.FileName)) return info.FileName;
+            if (!string.IsNullOrWhiteSpace(info.FilePath)) return Path.GetFileName(info.FilePath);
+            if (info.DataType == EDataType.Text)
+            {
+                string? ext = info.TaskSettings?.AdvancedSettings?.TextFileExtension;
+                return string.IsNullOrWhiteSpace(ext) ? null : "text." + ext.Trim().TrimStart('.');
+            }
+
+            return null;
+        }
+
         internal static UploaderInstance? ResolveRequestedInstance(
             InstanceManager instanceManager,
             string targetInstanceId,
@@ -403,7 +465,7 @@ namespace XerahS.Core.Tasks.Processors
         /// chosen destination only covers it as a catch-all, so e.g. .md goes to a docs host while the
         /// default stays object storage. Auto destinations already route by type.
         /// </summary>
-        internal static UploaderInstance? ApplyFileTypeRoute(
+        public static UploaderInstance? ApplyFileTypeRoute(
             InstanceManager instanceManager,
             UploaderCategory category,
             UploaderInstance? targetInstance,

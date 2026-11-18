@@ -8,8 +8,8 @@
     <IsWindowsCliBuild Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '')">true</IsWindowsCliBuild>
     <IsMacOSCliBuild Condition="$(RuntimeIdentifier.StartsWith('osx')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('OSX')))">true</IsMacOSCliBuild>
     <IsLinuxCliBuild Condition="$(RuntimeIdentifier.StartsWith('linux')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('Linux')))">true</IsLinuxCliBuild>
-    <!-- Omarchy/Linux host: never net10.0-windows*. Transitive ImageEditor/Media/Indexer/RegionCapture/Avalonia DLLs are accepted in v1. -->
-    <TargetFramework>net10.0</TargetFramework>
+    <!-- Omarchy/Linux host: never net11.0-windows*. Transitive ImageEditor/Media/Indexer/RegionCapture/Avalonia DLLs are accepted in v1. -->
+    <TargetFramework>net11.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <AssemblyName>omaxerahs</AssemblyName>
     <Nullable>enable</Nullable>
@@ -27,7 +27,7 @@
     <EmbeddedResource Include="AgentSkill\**\*" LogicalName="AgentSkill/$([System.String]::Copy('%(RecursiveDir)').Replace('\','/'))%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
-    <!-- Dual Windows/non-Windows Bootstrap refs match XerahS.CLI, but always drop OS so this net10.0 host binds Bootstrap's net10.0 TFM. -->
+    <!-- Dual Windows/non-Windows Bootstrap refs match XerahS.CLI, but always drop OS so this net11.0 host binds Bootstrap's net11.0 TFM. -->
     <ProjectReference Include="..\..\app\XerahS.Bootstrap\XerahS.Bootstrap.csproj"
                       Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(OS)' == 'Windows_NT' And '$(RuntimeIdentifier)' == '')"
                       GlobalPropertiesToRemove="OS" />
@@ -36,7 +36,7 @@
                       GlobalPropertiesToRemove="OS" />
     <ProjectReference Include="..\..\core\XerahS.Core\XerahS.Core.csproj" />
     <ProjectReference Include="..\..\..\platform\XerahS.Platform.Abstractions\XerahS.Platform.Abstractions.csproj" />
-    <!-- net10.0 cannot reference XerahS.Platform.Windows (net10.0-windows*). Linux/macOS platform projects match CLI RID/OS conditions. -->
+    <!-- net11.0 cannot reference XerahS.Platform.Windows (net11.0-windows*). Linux/macOS platform projects match CLI RID/OS conditions. -->
     <ProjectReference Include="..\..\..\platform\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" Condition="'$(IsMacOSCliBuild)' == 'true'" />
     <ProjectReference Include="..\..\..\platform\XerahS.Platform.Linux\XerahS.Platform.Linux.csproj" Condition="'$(IsLinuxCliBuild)' == 'true'" />
   </ItemGroup>

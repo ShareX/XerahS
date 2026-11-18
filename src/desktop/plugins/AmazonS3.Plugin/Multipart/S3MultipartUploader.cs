@@ -68,7 +68,7 @@ public sealed class S3MultipartUploader : IMultipartUploader
         Stopwatch stopwatch = Stopwatch.StartNew();
         ConcurrentDictionary<int, CompletedPart> completedParts = new();
         Dictionary<int, long> activePartBytes = new();
-        object progressSync = new();
+        Lock progressSync = new();
         long committedBytes = 0;
         long reportedBytes = 0;
         int committedPartCount = 0;

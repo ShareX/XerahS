@@ -41,7 +41,7 @@ namespace XerahS.Platform.MacOS.Native
         private const string PrivacyPaneUrl =
             "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture";
 
-        private static readonly object SyncLock = new();
+        private static readonly Lock SyncLock = new();
         private static bool _requestedThisSession;
         private static bool _guidanceShownThisSession;
 

@@ -32,7 +32,7 @@ namespace XerahS.Core.Capture;
 /// </summary>
 public static class LastRegionStore
 {
-    private static readonly object Gate = new();
+    private static readonly Lock Gate = new();
     private static Rectangle _region;
 
     public static void Set(int x, int y, int width, int height)

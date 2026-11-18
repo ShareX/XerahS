@@ -187,7 +187,7 @@ internal static class CliUploaderBootstrapper
     {
         var manager = InstanceManager.Instance;
         string ext = Path.GetExtension(fileName);
-        return new[] { string.IsNullOrWhiteSpace(ext) ? null : manager.GetDestinationForFile(category, ext), manager.GetDefaultInstance(category) }
+        return new[] { manager.GetFileTypeOverrideInstance(fileName), string.IsNullOrWhiteSpace(ext) ? null : manager.GetDestinationForFile(category, ext), manager.GetDefaultInstance(category) }
             .Where(i => i != null).Cast<UploaderInstance>().Any(IsUsable);
     }
 
@@ -207,6 +207,15 @@ internal static class CliUploaderBootstrapper
                 usable.Select(i => i.DisplayName).ToArray(), usable.Length > 0
                     ? $"{category}: {usable.Length} usable uploader(s). Default: {def?.DisplayName ?? "(none)"}."
                     : $"{category}: no usable uploader configured.");
+        }
+
+        foreach (var o in InstanceManager.Instance.GetFileTypeOverrides())
+        {
+            var target = InstanceManager.Instance.GetInstance(o.InstanceId);
+            bool ok = target is { IsAvailable: true };
+            yield return new BootstrapDiagnostic("Override", ok ? "ok" : "warning", target?.DisplayName, [],
+                ok ? $"Override: .{o.Extension} always goes to {target!.DisplayName}."
+                   : $"Override: .{o.Extension} points to {(target == null ? "a removed instance" : $"unavailable {target.DisplayName}")}; it is ignored.");
         }
 
         if (ProviderCatalog.GetProvider("pastebin") != null)

@@ -56,7 +56,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
     private RecordingOptions? _currentOptions;
     private RecordingStatus _status = RecordingStatus.Idle;
     private readonly Stopwatch _stopwatch = new();
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private bool _disposed;
     private bool _stopRequested;
     private Timer? _durationTimer;
@@ -70,7 +70,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
     // Portal-scoped PipeWire connection (OpenPipeWireRemote). Window streams on
     // xdg-desktop-portal-hyprland only negotiate through it.
     private SafeFileHandle? _pipewireRemote;
-    private static readonly object SpawnWithRemoteLock = new();
+    private static readonly Lock SpawnWithRemoteLock = new();
     private int _pipewireSourceWidth;
     private int _pipewireSourceHeight;
 

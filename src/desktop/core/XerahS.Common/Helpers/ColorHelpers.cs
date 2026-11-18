@@ -30,8 +30,14 @@ using System.Text.RegularExpressions;
 
 namespace XerahS.Common
 {
-    public static class ColorHelpers
+    public static partial class ColorHelpers
     {
+        [GeneratedRegex("[^a-fA-F0-9]")]
+        private static partial Regex HexToColorRegex();
+
+        [GeneratedRegex("^[0-9A-F]+$", RegexOptions.IgnoreCase)]
+        private static partial Regex HexToColorSafeRegex();
+
         public static Color[] StandardColors = new Color[]
         {
             Color.FromArgb(0, 0, 0),
@@ -233,7 +239,7 @@ namespace XerahS.Common
                 throw new ArgumentException(nameof(hex));
             }
 
-            hex = Regex.Replace(hex, "[^a-fA-F0-9]", string.Empty);
+            hex = HexToColorRegex().Replace(hex, string.Empty);
 
             if (((format == ColorFormat.RGBA || format == ColorFormat.ARGB) && hex.Length != 8) ||
                 (format == ColorFormat.RGB && hex.Length != 6))
@@ -354,7 +360,7 @@ namespace XerahS.Common
 
         public static Color HexToColorSafe(string hex, ColorFormat format = ColorFormat.RGB)
         {
-            if (!Regex.IsMatch(hex, "^[0-9A-F]+$", RegexOptions.IgnoreCase))
+            if (!HexToColorSafeRegex().IsMatch(hex))
             {
                 return Color.Black;
             }

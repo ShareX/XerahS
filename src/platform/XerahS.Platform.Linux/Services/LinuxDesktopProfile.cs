@@ -70,7 +70,7 @@ public sealed class LinuxDesktopProfile : IDesktopEnvironmentProfile
 
     private readonly Func<string?> _locateOmaSnap;
     private readonly Func<string, CancellationToken, Task<OmaSnapCapabilities>> _probe;
-    private readonly object _probeLock = new();
+    private readonly Lock _probeLock = new();
     private Task<OmaSnapCapabilities>? _probeTask;
 
     internal LinuxDesktopProfile(

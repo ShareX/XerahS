@@ -29,8 +29,17 @@ using System.Text.RegularExpressions;
 
 namespace XerahS.Common
 {
-    public static class TranslatorHelper
+    public static partial class TranslatorHelper
     {
+        [GeneratedRegex(@"[^01]")]
+        private static partial Regex BinaryToTextRegex();
+
+        [GeneratedRegex(@"[^0-9a-fA-F]")]
+        private static partial Regex HexadecimalToTextRegex();
+
+        [GeneratedRegex(@"\D+")]
+        private static partial Regex ASCIIToTextRegex();
+
         #region Text to ...
 
         public static string[] TextToBinary(string text)
@@ -84,7 +93,7 @@ namespace XerahS.Common
 
         public static string BinaryToText(string binary)
         {
-            binary = Regex.Replace(binary, @"[^01]", "");
+            binary = BinaryToTextRegex().Replace(binary, "");
 
             using (MemoryStream stream = new MemoryStream())
             {
@@ -146,7 +155,7 @@ namespace XerahS.Common
 
         public static string HexadecimalToText(string hex)
         {
-            hex = Regex.Replace(hex, @"[^0-9a-fA-F]", "");
+            hex = HexadecimalToTextRegex().Replace(hex, "");
 
             using (MemoryStream stream = new MemoryStream())
             {
@@ -175,7 +184,7 @@ namespace XerahS.Common
 
         public static string ASCIIToText(string ascii)
         {
-            string[] numbers = Regex.Split(ascii, @"\D+");
+            string[] numbers = ASCIIToTextRegex().Split(ascii);
 
             using (MemoryStream stream = new MemoryStream())
             {

@@ -43,7 +43,7 @@ public class MacOSNativeRecordingService : IRecordingService
     private RecordingStatus _status = RecordingStatus.Idle;
     private RecordingOptions? _currentOptions;
     private readonly Stopwatch _stopwatch = new();
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private bool _disposed;
 
     public event EventHandler<RecordingErrorEventArgs>? ErrorOccurred;

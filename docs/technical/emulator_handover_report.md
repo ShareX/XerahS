@@ -5,7 +5,7 @@
 **Status:** **PARTIALLY SUCCESSFUL** (Workaround Implemented)
 
 ## Objective
-Configure and run an Android Emulator (AVD) for the Avalonia Android project (`XerahS`) targeting `net10.0-android`, and establish a stable ADB connection.
+Configure and run an Android Emulator (AVD) for the Avalonia Android project (`XerahS`) targeting `net11.0-android`, and establish a stable ADB connection.
 
 ## Findings & Resolution
 

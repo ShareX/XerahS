@@ -2,7 +2,7 @@
 #define MyAppExeName "XerahS.exe"
 #define MyAppRootDirectory "..\..\..\"
 #ifndef MyAppReleaseDirectory
-#define MyAppReleaseDirectory MyAppRootDirectory + "src\\desktop\\app\\XerahS.App\\bin\\Release\\net10.0-windows10.0.26100.0"
+#define MyAppReleaseDirectory MyAppRootDirectory + "src\\desktop\\app\\XerahS.App\\bin\\Release\\net11.0-windows10.0.26100.0"
 #endif
 
 #ifndef MyAppPublisher

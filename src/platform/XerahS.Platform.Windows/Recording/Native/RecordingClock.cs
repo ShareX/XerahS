@@ -30,7 +30,7 @@ namespace XerahS.Platform.Windows.Recording.Native;
 /// <summary>WGC SystemRelativeTime and WASAPI QPCPosition both use the system QPC epoch, in 100 ns.</summary>
 internal sealed class RecordingClock
 {
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private long origin, pauseStarted, pausedTime, segmentStart, stoppedElapsed;
     private bool started, paused, stopped;
 

@@ -50,6 +50,21 @@ public partial class DestinationSettingsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _showImportShareXConfig;
 
+    /// <summary>File type overrides: extensions that always go to one instance.</summary>
+    public FileTypeOverridesViewModel Overrides { get; } = new();
+
+    /// <summary>True while the overrides pane is shown instead of a category.</summary>
+    [ObservableProperty]
+    private bool _showOverrides;
+
+    [RelayCommand]
+    private void OpenOverrides()
+    {
+        Overrides.Reload();
+        SelectedCategory = null;
+        ShowOverrides = true;
+    }
+
     private readonly IViewDialogService _dialogService;
     private readonly IDialogService _coreDialogService;
     private readonly IUiViewModelFactory _uiViewModelFactory;
@@ -150,6 +165,10 @@ public partial class DestinationSettingsViewModel : ViewModelBase
     partial void OnSelectedCategoryChanged(CategoryViewModel? value)
     {
         value?.LoadInstances();
+        if (value != null)
+        {
+            ShowOverrides = false;
+        }
     }
 
     [RelayCommand]

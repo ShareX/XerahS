@@ -25,7 +25,6 @@
 
 using System.Text.Json.Nodes;
 using XerahS.History;
-using XerahS.McpServer.JsonRpc;
 using XerahS.McpServer.Runtime;
 using XerahS.McpServer.Server;
 using Xunit;
@@ -38,25 +37,36 @@ public class XerahSMcpServerTests
     public async Task Initialize_ReturnsProtocolVersionAndRuntimeVersion()
     {
         var runtime = new FakeRuntime();
-        var server = new XerahSMcpServer(runtime);
+        var server = new McpWireServer(runtime);
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
             JsonRpc = "2.0",
             Id = 1,
             Method = "initialize",
-            Params = new { }
+            Params = new
+            {
+                protocolVersion = "2024-11-05",
+                capabilities = new { },
+                clientInfo = new { name = "xerahs-tests", version = "1.0" }
+            }
         });
 
+        Assert.Null(response.Error);
         var result = Assert.IsType<JsonObject>(response.Result);
+        // The SDK negotiates the protocol version with the client and derives capabilities from the handlers.
         Assert.Equal("2024-11-05", result["protocolVersion"]?.GetValue<string>());
+        Assert.Equal("xerahs", result["serverInfo"]?["name"]?.GetValue<string>());
         Assert.Equal(runtime.ServerVersion, result["serverInfo"]?["version"]?.GetValue<string>());
+        Assert.NotNull(result["capabilities"]?["tools"]);
+        Assert.NotNull(result["capabilities"]?["resources"]);
+        Assert.NotNull(result["capabilities"]?["prompts"]);
     }
 
     [Fact]
     public async Task ToolsList_ContainsImplementedTools()
     {
-        var server = new XerahSMcpServer(new FakeRuntime());
+        var server = new McpWireServer(new FakeRuntime());
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -79,7 +89,7 @@ public class XerahSMcpServerTests
     public async Task ToolsCall_DelegatesToRuntime()
     {
         var runtime = new FakeRuntime();
-        var server = new XerahSMcpServer(runtime);
+        var server = new McpWireServer(runtime);
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -98,8 +108,12 @@ public class XerahSMcpServerTests
 
         Assert.Null(response.Error);
         var result = Assert.IsType<JsonObject>(response.Result);
-        Assert.Equal("capture_full_screen", result["tool"]?.GetValue<string>());
-        Assert.Equal(1, result["monitor"]?.GetValue<int>());
+        // Bare runtime results are sent as structuredContent plus a JSON text block.
+        var structured = Assert.IsType<JsonObject>(result["structuredContent"]);
+        Assert.Equal("capture_full_screen", structured["tool"]?.GetValue<string>());
+        Assert.Equal(1, structured["monitor"]?.GetValue<int>());
+        Assert.Equal("text", result["content"]?[0]?["type"]?.GetValue<string>());
+        Assert.Equal("capture_full_screen", JsonNode.Parse(result["content"]![0]!["text"]!.GetValue<string>())!["tool"]?.GetValue<string>());
         Assert.Equal("capture_full_screen", runtime.LastCall);
     }
 
@@ -107,7 +121,7 @@ public class XerahSMcpServerTests
     public async Task ResourcesRead_DelegatesToRuntime()
     {
         var runtime = new FakeRuntime();
-        var server = new XerahSMcpServer(runtime);
+        var server = new McpWireServer(runtime);
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -130,7 +144,7 @@ public class XerahSMcpServerTests
     [Fact]
     public async Task ToolsCall_RejectsNonObjectArguments()
     {
-        var server = new XerahSMcpServer(new FakeRuntime());
+        var server = new McpWireServer(new FakeRuntime());
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -145,18 +159,17 @@ public class XerahSMcpServerTests
             """)
         });
 
-        Assert.NotNull(response.Error);
-        Assert.Equal(JsonRpcErrorCodes.InvalidParams, response.Error!.Code);
-        Assert.Contains("JSON object", response.Error.Message);
+        // The SDK rejects malformed params while binding the request, before any XerahS handler runs.
+        AssertRejectedAsMalformed(response);
     }
 
     [Theory]
     [InlineData("tools/call", "name")]
     [InlineData("resources/read", "uri")]
     [InlineData("prompts/get", "name")]
-    public async Task RequiredStringParamMethods_RejectNonStringValuesAsInvalidParams(string method, string propertyName)
+    public async Task RequiredStringParamMethods_RejectNonStringValues(string method, string propertyName)
     {
-        var server = new XerahSMcpServer(new FakeRuntime());
+        var server = new McpWireServer(new FakeRuntime());
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -169,18 +182,16 @@ public class XerahSMcpServerTests
             }
         });
 
-        Assert.NotNull(response.Error);
-        Assert.Equal(JsonRpcErrorCodes.InvalidParams, response.Error!.Code);
-        Assert.Contains("must be a string", response.Error.Message);
+        AssertRejectedAsMalformed(response);
     }
 
 
     [Theory]
     [InlineData("resources/read")]
     [InlineData("prompts/get")]
-    public async Task ObjectParamMethods_RejectArrayParamsAsInvalidParams(string method)
+    public async Task ObjectParamMethods_RejectArrayParams(string method)
     {
-        var server = new XerahSMcpServer(new FakeRuntime());
+        var server = new McpWireServer(new FakeRuntime());
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -190,15 +201,60 @@ public class XerahSMcpServerTests
             Params = JsonNode.Parse("[]")
         });
 
+        AssertRejectedAsMalformed(response);
+    }
+
+    /// <summary>
+    /// The pre-SDK server answered malformed params with InvalidParams (-32602). The SDK reports a binding failure
+    /// as an error response without that precision, so only the rejection itself is asserted.
+    /// </summary>
+    private static void AssertRejectedAsMalformed(JsonRpcResponse response)
+    {
+        Assert.NotNull(response.Error);
+        Assert.Null(response.Result);
+        Assert.Contains(response.Error!.Code, new[] { JsonRpcErrorCodes.InvalidParams, JsonRpcErrorCodes.InternalError });
+    }
+
+    [Fact]
+    public async Task ResourcesList_ReturnsConcreteResources_AndTemplatesAreListedSeparately()
+    {
+        var server = new McpWireServer(new FakeRuntime());
+
+        var list = await server.HandleRequestAsync(new JsonRpcRequest { Id = 20, Method = "resources/list", Params = new { } });
+        var templates = await server.HandleRequestAsync(new JsonRpcRequest { Id = 21, Method = "resources/templates/list", Params = new { } });
+
+        Assert.Null(list.Error);
+        Assert.Null(templates.Error);
+        var uris = list.Result!["resources"]!.AsArray().Select(node => node!["uri"]!.GetValue<string>()).ToList();
+        Assert.Contains("xerahs://settings/general", uris);
+        Assert.Contains("xerahs://capture/latest", uris);
+        Assert.DoesNotContain(uris, uri => uri.Contains('{'));
+        var templateUris = templates.Result!["resourceTemplates"]!.AsArray().Select(node => node!["uriTemplate"]!.GetValue<string>()).ToList();
+        Assert.Contains("xerahs://history/{id}", templateUris);
+        Assert.Contains("xerahs://workflows/{id}", templateUris);
+    }
+
+    [Fact]
+    public async Task ToolsCall_UnknownTool_ReportsInvalidParamsWithItsMessage()
+    {
+        var server = new McpWireServer(new FakeRuntime());
+
+        var response = await server.HandleRequestAsync(new JsonRpcRequest
+        {
+            Id = 22,
+            Method = "tools/call",
+            Params = JsonNode.Parse("""{"name":"does_not_exist","arguments":{}}""")
+        });
+
         Assert.NotNull(response.Error);
         Assert.Equal(JsonRpcErrorCodes.InvalidParams, response.Error!.Code);
-        Assert.Contains("JSON object", response.Error.Message);
+        Assert.Contains("Unknown tool: does_not_exist", response.Error.Message);
     }
 
     [Fact]
     public async Task PromptsGet_RendersTemplateArguments()
     {
-        var server = new XerahSMcpServer(new FakeRuntime());
+        var server = new McpWireServer(new FakeRuntime());
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -226,7 +282,7 @@ public class XerahSMcpServerTests
     [Fact]
     public async Task PromptsGet_UnknownTemplate_ReturnsInvalidParamsError()
     {
-        var server = new XerahSMcpServer(new FakeRuntime());
+        var server = new McpWireServer(new FakeRuntime());
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -653,7 +709,7 @@ public class XerahSMcpServerTests
     public async Task ResourcesRead_HistorySearch_ExtractsQueryFromQParameter()
     {
         var runtime = new TestHistoryRuntime();
-        var server = new XerahSMcpServer(runtime);
+        var server = new McpWireServer(runtime);
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -680,7 +736,7 @@ public class XerahSMcpServerTests
     public async Task ResourcesRead_HistorySearch_HandlesAmpersandDelimiter()
     {
         var runtime = new TestHistoryRuntime();
-        var server = new XerahSMcpServer(runtime);
+        var server = new McpWireServer(runtime);
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -709,7 +765,7 @@ public class XerahSMcpServerTests
     public async Task ResourcesRead_HistorySearch_DecodesPlusAsSpace()
     {
         var runtime = new TestHistoryRuntime();
-        var server = new XerahSMcpServer(runtime);
+        var server = new McpWireServer(runtime);
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -737,7 +793,7 @@ public class XerahSMcpServerTests
     public async Task ResourcesRead_HistorySearch_HandlesQAfterOtherParams()
     {
         var runtime = new TestHistoryRuntime();
-        var server = new XerahSMcpServer(runtime);
+        var server = new McpWireServer(runtime);
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -766,7 +822,7 @@ public class XerahSMcpServerTests
     public async Task ResourcesRead_HistorySearch_IgnoresMalformedPercentEncodedPairs()
     {
         var runtime = new TestHistoryRuntime();
-        var server = new XerahSMcpServer(runtime);
+        var server = new McpWireServer(runtime);
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -795,7 +851,7 @@ public class XerahSMcpServerTests
     public async Task ResourcesRead_HistorySearch_DoesNotMatchPrefixOnlyPaths()
     {
         var runtime = new TestHistoryRuntime();
-        var server = new XerahSMcpServer(runtime);
+        var server = new McpWireServer(runtime);
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -820,7 +876,7 @@ public class XerahSMcpServerTests
     public async Task ResourcesRead_MapsUserCancelledToUserCancelledCode()
     {
         var runtime = new UserCancelledRuntime();
-        var server = new XerahSMcpServer(runtime);
+        var server = new McpWireServer(runtime);
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -841,7 +897,7 @@ public class XerahSMcpServerTests
     public async Task ResourcesRead_MapsArgumentOutOfRangeToInvalidParams()
     {
         var runtime = new ArgOutOfRangeRuntime();
-        var server = new XerahSMcpServer(runtime);
+        var server = new McpWireServer(runtime);
 
         var response = await server.HandleRequestAsync(new JsonRpcRequest
         {
@@ -1010,7 +1066,7 @@ public class XerahSMcpServerTests
             throw new ArgumentOutOfRangeException("uri", "The specified value is out of range.");
     }
 
-    private sealed class FakeRuntime : IXerahSMcpRuntime
+    internal sealed class FakeRuntime : IXerahSMcpRuntime
     {
         public string ServerVersion => "9.9.9-test";
         public string? LastCall { get; private set; }

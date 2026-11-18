@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <RootNamespace>XerahS.Tests</RootNamespace>
-    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.26100.0</TargetFramework>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net11.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net11.0</TargetFramework>
     <EnableWindowsTargeting Condition="'$(OS)' != 'Windows_NT'">true</EnableWindowsTargeting>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -74,7 +74,6 @@
     <ProjectReference Include="..\..\src\platform\XerahS.Platform.MacOS\XerahS.Platform.MacOS.csproj" />
     <ProjectReference Include="..\..\src\platform\XerahS.Platform.Mobile\XerahS.Platform.Mobile.csproj" />
     <ProjectReference Include="..\..\src\desktop\core\XerahS.Uploaders\XerahS.Uploaders.csproj" />
-    <ProjectReference Include="..\..\src\tools\XerahS.McpServer\XerahS.McpServer.csproj" />
     <ProjectReference Include="..\..\ShareX.ImageEditor\src\ShareX.ImageEditor\ShareX.ImageEditor.csproj" GlobalPropertiesToRemove="OS" />
     <ProjectReference Include="..\..\Omacut\dotnet\src\Omacut\Omacut.csproj" GlobalPropertiesToRemove="OS" />
   </ItemGroup>

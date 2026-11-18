@@ -39,7 +39,7 @@ public sealed class UploadQueueService
     private const int MaxRetryCount = 2;
     private const string QueueFileName = "MobileUploadQueue.json";
 
-    private readonly object _queueLock = new();
+    private readonly Lock _queueLock = new();
     private readonly Queue<UploadQueueItem> _queue = new();
 
     private bool _isProcessing;

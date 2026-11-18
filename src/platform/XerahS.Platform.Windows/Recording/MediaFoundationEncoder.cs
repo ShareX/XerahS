@@ -45,7 +45,7 @@ public class MediaFoundationEncoder : IVideoEncoder
     private bool _initialized;
     private bool _disposed;
     private bool _finalized;
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private static readonly bool _applyVerticalFlip = true; // default fix for upside-down output
 
     /// <summary>

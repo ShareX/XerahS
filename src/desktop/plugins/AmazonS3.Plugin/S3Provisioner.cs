@@ -247,10 +247,12 @@ internal sealed class S3Provisioner : AwsApiClientBase
     }
 }
 
-internal static class S3BucketNameValidator
+internal static partial class S3BucketNameValidator
 {
-    private static readonly Regex ValidPattern = new Regex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$", RegexOptions.Compiled);
-    private static readonly Regex IpAddressPattern = new Regex("^\\d+\\.\\d+\\.\\d+\\.\\d+$", RegexOptions.Compiled);
+    [GeneratedRegex("^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$")]
+    private static partial Regex ValidPattern();
+    [GeneratedRegex("^\\d+\\.\\d+\\.\\d+\\.\\d+$")]
+    private static partial Regex IpAddressPattern();
 
     public static bool IsValid(string bucketName)
     {
@@ -264,7 +266,7 @@ internal static class S3BucketNameValidator
             return false;
         }
 
-        if (!ValidPattern.IsMatch(bucketName))
+        if (!ValidPattern().IsMatch(bucketName))
         {
             return false;
         }
@@ -274,7 +276,7 @@ internal static class S3BucketNameValidator
             return false;
         }
 
-        if (IpAddressPattern.IsMatch(bucketName))
+        if (IpAddressPattern().IsMatch(bucketName))
         {
             return false;
         }

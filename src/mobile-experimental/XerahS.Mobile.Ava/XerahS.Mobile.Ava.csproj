@@ -2,8 +2,8 @@
   <PropertyGroup>
     <RootNamespace>Ava</RootNamespace>
     <!-- On macOS build both Android and iOS, on other platforms only Android -->
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">net10.0-android;net10.0-ios</TargetFrameworks>
-    <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('osx'))">net10.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">net11.0-android;net11.0-ios</TargetFrameworks>
+    <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('osx'))">net11.0-android</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -11,24 +11,24 @@
     <ApplicationDisplayVersion>0.22.170</ApplicationDisplayVersion>
     <ApplicationVersion>22170</ApplicationVersion>
     <!-- Android -->
-    <ApplicationId Condition="'$(TargetFramework)' == 'net10.0-android'">com.xerahs.xerahs.mobile</ApplicationId>
+    <ApplicationId Condition="'$(TargetFramework)' == 'net11.0-android'">com.xerahs.xerahs.mobile</ApplicationId>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">23</SupportedOSPlatformVersion>
-    <EmbedAssembliesIntoApk Condition="'$(TargetFramework)' == 'net10.0-android'">true</EmbedAssembliesIntoApk>
-    <AndroidUseFastDeployment Condition="'$(TargetFramework)' == 'net10.0-android'">false</AndroidUseFastDeployment>
+    <EmbedAssembliesIntoApk Condition="'$(TargetFramework)' == 'net11.0-android'">true</EmbedAssembliesIntoApk>
+    <AndroidUseFastDeployment Condition="'$(TargetFramework)' == 'net11.0-android'">false</AndroidUseFastDeployment>
     <!-- iOS -->
-    <ApplicationId Condition="'$(TargetFramework)' == 'net10.0-ios'">com.xerahs.xerahs.mobile</ApplicationId>
+    <ApplicationId Condition="'$(TargetFramework)' == 'net11.0-ios'">com.xerahs.xerahs.mobile</ApplicationId>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
-    <EnableShareExtension Condition="'$(TargetFramework)' == 'net10.0-ios' And '$(EnableShareExtension)' == ''">true</EnableShareExtension>
+    <EnableShareExtension Condition="'$(TargetFramework)' == 'net11.0-ios' And '$(EnableShareExtension)' == ''">true</EnableShareExtension>
   </PropertyGroup>
   <!-- Exclude platform-specific code when building for the other platform -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net11.0-android'">
     <Compile Remove="Platforms\iOS\**\*" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net11.0-ios'">
     <Compile Remove="Platforms\Android\**\*" />
   </ItemGroup>
   <!-- Android manifest and resources -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net11.0-android'">
     <AndroidManifest Include="Platforms\Android\AndroidManifest.xml" />
     <AndroidResource Include="Platforms\Android\Resources\**\*" />
   </ItemGroup>
@@ -36,16 +36,16 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\Logo.png" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net11.0-ios'">
     <None Include="Platforms\iOS\Info.plist" Link="Info.plist" />
     <None Include="Platforms\iOS\Entitlements.plist" Link="Entitlements.plist" />
   </ItemGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-ios'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net11.0-ios'">
     <CodesignEntitlements>Platforms\iOS\Entitlements.plist</CodesignEntitlements>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia.Android" Condition="'$(TargetFramework)' == 'net10.0-android'" />
-    <PackageReference Include="Avalonia.iOS" Condition="'$(TargetFramework)' == 'net10.0-ios'" />
+    <PackageReference Include="Avalonia.Android" Condition="'$(TargetFramework)' == 'net11.0-android'" />
+    <PackageReference Include="Avalonia.iOS" Condition="'$(TargetFramework)' == 'net11.0-ios'" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="SkiaSharp" />
   </ItemGroup>
@@ -59,7 +59,7 @@
     <ProjectReference Include="..\..\desktop\plugins\AmazonS3.Plugin\XerahS.AmazonS3.Plugin.csproj" />
   </ItemGroup>
   <!-- iOS Share Extension (Apple requirement: separate extension project) -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-ios' And '$(EnableShareExtension)' == 'true'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net11.0-ios' And '$(EnableShareExtension)' == 'true'">
     <ProjectReference Include="..\XerahS.Mobile.iOS.ShareExtension\XerahS.Mobile.iOS.ShareExtension.csproj">
       <IsAppExtension>true</IsAppExtension>
     </ProjectReference>

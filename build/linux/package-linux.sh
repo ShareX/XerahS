@@ -633,7 +633,7 @@ for ARCH in "${ARCHITECTURES[@]}"; do
     echo "=========================================="
     
     # 1. Clean & Publish
-    PUBLISH_DIR="$ROOT/src/desktop/app/XerahS.App/bin/Release/net10.0/$ARCH/publish"
+    PUBLISH_DIR="$ROOT/src/desktop/app/XerahS.App/bin/Release/net11.0/$ARCH/publish"
     
     if [ -d "$PUBLISH_DIR" ]; then
         rm -rf "$PUBLISH_DIR"

@@ -30,7 +30,7 @@ namespace XerahS.Common
     // https://docs.microsoft.com/en-us/archive/msdn-magazine/2007/september/net-matters-tales-from-the-cryptorandom
     public static class RandomCrypto
     {
-        private static readonly object randomLock = new object();
+        private static readonly Lock randomLock = new();
         private static readonly RandomNumberGenerator random = RandomNumberGenerator.Create();
         private static byte[] uint32Buffer = new byte[4];
 

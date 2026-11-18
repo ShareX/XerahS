@@ -207,7 +207,7 @@ The annotation subsystem is fully implemented as the standalone cross-platform `
 - `EditorServices` — DI composition
 - `ImageEditorOptions` — configuration contract
 
-**Cross-platform:** Targets `net10.0` (no Windows-specific APIs). Works on Windows, Linux, and macOS.
+**Cross-platform:** Targets `net11.0` (no Windows-specific APIs). Works on Windows, Linux, and macOS.
 
 ## Backend Porting Checklist
 

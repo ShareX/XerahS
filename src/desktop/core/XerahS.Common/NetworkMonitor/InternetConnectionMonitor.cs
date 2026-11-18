@@ -37,7 +37,7 @@ public sealed class InternetConnectionMonitor : IDisposable
 
     private readonly INetworkProbe _probe;
     private readonly Func<DateTime> _clock;
-    private readonly object _sync = new();
+    private readonly Lock _sync = new();
     private NetworkMonitorOptions _options;
     private CancellationTokenSource? _loopCts;
     private int _failCount;

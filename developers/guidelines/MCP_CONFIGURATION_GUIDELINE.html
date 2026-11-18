@@ -208,7 +208,7 @@
       <pre><code>{
   "mcpServers": {
     "xerahs": {
-      "command": "C:/Users/&lt;user&gt;/source/repos/KovaForge/XerahS/src/tools/XerahS.McpServer/bin/Release/net10.0/xerahs-mcp.exe",
+      "command": "C:/Users/&lt;user&gt;/source/repos/KovaForge/XerahS/src/tools/XerahS.McpServer/bin/Release/net11.0/xerahs-mcp.exe",
       "args": ["--mcp"]
     }
   }
@@ -224,13 +224,16 @@
       <pre><code>dotnet test .\src\tools\XerahS.McpServer.Tests\XerahS.McpServer.Tests.csproj --configuration Release</code></pre>
 
       <p>Smoke test stdio initialization and tool discovery:</p>
-      <pre><code>$exe = ".\src\tools\XerahS.McpServer\bin\Release\net10.0\xerahs-mcp.exe"
-$input = @(
-  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}',
-  '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}',
-  '{"jsonrpc":"2.0","id":3,"method":"shutdown","params":{}}'
-) -join "`n"
-$input | &amp; $exe --mcp</code></pre>
+      <pre><code>$psi = New-Object Diagnostics.ProcessStartInfo ".\src\tools\XerahS.McpServer\bin\Release\net11.0\xerahs-mcp.exe", "--mcp"
+$psi.RedirectStandardInput = $true; $psi.RedirectStandardOutput = $true; $psi.UseShellExecute = $false
+$p = [Diagnostics.Process]::Start($psi)
+$p.StandardInput.WriteLine('{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"smoke","version":"1"}}}')
+$p.StandardOutput.ReadLine()
+$p.StandardInput.WriteLine('{"jsonrpc":"2.0","method":"notifications/initialized"}')
+$p.StandardInput.WriteLine('{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}')
+$p.StandardOutput.ReadLine()
+$p.StandardInput.Close()   # closing stdin ends the session</code></pre>
+      <p>Keep stdin open until each reply has been read; the server shuts down as soon as stdin closes.</p>
 
       <p>
         A successful smoke test returns an <code>initialize</code> result with server name

@@ -40,7 +40,7 @@ namespace XerahS.Platform.MacOS
         internal static readonly IntPtr FrontWindowHandle = new(1);
 
         private static readonly HashSet<string> Warned = new(StringComparer.Ordinal);
-        private static readonly object WarnLock = new();
+        private static readonly Lock WarnLock = new();
 
         internal readonly record struct FrontWindowInfo(string AppName, string WindowTitle, Rectangle Bounds, uint ProcessId);
 

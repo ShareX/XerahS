@@ -31,7 +31,7 @@ Follow these instructions **exactly** and in order to build Windows executables 
 <context>
   <build_script_path>build\windows\package-windows.ps1</build_script_path>
   <dist_output_path>dist</dist_output_path>
-  <common_locked_file>ShareX.ImageEditor\src\ShareX.ImageEditor\obj\Release\net10.0-windows10.0.26100.0\ShareX.ImageEditor.dll</common_locked_file>
+  <common_locked_file>ShareX.ImageEditor\src\ShareX.ImageEditor\obj\Release\net10.0\ShareX.ImageEditor.dll</common_locked_file>
   <expected_outputs>
     - XerahS-{version}-win-x64.exe
     - XerahS-{version}-win-arm64.exe

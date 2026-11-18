@@ -34,8 +34,17 @@ namespace XerahS.Core.Diagnostics;
 /// This is a port of web/functions/diagnostics/analysis.ts; keep the two in step
 /// (DiagnosticsLogAnalyzerTests uses the same fixture as analysis.test.ts).
 /// </summary>
-public static class DiagnosticsLogAnalyzer
+public static partial class DiagnosticsLogAnalyzer
 {
+    [GeneratedRegex("^[^@]*@")]
+    private static partial Regex ScrubRegex();
+
+    [GeneratedRegex(@"^(\d+)\.(\d+)(?:\.(\d+))?", Options)]
+    private static partial Regex ParseVersionRegex();
+
+    [GeneratedRegex(@"Windows\.Graphics\.Capture|WGC capture succeeded", Options | RegexOptions.IgnoreCase)]
+    private static partial Regex WgcCaptureRegex();
+
     public const int RedactionVersion = 1;
     public const int SchemaVersion = 1;
     public const int MaxEvents = 500;
@@ -48,7 +57,7 @@ public static class DiagnosticsLogAnalyzer
     public const string TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff";
     private static readonly Version ExitMarkerVersion = new(0, 32, 0);
 
-    private static readonly RegexOptions Options = RegexOptions.CultureInvariant;
+    private const RegexOptions Options = RegexOptions.CultureInvariant;
 
     // ------------------------------------------------------------------
     // Scrubbing
@@ -59,26 +68,32 @@ public static class DiagnosticsLogAnalyzer
         "github.com", "api.github.com", "raw.githubusercontent.com", "xerahs.com", "cloud.xerahs.com", "getsharex.com"
     };
 
-    private static readonly Regex WindowsUserPath = new(@"([A-Za-z]:\\Users\\)[^\\/\r\n""'<>|]+", Options);
-    private static readonly Regex UnixUserPath = new(@"/(home|Users|var/home)/[^/\s""'<>]+", Options);
-    private static readonly Regex OneDriveOrg = new(@"OneDrive - [^\\/\r\n""]+", Options);
-    private static readonly Regex Email = new(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", Options);
-    private static readonly Regex Url = new(@"\b(https?)://([^\s/""'<>?#]+)([^\s""'<>]*)", Options | RegexOptions.IgnoreCase);
-    private static readonly Regex Secret = new(
-        @"\b(authorization|bearer|api[_-]?key|apikey|access[_-]?token|refresh[_-]?token|client[_-]?secret|secret|password|passwd|token|cookie|sig|signature)(\s*[:=]\s*|\s+)(""?)([^\s""',;&]{4,})",
-        Options | RegexOptions.IgnoreCase);
+    [GeneratedRegex(@"([A-Za-z]:\\Users\\)[^\\/\r\n""'<>|]+", Options)]
+    private static partial Regex WindowsUserPath();
+    [GeneratedRegex(@"/(home|Users|var/home)/[^/\s""'<>]+", Options)]
+    private static partial Regex UnixUserPath();
+    [GeneratedRegex(@"OneDrive - [^\\/\r\n""]+", Options)]
+    private static partial Regex OneDriveOrg();
+    [GeneratedRegex(@"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", Options)]
+    private static partial Regex Email();
+    [GeneratedRegex(@"\b(https?)://([^\s/""'<>?#]+)([^\s""'<>]*)", Options | RegexOptions.IgnoreCase)]
+    private static partial Regex Url();
+    [GeneratedRegex(@"\b(authorization|bearer|api[_-]?key|apikey|access[_-]?token|refresh[_-]?token|client[_-]?secret|secret|password|passwd|token|cookie|sig|signature)(\s*[:=]\s*|\s+)(""?)([^\s""',;&]{4,})", Options | RegexOptions.IgnoreCase)]
+    private static partial Regex Secret();
     // IPv4 addresses, but not version numbers ("Version: 0.31.3.1", "v1.2.3.4").
-    private static readonly Regex IPv4 = new(
-        @"(?<![\d.])(?<!(?:version|ver)[:=]?\s{0,3})(?<!\bv)(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}(?![\d.])",
-        Options | RegexOptions.IgnoreCase);
+    [GeneratedRegex(@"(?<![\d.])(?<!(?:version|ver)[:=]?\s{0,3})(?<!\bv)(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}(?![\d.])", Options | RegexOptions.IgnoreCase)]
+    private static partial Regex IPv4();
 
-    private static readonly Regex IdentifierWindows = new(@"[A-Za-z]:\\Users\\([^\\/\r\n""'<>|]+)", Options);
-    private static readonly Regex IdentifierUnix = new(@"/(?:home|Users|var/home)/([^/\s""'<>]+)", Options);
-    private static readonly Regex IdentifierConfig = new(@"\b[A-Za-z]+Config-([A-Za-z0-9_.-]+?)\.json\b", Options);
-    private static readonly Regex IdentifierOneDrive = new(@"OneDrive - ([^\\/\r\n""]+)", Options);
-    private static readonly Regex NotIdentifying = new(
-        @"^(public|default|shared|user|users|home|root|admin|<user>|<machine>|fedora|ubuntu|debian|arch|archlinux|manjaro|endeavouros|nixos|pop-os|mint|linuxmint|opensuse|suse|centos|rocky|alma|gentoo|kali|zorin|elementary|garuda|cachyos|bazzite|steamdeck|localhost|runner|vsts|appveyor|builder|desktop|laptop|computer|windows|linux|macbook|imac|omarchy)$",
-        Options | RegexOptions.IgnoreCase);
+    [GeneratedRegex(@"[A-Za-z]:\\Users\\([^\\/\r\n""'<>|]+)", Options)]
+    private static partial Regex IdentifierWindows();
+    [GeneratedRegex(@"/(?:home|Users|var/home)/([^/\s""'<>]+)", Options)]
+    private static partial Regex IdentifierUnix();
+    [GeneratedRegex(@"\b[A-Za-z]+Config-([A-Za-z0-9_.-]+?)\.json\b", Options)]
+    private static partial Regex IdentifierConfig();
+    [GeneratedRegex(@"OneDrive - ([^\\/\r\n""]+)", Options)]
+    private static partial Regex IdentifierOneDrive();
+    [GeneratedRegex(@"^(public|default|shared|user|users|home|root|admin|<user>|<machine>|fedora|ubuntu|debian|arch|archlinux|manjaro|endeavouros|nixos|pop-os|mint|linuxmint|opensuse|suse|centos|rocky|alma|gentoo|kali|zorin|elementary|garuda|cachyos|bazzite|steamdeck|localhost|runner|vsts|appveyor|builder|desktop|laptop|computer|windows|linux|macbook|imac|omarchy)$", Options | RegexOptions.IgnoreCase)]
+    private static partial Regex NotIdentifying();
 
     /// <summary>User, machine and organisation names found in log text.</summary>
     public static IReadOnlyList<string> CollectIdentifiers(string text)
@@ -87,28 +102,28 @@ public static class DiagnosticsLogAnalyzer
         void Add(string value)
         {
             string name = value.Trim();
-            if (name.Length < 3 || NotIdentifying.IsMatch(name)) return;
+            if (name.Length < 3 || NotIdentifying().IsMatch(name)) return;
             names.Add(name);
         }
 
-        foreach (Match m in IdentifierWindows.Matches(text)) Add(m.Groups[1].Value);
-        foreach (Match m in IdentifierUnix.Matches(text)) Add(m.Groups[1].Value);
-        foreach (Match m in IdentifierConfig.Matches(text)) Add(m.Groups[1].Value);
-        foreach (Match m in IdentifierOneDrive.Matches(text)) Add(m.Groups[1].Value);
+        foreach (Match m in IdentifierWindows().Matches(text)) Add(m.Groups[1].Value);
+        foreach (Match m in IdentifierUnix().Matches(text)) Add(m.Groups[1].Value);
+        foreach (Match m in IdentifierConfig().Matches(text)) Add(m.Groups[1].Value);
+        foreach (Match m in IdentifierOneDrive().Matches(text)) Add(m.Groups[1].Value);
         return names.OrderByDescending(n => n.Length).ThenBy(n => n, StringComparer.Ordinal).ToList();
     }
 
     /// <summary>Removes personal data from log text.</summary>
     public static string Scrub(string text, IEnumerable<string>? identifiers = null)
     {
-        string result = WindowsUserPath.Replace(text, "$1<user>");
-        result = UnixUserPath.Replace(result, "/$1/<user>");
-        result = OneDriveOrg.Replace(result, "OneDrive - <org>");
-        result = Email.Replace(result, "<email>");
-        result = Url.Replace(result, m =>
+        string result = WindowsUserPath().Replace(text, "$1<user>");
+        result = UnixUserPath().Replace(result, "/$1/<user>");
+        result = OneDriveOrg().Replace(result, "OneDrive - <org>");
+        result = Email().Replace(result, "<email>");
+        result = Url().Replace(result, m =>
         {
             string scheme = m.Groups[1].Value;
-            string host = Regex.Replace(m.Groups[2].Value, "^[^@]*@", "").ToLowerInvariant();
+            string host = ScrubRegex().Replace(m.Groups[2].Value, "").ToLowerInvariant();
             string rest = m.Groups[3].Value;
             if (PublicUrlHosts.Contains(host.Split(':')[0]))
             {
@@ -116,16 +131,15 @@ public static class DiagnosticsLogAnalyzer
             }
             return rest.Length > 0 ? $"{scheme}://{host}/<path>" : $"{scheme}://{host}";
         });
-        result = Secret.Replace(result, m => $"{m.Groups[1].Value}{m.Groups[2].Value}{m.Groups[3].Value}<redacted>");
-        result = IPv4.Replace(result, m => m.Value is "127.0.0.1" or "0.0.0.0" || m.Value.StartsWith("0.", StringComparison.Ordinal) ? m.Value : "<ip>");
+        result = Secret().Replace(result, m => $"{m.Groups[1].Value}{m.Groups[2].Value}{m.Groups[3].Value}<redacted>");
+        result = IPv4().Replace(result, m => m.Value is "127.0.0.1" or "0.0.0.0" || m.Value.StartsWith("0.", StringComparison.Ordinal) ? m.Value : "<ip>");
 
         if (identifiers != null)
         {
             foreach (string name in identifiers)
             {
                 if (string.IsNullOrEmpty(name) || name.Length < 3) continue;
-                result = Regex.Replace(result, $"(?<![A-Za-z0-9]){Regex.Escape(name)}(?![A-Za-z0-9])", "<id>",
-                    Options | RegexOptions.IgnoreCase);
+                result = Regex.Replace(result, $"(?<![A-Za-z0-9]){Regex.Escape(name)}(?![A-Za-z0-9])", "<id>", Options | RegexOptions.IgnoreCase);
             }
         }
 
@@ -136,9 +150,12 @@ public static class DiagnosticsLogAnalyzer
     // Parsing
     // ------------------------------------------------------------------
 
-    private static readonly Regex Entry = new(@"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) - (.*)$", Options);
-    private static readonly Regex Tag = new(@"^\[([^\]]{1,64})\]\s*(.*)$", Options);
-    private static readonly Regex Prefix = new(@"^([A-Za-z][A-Za-z0-9_.]{2,63}):\s+(.*)$", Options);
+    [GeneratedRegex(@"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) - (.*)$", Options)]
+    private static partial Regex Entry();
+    [GeneratedRegex(@"^\[([^\]]{1,64})\]\s*(.*)$", Options)]
+    private static partial Regex Tag();
+    [GeneratedRegex(@"^([A-Za-z][A-Za-z0-9_.]{2,63}):\s+(.*)$", Options)]
+    private static partial Regex Prefix();
 
     public static List<LogEntry> ParseLog(string content, string fileName)
     {
@@ -147,11 +164,11 @@ public static class DiagnosticsLogAnalyzer
         foreach (string line in content.Split('\n'))
         {
             string trimmed = line.TrimEnd('\r');
-            Match match = Entry.Match(trimmed);
+            Match match = Entry().Match(trimmed);
             if (match.Success)
             {
                 string message = match.Groups[2].Value;
-                Match repeated = Entry.Match(message);
+                Match repeated = Entry().Match(message);
                 if (repeated.Success && repeated.Groups[1].Value == match.Groups[1].Value)
                 {
                     message = repeated.Groups[2].Value;
@@ -168,22 +185,29 @@ public static class DiagnosticsLogAnalyzer
 
     public static (string? Component, string Text) SplitComponent(string message)
     {
-        Match tag = Tag.Match(message);
+        Match tag = Tag().Match(message);
         if (tag.Success) return (tag.Groups[1].Value, tag.Groups[2].Value);
-        Match prefix = Prefix.Match(message);
+        Match prefix = Prefix().Match(message);
         if (prefix.Success) return (prefix.Groups[1].Value, prefix.Groups[2].Value);
         return (null, message);
     }
 
-    private static readonly Regex DisplayName = new(@"\\\\\.\\DISPLAY\d+", Options);
-    private static readonly Regex WindowsPath = new(@"[A-Za-z]:\\[^\s""'|,;)\]]+", Options);
-    private static readonly Regex UnixPath = new(
-        @"(?<![\w/.<>-])/(?:home|Users|usr|tmp|opt|var|run|etc|mnt|media|srv|proc|dev|nix)/[^\s""',;)\]]*", Options);
-    private static readonly Regex Guid = new(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", Options);
-    private static readonly Regex CompactGuid = new(@"\b[0-9a-f]{32}\b", Options);
-    private static readonly Regex Hex = new(@"\b0x(?![89a-fA-F][0-9a-fA-F]{7}\b)[0-9a-fA-F]+\b", Options);
-    private static readonly Regex Number = new(@"\b\d+(?:\.\d+)*\b", Options);
-    private static readonly Regex Whitespace = new(@"\s+", Options);
+    [GeneratedRegex(@"\\\\\.\\DISPLAY\d+", Options)]
+    private static partial Regex DisplayName();
+    [GeneratedRegex(@"[A-Za-z]:\\[^\s""'|,;)\]]+", Options)]
+    private static partial Regex WindowsPath();
+    [GeneratedRegex(@"(?<![\w/.<>-])/(?:home|Users|usr|tmp|opt|var|run|etc|mnt|media|srv|proc|dev|nix)/[^\s""',;)\]]*", Options)]
+    private static partial Regex UnixPath();
+    [GeneratedRegex(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", Options)]
+    private static partial Regex Guid();
+    [GeneratedRegex(@"\b[0-9a-f]{32}\b", Options)]
+    private static partial Regex CompactGuid();
+    [GeneratedRegex(@"\b0x(?![89a-fA-F][0-9a-fA-F]{7}\b)[0-9a-fA-F]+\b", Options)]
+    private static partial Regex Hex();
+    [GeneratedRegex(@"\b\d+(?:\.\d+)*\b", Options)]
+    private static partial Regex Number();
+    [GeneratedRegex(@"\s+", Options)]
+    private static partial Regex Whitespace();
 
     /// <summary>
     /// Collapses volatile tokens so one failure groups across machines and runs.
@@ -191,49 +215,50 @@ public static class DiagnosticsLogAnalyzer
     /// </summary>
     public static string NormalizeTemplate(string text)
     {
-        string result = DisplayName.Replace(text, "<display>");
-        result = WindowsPath.Replace(result, "<path>");
-        result = UnixPath.Replace(result, "<path>");
-        result = Guid.Replace(result, "<guid>");
-        result = CompactGuid.Replace(result, "<guid>");
-        result = Hex.Replace(result, "<hex>");
-        result = Number.Replace(result, "#");
-        result = Whitespace.Replace(result, " ").Trim();
+        string result = DisplayName().Replace(text, "<display>");
+        result = WindowsPath().Replace(result, "<path>");
+        result = UnixPath().Replace(result, "<path>");
+        result = Guid().Replace(result, "<guid>");
+        result = CompactGuid().Replace(result, "<guid>");
+        result = Hex().Replace(result, "<hex>");
+        result = Number().Replace(result, "#");
+        result = Whitespace().Replace(result, " ").Trim();
         return result.Length > 2000 ? result[..2000] : result;
     }
 
-    private static readonly Regex ExceptionHeader = new(
-        @"^\s*(?:---> )?((?:[A-Za-z_]\w*\.)*[A-Za-z_]\w*(?:Exception|Error))(?::\s*(.*))?$", Options);
-    private static readonly Regex InlineException = new(@"((?:[A-Za-z_]\w*\.)+[A-Za-z_]\w*(?:Exception|Error)):\s*(.*)$", Options);
-    private static readonly Regex StackFrame = new(@"^\s+at (.+?)(?: in .+?:line \d+)?\s*$", Options);
+    [GeneratedRegex(@"^\s*(?:---> )?((?:[A-Za-z_]\w*\.)*[A-Za-z_]\w*(?:Exception|Error))(?::\s*(.*))?$", Options)]
+    private static partial Regex ExceptionHeader();
+    [GeneratedRegex(@"((?:[A-Za-z_]\w*\.)+[A-Za-z_]\w*(?:Exception|Error)):\s*(.*)$", Options)]
+    private static partial Regex InlineException();
+    [GeneratedRegex(@"^\s+at (.+?)(?: in .+?:line \d+)?\s*$", Options)]
+    private static partial Regex StackFrame();
 
     public static (string Type, string Message, List<string> Frames)? FindException(LogEntry entry)
     {
         foreach (string candidate in entry.Details.Prepend(entry.Message))
         {
-            Match header = ExceptionHeader.Match(candidate);
+            Match header = ExceptionHeader().Match(candidate);
             if (!header.Success) continue;
             var frames = new List<string>();
             foreach (string line in entry.Details)
             {
-                Match frame = StackFrame.Match(line);
-                if (frame.Success) frames.Add(Whitespace.Replace(frame.Groups[1].Value, " "));
+                Match frame = StackFrame().Match(line);
+                if (frame.Success) frames.Add(Whitespace().Replace(frame.Groups[1].Value, " "));
                 if (frames.Count >= MaxFrames) break;
             }
             return (header.Groups[1].Value, header.Groups[2].Value, frames);
         }
 
-        Match inline = InlineException.Match(entry.Message);
+        Match inline = InlineException().Match(entry.Message);
         return inline.Success ? (inline.Groups[1].Value, inline.Groups[2].Value, new List<string>()) : null;
     }
 
-    private static readonly Regex ErrorWords = new(
-        @"\b(fail(?:ed|ure|s)?|error|exception|crash(?:ed)?|unable to|could not|cannot|access violation|timed out)\b",
-        Options | RegexOptions.IgnoreCase);
-    private static readonly Regex NotAnError = new(
-        @"\b(0 failed|no errors?|without errors?|0 errors?|errors?=0|failed=0)\b", Options | RegexOptions.IgnoreCase);
+    [GeneratedRegex(@"\b(fail(?:ed|ure|s)?|error|exception|crash(?:ed)?|unable to|could not|cannot|access violation|timed out)\b", Options | RegexOptions.IgnoreCase)]
+    private static partial Regex ErrorWords();
+    [GeneratedRegex(@"\b(0 failed|no errors?|without errors?|0 errors?|errors?=0|failed=0)\b", Options | RegexOptions.IgnoreCase)]
+    private static partial Regex NotAnError();
 
-    public static bool IsErrorLine(string message) => ErrorWords.IsMatch(message) && !NotAnError.IsMatch(message);
+    public static bool IsErrorLine(string message) => ErrorWords().IsMatch(message) && !NotAnError().IsMatch(message);
 
     private static readonly Regex[] PreviousSessionDied =
     {
@@ -252,11 +277,12 @@ public static class DiagnosticsLogAnalyzer
         new(@"^Exiting \(--exit-on-complete specified\)\.", Options),
         new(@"^Startup wait elapsed\. Exiting after collecting diagnostics\.", Options),
     };
-    private static readonly Regex VersionLine = new(@"^Version: (\S+)", Options);
+    [GeneratedRegex(@"^Version: (\S+)", Options)]
+    private static partial Regex VersionLine();
 
     public static Version? ParseVersion(string? value)
     {
-        Match m = Regex.Match(value?.Trim() ?? "", @"^(\d+)\.(\d+)(?:\.(\d+))?", Options);
+        Match m = ParseVersionRegex().Match(value?.Trim() ?? "");
         return m.Success
             ? new Version(int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture), int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture),
                 m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0)
@@ -277,7 +303,7 @@ public static class DiagnosticsLogAnalyzer
             current.Entries.Add(entry);
             if (current.AppVersion == null)
             {
-                Match version = VersionLine.Match(entry.Message);
+                Match version = VersionLine().Match(entry.Message);
                 if (version.Success) current.AppVersion = version.Groups[1].Value;
             }
         }
@@ -403,7 +429,8 @@ public static class DiagnosticsLogAnalyzer
             .ToList();
     }
 
-    private static readonly Regex RecordingBackend = new(@"Recording backend: (.+)$", Options);
+    [GeneratedRegex(@"Recording backend: (.+)$", Options)]
+    private static partial Regex RecordingBackend();
 
     /// <summary>Capture and recording backends named in the log (newest wins).</summary>
     public static (string? CaptureBackend, string? RecordingBackend) ExtractBackends(IEnumerable<LogEntry> entries)
@@ -414,8 +441,8 @@ public static class DiagnosticsLogAnalyzer
         {
             string m = entry.Message;
             if (m.Contains("DXGI Output Duplication succeeded", StringComparison.Ordinal)) capture = "dxgi";
-            else if (capture == null && Regex.IsMatch(m, @"Windows\.Graphics\.Capture|WGC capture succeeded", Options | RegexOptions.IgnoreCase)) capture = "wgc";
-            else if (RecordingBackend.Match(m) is { Success: true } r) recording = r.Groups[1].Value.Trim();
+            else if (capture == null && WgcCaptureRegex().IsMatch(m)) capture = "wgc";
+            else if (RecordingBackend().Match(m) is { Success: true } r) recording = r.Groups[1].Value.Trim();
             else if (m.Contains("Native recording (WGC + Media Foundation) is supported", StringComparison.Ordinal)) recording = "WGC + Media Foundation";
         }
         return (capture, recording);
@@ -436,7 +463,7 @@ public static class DiagnosticsLogAnalyzer
         var fileList = files.OrderBy(f => f.FileName, StringComparer.Ordinal).ToList();
         var identifiers = (extraIdentifiers ?? Array.Empty<string>())
             .Concat(fileList.SelectMany(f => CollectIdentifiers(f.Content)))
-            .Where(n => !string.IsNullOrWhiteSpace(n) && n.Trim().Length >= 3 && !NotIdentifying.IsMatch(n.Trim()))
+            .Where(n => !string.IsNullOrWhiteSpace(n) && n.Trim().Length >= 3 && !NotIdentifying().IsMatch(n.Trim()))
             .Distinct(StringComparer.Ordinal)
             .OrderByDescending(n => n.Length)
             .ToList();
