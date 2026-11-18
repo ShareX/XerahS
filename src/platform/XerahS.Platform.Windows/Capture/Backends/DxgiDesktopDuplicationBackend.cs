@@ -111,6 +111,9 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
     /// Captures <paramref name="targetBounds"/> (desktop coordinates) from the outputs that intersect it.
     /// Areas no output covers stay black.
     /// </summary>
+    /// <summary>Set once per process so a permanently 8-bit desktop does not spam the log.</summary>
+    private static bool _sdrFallbackWarned;
+
     private static SKBitmap? CaptureDesktopArea(IReadOnlyList<DxgiOutputInfo> outputs, Rectangle targetBounds, bool drawCursor)
     {
         var targetOutputs = outputs.Where(output => output.Bounds.IntersectsWith(targetBounds)).ToList();
@@ -188,6 +191,25 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
         }
 
         bitmap.NotifyPixelsChanged();
+
+        if (hdrSurface && !_sdrFallbackWarned && bitmap.ColorType == SKColorType.RgbaF16)
+        {
+            // HDR is enabled on the output but the driver composites the desktop at 8 bits per
+            // channel, so Desktop Duplication never hands out scRGB frames and the fp16 surface
+            // only holds SDR values. Usually the link cannot carry 10-bit at the current mode
+            // (e.g. 1440p at a high refresh), or the monitor is not in its own HDR mode.
+            string? primaryDeviceName = targetOutputs.Count > 0 ? targetOutputs[0].DeviceName : null;
+            DisplayConfigHelper.AdvancedColorState? state = DisplayConfigHelper.GetAdvancedColorState(primaryDeviceName);
+
+            if (state is { BitsPerChannel: <= 8 })
+            {
+                _sdrFallbackWarned = true;
+                DebugHelper.WriteLine(
+                    "[HDR] Advanced colour is enabled but the desktop is composited at 8 bits per channel: " +
+                    "Desktop Duplication returns SDR frames, so captures contain no HDR range. " +
+                    "Lower the refresh rate or use a link that supports 10-bit at this mode.");
+            }
+        }
 
         // Log success so the log file verifies DXGI (Vortice.Direct3D11/DXGI) was actually used
         DebugHelper.WriteLine(
