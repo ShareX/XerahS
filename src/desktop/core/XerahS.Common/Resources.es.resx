@@ -4147,4 +4147,163 @@ Esto eliminará permanentemente el archivo del almacenamiento remoto. Esta acci�
   <data name="ShareLogs_Send" xml:space="preserve">
     <value>Enviar</value>
   </data>
+  <data name="ImageBatch_Images" xml:space="preserve">
+    <value>Imágenes</value>
+  </data>
+  <data name="ImageBatch_Add" xml:space="preserve">
+    <value>Añadir...</value>
+  </data>
+  <data name="ImageBatch_Remove" xml:space="preserve">
+    <value>Quitar</value>
+  </data>
+  <data name="ImageBatch_Clear" xml:space="preserve">
+    <value>Vaciar</value>
+  </data>
+  <data name="ImageBatch_Size" xml:space="preserve">
+    <value>Tamaño</value>
+  </data>
+  <data name="ImageBatch_ResizeHint" xml:space="preserve">
+    <value>Rellenar recorta para cubrir, Ajustar añade márgenes, Estirar ignora la proporción.</value>
+  </data>
+  <data name="ImageBatch_Watermark" xml:space="preserve">
+    <value>Marca de agua</value>
+  </data>
+  <data name="ImageBatch_WatermarkPlaceholder" xml:space="preserve">
+    <value>Imagen de marca de agua...</value>
+  </data>
+  <data name="ImageBatch_Scale" xml:space="preserve">
+    <value>Escala %</value>
+  </data>
+  <data name="ImageBatch_Opacity" xml:space="preserve">
+    <value>Opacidad %</value>
+  </data>
+  <data name="ImageBatch_Margin" xml:space="preserve">
+    <value>Margen</value>
+  </data>
+  <data name="ImageBatch_Rotation" xml:space="preserve">
+    <value>Rotación</value>
+  </data>
+  <data name="ImageBatch_Output" xml:space="preserve">
+    <value>Salida</value>
+  </data>
+  <data name="ImageBatch_Quality" xml:space="preserve">
+    <value>Calidad</value>
+  </data>
+  <data name="ImageBatch_Background" xml:space="preserve">
+    <value>Fondo</value>
+  </data>
+  <data name="ImageBatch_BackgroundTip" xml:space="preserve">
+    <value>Relleno para píxeles transparentes, p. ej. #FFFFFF</value>
+  </data>
+  <data name="ImageBatch_OutputHint" xml:space="preserve">
+    <value> es el nombre original</value>
+  </data>
+  <data name="ImageBatch_OutputPlaceholder" xml:space="preserve">
+    <value>Junto a cada imagen</value>
+  </data>
+  <data name="ImageBatch_SaveAll" xml:space="preserve">
+    <value>Guardar todo</value>
+  </data>
+  <data name="UploadContent_Title" xml:space="preserve">
+    <value>Subir contenido</value>
+  </data>
+  <data name="UploadContent_Sources" xml:space="preserve">
+    <value>Orígenes</value>
+  </data>
+  <data name="UploadContent_Uploader" xml:space="preserve">
+    <value>Servicio de subida</value>
+  </data>
+  <data name="UploadContent_Clipboard" xml:space="preserve">
+    <value>Portapapeles</value>
+  </data>
+  <data name="UploadContent_Files" xml:space="preserve">
+    <value>Archivos...</value>
+  </data>
+  <data name="UploadContent_Folder" xml:space="preserve">
+    <value>Carpeta...</value>
+  </data>
+  <data name="UploadContent_Text" xml:space="preserve">
+    <value>Texto</value>
+  </data>
+  <data name="UploadContent_Url" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="UploadContent_FromUrl" xml:space="preserve">
+    <value>Desde URL...</value>
+  </data>
+  <data name="UploadContent_FromUrlTip" xml:space="preserve">
+    <value>Descargue un archivo desde una URL (incluidos enlaces de GitHub) y súbalo</value>
+  </data>
+  <data name="UploadContent_Queue" xml:space="preserve">
+    <value>Cola</value>
+  </data>
+  <data name="UploadContent_ClearCompleted" xml:space="preserve">
+    <value>Quitar completados</value>
+  </data>
+  <data name="UploadContent_DropHint" xml:space="preserve">
+    <value>Arrastre archivos aquí o use los orígenes de arriba.</value>
+  </data>
+  <data name="UploadContent_Pending" xml:space="preserve">
+    <value>Pendiente</value>
+  </data>
+  <data name="UploadContent_Retry" xml:space="preserve">
+    <value>Reintentar</value>
+  </data>
+  <data name="UploadContent_Preview" xml:space="preserve">
+    <value>Vista previa</value>
+  </data>
+  <data name="UploadContent_PreviewHint" xml:space="preserve">
+    <value>Seleccione un elemento de la cola para ver el texto, la imagen o los datos del archivo.</value>
+  </data>
+  <data name="UploadContent_UploadAll" xml:space="preserve">
+    <value>Subir todo</value>
+  </data>
+  <data name="AfterCapture_ChooseGoal" xml:space="preserve">
+    <value>Elija qué poner en el portapapeles.</value>
+  </data>
+  <data name="AfterCapture_GoalQuestion" xml:space="preserve">
+    <value>¿Qué quiere poner en el portapapeles?</value>
+  </data>
+  <data name="AfterCapture_GoalHint" xml:space="preserve">
+    <value>Los pasos necesarios se eligen según su objetivo. Puede añadir extras que no entren en conflicto.</value>
+  </data>
+  <data name="AfterCapture_CopyImage" xml:space="preserve">
+    <value>Copiar imagen</value>
+  </data>
+  <data name="AfterCapture_CopyImageHint" xml:space="preserve">
+    <value>Pone la imagen en el portapapeles.</value>
+  </data>
+  <data name="AfterCapture_CopyFilePath" xml:space="preserve">
+    <value>Copiar ruta del archivo</value>
+  </data>
+  <data name="AfterCapture_CopyFilePathHint" xml:space="preserve">
+    <value>Guarda la imagen y luego copia la ruta.</value>
+  </data>
+  <data name="AfterCapture_UploadThenCopyHint" xml:space="preserve">
+    <value>Sube la imagen y luego copia el enlace.</value>
+  </data>
+  <data name="AfterCapture_Required" xml:space="preserve">
+    <value>Necesario para este objetivo</value>
+  </data>
+  <data name="AfterCapture_RequiredHint" xml:space="preserve">
+    <value>Estas acciones se ejecutan para que el objetivo elegido se cumpla.</value>
+  </data>
+  <data name="AfterCapture_CopyImageAction" xml:space="preserve">
+    <value>Copiar imagen al portapapeles</value>
+  </data>
+  <data name="AfterCapture_PrivacyMode" xml:space="preserve">
+    <value>Modo privacidad: analizar y censurar antes de subir</value>
+  </data>
+  <data name="AfterCapture_Also" xml:space="preserve">
+    <value>Además</value>
+  </data>
+  <data name="AfterCapture_AlsoHint" xml:space="preserve">
+    <value>Extras opcionales. Copiar el texto OCR sobrescribe el portapapeles.</value>
+  </data>
+  <data name="AfterCapture_EffectsTip" xml:space="preserve">
+    <value>Aplica los efectos de imagen de este flujo de trabajo a la captura. Desmarque para omitirlos esta vez.</value>
+  </data>
+  <data name="AfterCapture_Locked" xml:space="preserve">
+    <value>Los pasos necesarios quedan ligados a su objetivo.</value>
+  </data>
 </root>

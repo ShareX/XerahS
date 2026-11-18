@@ -4147,4 +4147,163 @@
   <data name="ShareLogs_Send" xml:space="preserve">
     <value>Отправить</value>
   </data>
+  <data name="ImageBatch_Images" xml:space="preserve">
+    <value>Изображения</value>
+  </data>
+  <data name="ImageBatch_Add" xml:space="preserve">
+    <value>Добавить...</value>
+  </data>
+  <data name="ImageBatch_Remove" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="ImageBatch_Clear" xml:space="preserve">
+    <value>Очистить</value>
+  </data>
+  <data name="ImageBatch_Size" xml:space="preserve">
+    <value>Размер</value>
+  </data>
+  <data name="ImageBatch_ResizeHint" xml:space="preserve">
+    <value>«Заполнить» обрезает по размеру, «Вписать» добавляет поля, «Растянуть» игнорирует пропорции.</value>
+  </data>
+  <data name="ImageBatch_Watermark" xml:space="preserve">
+    <value>Водяной знак</value>
+  </data>
+  <data name="ImageBatch_WatermarkPlaceholder" xml:space="preserve">
+    <value>Изображение водяного знака...</value>
+  </data>
+  <data name="ImageBatch_Scale" xml:space="preserve">
+    <value>Масштаб %</value>
+  </data>
+  <data name="ImageBatch_Opacity" xml:space="preserve">
+    <value>Непрозрачность %</value>
+  </data>
+  <data name="ImageBatch_Margin" xml:space="preserve">
+    <value>Отступ</value>
+  </data>
+  <data name="ImageBatch_Rotation" xml:space="preserve">
+    <value>Поворот</value>
+  </data>
+  <data name="ImageBatch_Output" xml:space="preserve">
+    <value>Вывод</value>
+  </data>
+  <data name="ImageBatch_Quality" xml:space="preserve">
+    <value>Качество</value>
+  </data>
+  <data name="ImageBatch_Background" xml:space="preserve">
+    <value>Фон</value>
+  </data>
+  <data name="ImageBatch_BackgroundTip" xml:space="preserve">
+    <value>Заливка для прозрачных пикселей, например #FFFFFF</value>
+  </data>
+  <data name="ImageBatch_OutputHint" xml:space="preserve">
+    <value> — исходное имя файла</value>
+  </data>
+  <data name="ImageBatch_OutputPlaceholder" xml:space="preserve">
+    <value>Рядом с каждым изображением</value>
+  </data>
+  <data name="ImageBatch_SaveAll" xml:space="preserve">
+    <value>Сохранить все</value>
+  </data>
+  <data name="UploadContent_Title" xml:space="preserve">
+    <value>Отправка содержимого</value>
+  </data>
+  <data name="UploadContent_Sources" xml:space="preserve">
+    <value>Источники</value>
+  </data>
+  <data name="UploadContent_Uploader" xml:space="preserve">
+    <value>Сервис загрузки</value>
+  </data>
+  <data name="UploadContent_Clipboard" xml:space="preserve">
+    <value>Буфер обмена</value>
+  </data>
+  <data name="UploadContent_Files" xml:space="preserve">
+    <value>Файлы...</value>
+  </data>
+  <data name="UploadContent_Folder" xml:space="preserve">
+    <value>Папка...</value>
+  </data>
+  <data name="UploadContent_Text" xml:space="preserve">
+    <value>Текст</value>
+  </data>
+  <data name="UploadContent_Url" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="UploadContent_FromUrl" xml:space="preserve">
+    <value>Из URL...</value>
+  </data>
+  <data name="UploadContent_FromUrlTip" xml:space="preserve">
+    <value>Скачайте файл по URL (включая ссылки на файлы GitHub) и отправьте его</value>
+  </data>
+  <data name="UploadContent_Queue" xml:space="preserve">
+    <value>Очередь</value>
+  </data>
+  <data name="UploadContent_ClearCompleted" xml:space="preserve">
+    <value>Очистить завершённые</value>
+  </data>
+  <data name="UploadContent_DropHint" xml:space="preserve">
+    <value>Перетащите файлы сюда или используйте «Источники» выше.</value>
+  </data>
+  <data name="UploadContent_Pending" xml:space="preserve">
+    <value>В ожидании</value>
+  </data>
+  <data name="UploadContent_Retry" xml:space="preserve">
+    <value>Повторить</value>
+  </data>
+  <data name="UploadContent_Preview" xml:space="preserve">
+    <value>Предпросмотр</value>
+  </data>
+  <data name="UploadContent_PreviewHint" xml:space="preserve">
+    <value>Выберите элемент очереди, чтобы увидеть текст, изображение или сведения о файле.</value>
+  </data>
+  <data name="UploadContent_UploadAll" xml:space="preserve">
+    <value>Отправить все</value>
+  </data>
+  <data name="AfterCapture_ChooseGoal" xml:space="preserve">
+    <value>Выберите, что поместить в буфер обмена.</value>
+  </data>
+  <data name="AfterCapture_GoalQuestion" xml:space="preserve">
+    <value>Что вы хотите поместить в буфер обмена?</value>
+  </data>
+  <data name="AfterCapture_GoalHint" xml:space="preserve">
+    <value>Обязательные шаги выбраны по вашей цели. Можно добавить дополнительные, если они не конфликтуют.</value>
+  </data>
+  <data name="AfterCapture_CopyImage" xml:space="preserve">
+    <value>Копировать изображение</value>
+  </data>
+  <data name="AfterCapture_CopyImageHint" xml:space="preserve">
+    <value>Помещает изображение в буфер обмена.</value>
+  </data>
+  <data name="AfterCapture_CopyFilePath" xml:space="preserve">
+    <value>Копировать путь к файлу</value>
+  </data>
+  <data name="AfterCapture_CopyFilePathHint" xml:space="preserve">
+    <value>Сохраняет изображение, затем копирует путь.</value>
+  </data>
+  <data name="AfterCapture_UploadThenCopyHint" xml:space="preserve">
+    <value>Отправляет изображение, затем копирует ссылку.</value>
+  </data>
+  <data name="AfterCapture_Required" xml:space="preserve">
+    <value>Обязательно для этой цели</value>
+  </data>
+  <data name="AfterCapture_RequiredHint" xml:space="preserve">
+    <value>Эти действия выполняются, чтобы выбранная цель была достигнута.</value>
+  </data>
+  <data name="AfterCapture_CopyImageAction" xml:space="preserve">
+    <value>Копировать изображение в буфер обмена</value>
+  </data>
+  <data name="AfterCapture_PrivacyMode" xml:space="preserve">
+    <value>Режим приватности: проверка и замазывание перед отправкой</value>
+  </data>
+  <data name="AfterCapture_Also" xml:space="preserve">
+    <value>Дополнительно</value>
+  </data>
+  <data name="AfterCapture_AlsoHint" xml:space="preserve">
+    <value>Необязательные дополнения. Копирование текста OCR перезаписывает буфер обмена.</value>
+  </data>
+  <data name="AfterCapture_EffectsTip" xml:space="preserve">
+    <value>Применяет эффекты изображения этого workflow к снимку. Снимите галочку, чтобы пропустить их сейчас.</value>
+  </data>
+  <data name="AfterCapture_Locked" xml:space="preserve">
+    <value>Обязательные шаги закреплены за вашей целью.</value>
+  </data>
 </root>

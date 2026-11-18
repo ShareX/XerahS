@@ -111,7 +111,7 @@
       <Grid RowDefinitions="Auto, Auto" RowSpacing="{StaticResource SpaceXS}">
         <TextBlock Text="{local:Localize AfterCapture_AfterCapture}" Classes="title" AutomationProperties.Name="After Capture Title"/>
         <TextBlock Grid.Row="1"
-                   Text="Choose what to put on the clipboard."
+                   Text="{local:Localize AfterCapture_ChooseGoal}"
                    Classes="caption"
                    AutomationProperties.Name="After Capture Description"/>
       </Grid>
@@ -122,7 +122,7 @@
       <!-- Preview Column -->
       <Grid Grid.Column="0" RowDefinitions="Auto, *" RowSpacing="{StaticResource SpaceS}">
         <StackPanel Spacing="{StaticResource SpaceXS}">
-          <TextBlock Text="Preview" Classes="section-header" AutomationProperties.Name="Preview Heading"/>
+          <TextBlock Text="{local:Localize UploadContent_Preview}" Classes="section-header" AutomationProperties.Name="Preview Heading"/>
           <TextBlock Text="{local:Localize AfterCapture_PreviewDescription}" Classes="caption" AutomationProperties.Name="Preview Description"/>
         </StackPanel>
         <Border Grid.Row="1"
@@ -149,8 +149,8 @@
                     MaxWidth="380">
         <StackPanel Spacing="{StaticResource SpaceL}">
           <StackPanel Spacing="{StaticResource SpaceXS}">
-            <TextBlock Text="What do you want on the clipboard?" Classes="section-header" AutomationProperties.Name="Goal Heading"/>
-            <TextBlock Text="Required steps are selected from your goal. You can add extras that do not conflict." Classes="caption" AutomationProperties.Name="Goal Section Description"/>
+            <TextBlock Text="{local:Localize AfterCapture_GoalQuestion}" Classes="section-header" AutomationProperties.Name="Goal Heading"/>
+            <TextBlock Text="{local:Localize AfterCapture_GoalHint}" Classes="caption" AutomationProperties.Name="Goal Section Description"/>
           </StackPanel>
           <Border Classes="card" Padding="{StaticResource CardPadding}">
             <StackPanel Spacing="{StaticResource SpaceM}">
@@ -158,16 +158,16 @@
                            IsChecked="{Binding IsCopyImageGoal}"
                            AutomationProperties.Name="Copy Image">
                 <StackPanel Spacing="{StaticResource SpaceXS}">
-                  <TextBlock Text="Copy Image" FontWeight="SemiBold"/>
-                  <TextBlock Text="Puts the picture on the clipboard." Classes="caption"/>
+                  <TextBlock Text="{local:Localize AfterCapture_CopyImage}" FontWeight="SemiBold"/>
+                  <TextBlock Text="{local:Localize AfterCapture_CopyImageHint}" Classes="caption"/>
                 </StackPanel>
               </RadioButton>
               <RadioButton GroupName="AfterCaptureGoal"
                            IsChecked="{Binding IsCopyFilePathGoal}"
                            AutomationProperties.Name="Copy File Path">
                 <StackPanel Spacing="{StaticResource SpaceXS}">
-                  <TextBlock Text="Copy File Path" FontWeight="SemiBold"/>
-                  <TextBlock Text="Saves the image, then copies the path." Classes="caption"/>
+                  <TextBlock Text="{local:Localize AfterCapture_CopyFilePath}" FontWeight="SemiBold"/>
+                  <TextBlock Text="{local:Localize AfterCapture_CopyFilePathHint}" Classes="caption"/>
                 </StackPanel>
               </RadioButton>
               <RadioButton GroupName="AfterCaptureGoal"
@@ -175,19 +175,19 @@
                            AutomationProperties.Name="Copy URL">
                 <StackPanel Spacing="{StaticResource SpaceXS}">
                   <TextBlock Text="{local:Localize App_CopyUrl}" FontWeight="SemiBold"/>
-                  <TextBlock Text="Uploads the image, then copies the link." Classes="caption"/>
+                  <TextBlock Text="{local:Localize AfterCapture_UploadThenCopyHint}" Classes="caption"/>
                 </StackPanel>
               </RadioButton>
             </StackPanel>
           </Border>
 
           <StackPanel Spacing="{StaticResource SpaceXS}">
-            <TextBlock Text="Required for this goal" Classes="section-header" AutomationProperties.Name="Required Heading"/>
-            <TextBlock Text="These actions run so the selected goal can succeed." Classes="caption" AutomationProperties.Name="Required Section Description"/>
+            <TextBlock Text="{local:Localize AfterCapture_Required}" Classes="section-header" AutomationProperties.Name="Required Heading"/>
+            <TextBlock Text="{local:Localize AfterCapture_RequiredHint}" Classes="caption" AutomationProperties.Name="Required Section Description"/>
           </StackPanel>
           <Border Classes="card" Padding="{StaticResource CardPadding}">
             <StackPanel Spacing="{StaticResource SpaceM}">
-              <CheckBox Content="Copy image to clipboard"
+              <CheckBox Content="{local:Localize AfterCapture_CopyImageAction}"
                         IsChecked="{Binding CopyImageToClipboard}"
                         IsEnabled="False"
                         IsVisible="{Binding IsCopyImageGoal}"
@@ -207,7 +207,7 @@
                         IsEnabled="False"
                         IsVisible="{Binding IsCopyUrlGoal}"
                         AutomationProperties.Name="Upload Image to Host"/>
-              <CheckBox Content="Privacy mode: scan and redact before upload" IsChecked="{Binding PrivacyMode}" IsEnabled="{Binding UploadImageToHost}"/>
+              <CheckBox Content="{local:Localize AfterCapture_PrivacyMode}" IsChecked="{Binding PrivacyMode}" IsEnabled="{Binding UploadImageToHost}"/>
               <CheckBox Content="{local:Localize AfterCapture_CopyURLToClipboard}"
                         IsChecked="{Binding CopyURLToClipboard}"
                         IsEnabled="False"
@@ -217,8 +217,8 @@
           </Border>
 
           <StackPanel Spacing="{StaticResource SpaceXS}">
-            <TextBlock Text="Also" Classes="section-header" AutomationProperties.Name="Optional Heading"/>
-            <TextBlock Text="Optional extras. Copy OCR text overwrites the clipboard." Classes="caption" AutomationProperties.Name="Optional Section Description"/>
+            <TextBlock Text="{local:Localize AfterCapture_Also}" Classes="section-header" AutomationProperties.Name="Optional Heading"/>
+            <TextBlock Text="{local:Localize AfterCapture_AlsoHint}" Classes="caption" AutomationProperties.Name="Optional Section Description"/>
           </StackPanel>
           <Border Classes="card" Padding="{StaticResource CardPadding}">
             <StackPanel Spacing="{StaticResource SpaceM}">
@@ -228,7 +228,7 @@
                         AutomationProperties.Name="Save Image to File"/>
               <CheckBox Content="{local:Localize TaskSettings_ApplyImageEffects}"
                         IsChecked="{Binding AddImageEffects}"
-                        ToolTip.Tip="Applies this workflow's image effects to the capture. Untick to skip them this time."
+                        ToolTip.Tip="{local:Localize AfterCapture_EffectsTip}"
                         AutomationProperties.Name="Apply Image Effects"/>
               <CheckBox Content="{local:Localize AfterCapture_AnnotateMedia}"
                         IsChecked="{Binding AnnotateMedia}"
@@ -257,7 +257,7 @@
     <!-- Action Bar -->
     <Border Grid.Row="2" Classes="card" Padding="{StaticResource CardPaddingCompact}">
       <Grid ColumnDefinitions="*, Auto" ColumnSpacing="{StaticResource SpaceM}" VerticalAlignment="Center">
-        <TextBlock Text="Required steps stay locked to your goal."
+        <TextBlock Text="{local:Localize AfterCapture_Locked}"
                    Classes="caption"
                    VerticalAlignment="Center"
                    AutomationProperties.Name="After Capture Footer Note"/>
@@ -265,7 +265,7 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     Spacing="{StaticResource SpaceS}">
-          <Button Content="Cancel"
+          <Button Content="{local:Localize SendToAction_Cancel}"
                   Command="{Binding CancelCommand}"
                   IsCancel="True"
                   AutomationProperties.Name="Cancel"/>

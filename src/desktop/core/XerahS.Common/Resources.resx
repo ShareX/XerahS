@@ -4147,4 +4147,163 @@ This will permanently remove the file from the remote storage. This cannot be un
   <data name="ShareLogs_Send" xml:space="preserve">
     <value>Send</value>
   </data>
+  <data name="ImageBatch_Images" xml:space="preserve">
+    <value>Images</value>
+  </data>
+  <data name="ImageBatch_Add" xml:space="preserve">
+    <value>Add...</value>
+  </data>
+  <data name="ImageBatch_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ImageBatch_Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="ImageBatch_Size" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="ImageBatch_ResizeHint" xml:space="preserve">
+    <value>Fill crops to cover, Fit pads to fit, Stretch ignores the aspect ratio.</value>
+  </data>
+  <data name="ImageBatch_Watermark" xml:space="preserve">
+    <value>Watermark</value>
+  </data>
+  <data name="ImageBatch_WatermarkPlaceholder" xml:space="preserve">
+    <value>Watermark image...</value>
+  </data>
+  <data name="ImageBatch_Scale" xml:space="preserve">
+    <value>Scale %</value>
+  </data>
+  <data name="ImageBatch_Opacity" xml:space="preserve">
+    <value>Opacity %</value>
+  </data>
+  <data name="ImageBatch_Margin" xml:space="preserve">
+    <value>Margin</value>
+  </data>
+  <data name="ImageBatch_Rotation" xml:space="preserve">
+    <value>Rotation</value>
+  </data>
+  <data name="ImageBatch_Output" xml:space="preserve">
+    <value>Output</value>
+  </data>
+  <data name="ImageBatch_Quality" xml:space="preserve">
+    <value>Quality</value>
+  </data>
+  <data name="ImageBatch_Background" xml:space="preserve">
+    <value>Background</value>
+  </data>
+  <data name="ImageBatch_BackgroundTip" xml:space="preserve">
+    <value>Fill for transparent pixels, e.g. #FFFFFF</value>
+  </data>
+  <data name="ImageBatch_OutputHint" xml:space="preserve">
+    <value> is the original name</value>
+  </data>
+  <data name="ImageBatch_OutputPlaceholder" xml:space="preserve">
+    <value>Next to each image</value>
+  </data>
+  <data name="ImageBatch_SaveAll" xml:space="preserve">
+    <value>Save all</value>
+  </data>
+  <data name="UploadContent_Title" xml:space="preserve">
+    <value>Upload Content</value>
+  </data>
+  <data name="UploadContent_Sources" xml:space="preserve">
+    <value>Sources</value>
+  </data>
+  <data name="UploadContent_Uploader" xml:space="preserve">
+    <value>Uploader</value>
+  </data>
+  <data name="UploadContent_Clipboard" xml:space="preserve">
+    <value>Clipboard</value>
+  </data>
+  <data name="UploadContent_Files" xml:space="preserve">
+    <value>Files...</value>
+  </data>
+  <data name="UploadContent_Folder" xml:space="preserve">
+    <value>Folder...</value>
+  </data>
+  <data name="UploadContent_Text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="UploadContent_Url" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="UploadContent_FromUrl" xml:space="preserve">
+    <value>From URL...</value>
+  </data>
+  <data name="UploadContent_FromUrlTip" xml:space="preserve">
+    <value>Download a file from a URL (including GitHub file links) and upload the file</value>
+  </data>
+  <data name="UploadContent_Queue" xml:space="preserve">
+    <value>Queue</value>
+  </data>
+  <data name="UploadContent_ClearCompleted" xml:space="preserve">
+    <value>Clear Completed</value>
+  </data>
+  <data name="UploadContent_DropHint" xml:space="preserve">
+    <value>Drag and drop files here, or use Sources above.</value>
+  </data>
+  <data name="UploadContent_Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="UploadContent_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="UploadContent_Preview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="UploadContent_PreviewHint" xml:space="preserve">
+    <value>Select a queue item to preview text, image, or file metadata.</value>
+  </data>
+  <data name="UploadContent_UploadAll" xml:space="preserve">
+    <value>Upload All</value>
+  </data>
+  <data name="AfterCapture_ChooseGoal" xml:space="preserve">
+    <value>Choose what to put on the clipboard.</value>
+  </data>
+  <data name="AfterCapture_GoalQuestion" xml:space="preserve">
+    <value>What do you want on the clipboard?</value>
+  </data>
+  <data name="AfterCapture_GoalHint" xml:space="preserve">
+    <value>Required steps are selected from your goal. You can add extras that do not conflict.</value>
+  </data>
+  <data name="AfterCapture_CopyImage" xml:space="preserve">
+    <value>Copy Image</value>
+  </data>
+  <data name="AfterCapture_CopyImageHint" xml:space="preserve">
+    <value>Puts the picture on the clipboard.</value>
+  </data>
+  <data name="AfterCapture_CopyFilePath" xml:space="preserve">
+    <value>Copy File Path</value>
+  </data>
+  <data name="AfterCapture_CopyFilePathHint" xml:space="preserve">
+    <value>Saves the image, then copies the path.</value>
+  </data>
+  <data name="AfterCapture_UploadThenCopyHint" xml:space="preserve">
+    <value>Uploads the image, then copies the link.</value>
+  </data>
+  <data name="AfterCapture_Required" xml:space="preserve">
+    <value>Required for this goal</value>
+  </data>
+  <data name="AfterCapture_RequiredHint" xml:space="preserve">
+    <value>These actions run so the selected goal can succeed.</value>
+  </data>
+  <data name="AfterCapture_CopyImageAction" xml:space="preserve">
+    <value>Copy image to clipboard</value>
+  </data>
+  <data name="AfterCapture_PrivacyMode" xml:space="preserve">
+    <value>Privacy mode: scan and redact before upload</value>
+  </data>
+  <data name="AfterCapture_Also" xml:space="preserve">
+    <value>Also</value>
+  </data>
+  <data name="AfterCapture_AlsoHint" xml:space="preserve">
+    <value>Optional extras. Copy OCR text overwrites the clipboard.</value>
+  </data>
+  <data name="AfterCapture_EffectsTip" xml:space="preserve">
+    <value>Applies this workflow's image effects to the capture. Untick to skip them this time.</value>
+  </data>
+  <data name="AfterCapture_Locked" xml:space="preserve">
+    <value>Required steps stay locked to your goal.</value>
+  </data>
 </root>

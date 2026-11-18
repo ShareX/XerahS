@@ -4147,4 +4147,163 @@
   <data name="ShareLogs_Send" xml:space="preserve">
     <value>发送</value>
   </data>
+  <data name="ImageBatch_Images" xml:space="preserve">
+    <value>图像</value>
+  </data>
+  <data name="ImageBatch_Add" xml:space="preserve">
+    <value>添加...</value>
+  </data>
+  <data name="ImageBatch_Remove" xml:space="preserve">
+    <value>移除</value>
+  </data>
+  <data name="ImageBatch_Clear" xml:space="preserve">
+    <value>清空</value>
+  </data>
+  <data name="ImageBatch_Size" xml:space="preserve">
+    <value>尺寸</value>
+  </data>
+  <data name="ImageBatch_ResizeHint" xml:space="preserve">
+    <value>填充会裁剪以覆盖，适应会补边，拉伸会忽略宽高比。</value>
+  </data>
+  <data name="ImageBatch_Watermark" xml:space="preserve">
+    <value>水印</value>
+  </data>
+  <data name="ImageBatch_WatermarkPlaceholder" xml:space="preserve">
+    <value>水印图像...</value>
+  </data>
+  <data name="ImageBatch_Scale" xml:space="preserve">
+    <value>缩放 %</value>
+  </data>
+  <data name="ImageBatch_Opacity" xml:space="preserve">
+    <value>不透明度 %</value>
+  </data>
+  <data name="ImageBatch_Margin" xml:space="preserve">
+    <value>边距</value>
+  </data>
+  <data name="ImageBatch_Rotation" xml:space="preserve">
+    <value>旋转</value>
+  </data>
+  <data name="ImageBatch_Output" xml:space="preserve">
+    <value>输出</value>
+  </data>
+  <data name="ImageBatch_Quality" xml:space="preserve">
+    <value>质量</value>
+  </data>
+  <data name="ImageBatch_Background" xml:space="preserve">
+    <value>背景</value>
+  </data>
+  <data name="ImageBatch_BackgroundTip" xml:space="preserve">
+    <value>透明像素的填充色，例如 #FFFFFF</value>
+  </data>
+  <data name="ImageBatch_OutputHint" xml:space="preserve">
+    <value> 是原始名称</value>
+  </data>
+  <data name="ImageBatch_OutputPlaceholder" xml:space="preserve">
+    <value>与每个图像放在同一位置</value>
+  </data>
+  <data name="ImageBatch_SaveAll" xml:space="preserve">
+    <value>全部保存</value>
+  </data>
+  <data name="UploadContent_Title" xml:space="preserve">
+    <value>上传内容</value>
+  </data>
+  <data name="UploadContent_Sources" xml:space="preserve">
+    <value>来源</value>
+  </data>
+  <data name="UploadContent_Uploader" xml:space="preserve">
+    <value>上传服务</value>
+  </data>
+  <data name="UploadContent_Clipboard" xml:space="preserve">
+    <value>剪贴板</value>
+  </data>
+  <data name="UploadContent_Files" xml:space="preserve">
+    <value>文件...</value>
+  </data>
+  <data name="UploadContent_Folder" xml:space="preserve">
+    <value>文件夹...</value>
+  </data>
+  <data name="UploadContent_Text" xml:space="preserve">
+    <value>文本</value>
+  </data>
+  <data name="UploadContent_Url" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="UploadContent_FromUrl" xml:space="preserve">
+    <value>从 URL...</value>
+  </data>
+  <data name="UploadContent_FromUrlTip" xml:space="preserve">
+    <value>从 URL（包括 GitHub 文件链接）下载文件并上传</value>
+  </data>
+  <data name="UploadContent_Queue" xml:space="preserve">
+    <value>队列</value>
+  </data>
+  <data name="UploadContent_ClearCompleted" xml:space="preserve">
+    <value>清除已完成项</value>
+  </data>
+  <data name="UploadContent_DropHint" xml:space="preserve">
+    <value>将文件拖到此处，或使用上方的来源。</value>
+  </data>
+  <data name="UploadContent_Pending" xml:space="preserve">
+    <value>待处理</value>
+  </data>
+  <data name="UploadContent_Retry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="UploadContent_Preview" xml:space="preserve">
+    <value>预览</value>
+  </data>
+  <data name="UploadContent_PreviewHint" xml:space="preserve">
+    <value>选择队列项以预览文本、图像或文件元数据。</value>
+  </data>
+  <data name="UploadContent_UploadAll" xml:space="preserve">
+    <value>全部上传</value>
+  </data>
+  <data name="AfterCapture_ChooseGoal" xml:space="preserve">
+    <value>选择要放入剪贴板的内容。</value>
+  </data>
+  <data name="AfterCapture_GoalQuestion" xml:space="preserve">
+    <value>你希望剪贴板中有什么？</value>
+  </data>
+  <data name="AfterCapture_GoalHint" xml:space="preserve">
+    <value>必需步骤会根据你的目标自动选择。你可以添加不冲突的额外步骤。</value>
+  </data>
+  <data name="AfterCapture_CopyImage" xml:space="preserve">
+    <value>复制图像</value>
+  </data>
+  <data name="AfterCapture_CopyImageHint" xml:space="preserve">
+    <value>将图片放入剪贴板。</value>
+  </data>
+  <data name="AfterCapture_CopyFilePath" xml:space="preserve">
+    <value>复制文件路径</value>
+  </data>
+  <data name="AfterCapture_CopyFilePathHint" xml:space="preserve">
+    <value>保存图像，然后复制路径。</value>
+  </data>
+  <data name="AfterCapture_UploadThenCopyHint" xml:space="preserve">
+    <value>上传图像，然后复制链接。</value>
+  </data>
+  <data name="AfterCapture_Required" xml:space="preserve">
+    <value>此目标所必需</value>
+  </data>
+  <data name="AfterCapture_RequiredHint" xml:space="preserve">
+    <value>执行这些操作才能实现所选目标。</value>
+  </data>
+  <data name="AfterCapture_CopyImageAction" xml:space="preserve">
+    <value>将图像复制到剪贴板</value>
+  </data>
+  <data name="AfterCapture_PrivacyMode" xml:space="preserve">
+    <value>隐私模式：上传前扫描并遮盖</value>
+  </data>
+  <data name="AfterCapture_Also" xml:space="preserve">
+    <value>另外</value>
+  </data>
+  <data name="AfterCapture_AlsoHint" xml:space="preserve">
+    <value>可选项。复制 OCR 文本会覆盖剪贴板。</value>
+  </data>
+  <data name="AfterCapture_EffectsTip" xml:space="preserve">
+    <value>对此捕获应用该工作流的图像效果。取消勾选可在本次跳过。</value>
+  </data>
+  <data name="AfterCapture_Locked" xml:space="preserve">
+    <value>必需步骤会保持与你的目标锁定。</value>
+  </data>
 </root>

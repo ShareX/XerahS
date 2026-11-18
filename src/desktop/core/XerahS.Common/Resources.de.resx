@@ -4147,4 +4147,163 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   <data name="ShareLogs_Send" xml:space="preserve">
     <value>Senden</value>
   </data>
+  <data name="ImageBatch_Images" xml:space="preserve">
+    <value>Bilder</value>
+  </data>
+  <data name="ImageBatch_Add" xml:space="preserve">
+    <value>Hinzufügen...</value>
+  </data>
+  <data name="ImageBatch_Remove" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="ImageBatch_Clear" xml:space="preserve">
+    <value>Leeren</value>
+  </data>
+  <data name="ImageBatch_Size" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="ImageBatch_ResizeHint" xml:space="preserve">
+    <value>Füllen schneidet zu, Einpassen ergänzt Ränder, Strecken ignoriert das Seitenverhältnis.</value>
+  </data>
+  <data name="ImageBatch_Watermark" xml:space="preserve">
+    <value>Wasserzeichen</value>
+  </data>
+  <data name="ImageBatch_WatermarkPlaceholder" xml:space="preserve">
+    <value>Wasserzeichenbild...</value>
+  </data>
+  <data name="ImageBatch_Scale" xml:space="preserve">
+    <value>Skalierung %</value>
+  </data>
+  <data name="ImageBatch_Opacity" xml:space="preserve">
+    <value>Deckkraft %</value>
+  </data>
+  <data name="ImageBatch_Margin" xml:space="preserve">
+    <value>Rand</value>
+  </data>
+  <data name="ImageBatch_Rotation" xml:space="preserve">
+    <value>Drehung</value>
+  </data>
+  <data name="ImageBatch_Output" xml:space="preserve">
+    <value>Ausgabe</value>
+  </data>
+  <data name="ImageBatch_Quality" xml:space="preserve">
+    <value>Qualität</value>
+  </data>
+  <data name="ImageBatch_Background" xml:space="preserve">
+    <value>Hintergrund</value>
+  </data>
+  <data name="ImageBatch_BackgroundTip" xml:space="preserve">
+    <value>Füllung für transparente Pixel, z. B. #FFFFFF</value>
+  </data>
+  <data name="ImageBatch_OutputHint" xml:space="preserve">
+    <value> ist der ursprüngliche Name</value>
+  </data>
+  <data name="ImageBatch_OutputPlaceholder" xml:space="preserve">
+    <value>Neben jedem Bild</value>
+  </data>
+  <data name="ImageBatch_SaveAll" xml:space="preserve">
+    <value>Alle speichern</value>
+  </data>
+  <data name="UploadContent_Title" xml:space="preserve">
+    <value>Inhalt hochladen</value>
+  </data>
+  <data name="UploadContent_Sources" xml:space="preserve">
+    <value>Quellen</value>
+  </data>
+  <data name="UploadContent_Uploader" xml:space="preserve">
+    <value>Uploader</value>
+  </data>
+  <data name="UploadContent_Clipboard" xml:space="preserve">
+    <value>Zwischenablage</value>
+  </data>
+  <data name="UploadContent_Files" xml:space="preserve">
+    <value>Dateien...</value>
+  </data>
+  <data name="UploadContent_Folder" xml:space="preserve">
+    <value>Ordner...</value>
+  </data>
+  <data name="UploadContent_Text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="UploadContent_Url" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="UploadContent_FromUrl" xml:space="preserve">
+    <value>Aus URL...</value>
+  </data>
+  <data name="UploadContent_FromUrlTip" xml:space="preserve">
+    <value>Eine Datei von einer URL herunterladen (auch GitHub-Dateilinks) und hochladen</value>
+  </data>
+  <data name="UploadContent_Queue" xml:space="preserve">
+    <value>Warteschlange</value>
+  </data>
+  <data name="UploadContent_ClearCompleted" xml:space="preserve">
+    <value>Abgeschlossene entfernen</value>
+  </data>
+  <data name="UploadContent_DropHint" xml:space="preserve">
+    <value>Dateien hierher ziehen oder die Quellen oben verwenden.</value>
+  </data>
+  <data name="UploadContent_Pending" xml:space="preserve">
+    <value>Ausstehend</value>
+  </data>
+  <data name="UploadContent_Retry" xml:space="preserve">
+    <value>Wiederholen</value>
+  </data>
+  <data name="UploadContent_Preview" xml:space="preserve">
+    <value>Vorschau</value>
+  </data>
+  <data name="UploadContent_PreviewHint" xml:space="preserve">
+    <value>Wählen Sie ein Element aus, um Text, Bild oder Dateidetails anzuzeigen.</value>
+  </data>
+  <data name="UploadContent_UploadAll" xml:space="preserve">
+    <value>Alle hochladen</value>
+  </data>
+  <data name="AfterCapture_ChooseGoal" xml:space="preserve">
+    <value>Wählen Sie, was in die Zwischenablage soll.</value>
+  </data>
+  <data name="AfterCapture_GoalQuestion" xml:space="preserve">
+    <value>Was soll in der Zwischenablage landen?</value>
+  </data>
+  <data name="AfterCapture_GoalHint" xml:space="preserve">
+    <value>Pflichtschritte ergeben sich aus Ihrem Ziel. Sie können zusätzliche hinzufügen, die nicht kollidieren.</value>
+  </data>
+  <data name="AfterCapture_CopyImage" xml:space="preserve">
+    <value>Bild kopieren</value>
+  </data>
+  <data name="AfterCapture_CopyImageHint" xml:space="preserve">
+    <value>Legt das Bild in der Zwischenablage ab.</value>
+  </data>
+  <data name="AfterCapture_CopyFilePath" xml:space="preserve">
+    <value>Dateipfad kopieren</value>
+  </data>
+  <data name="AfterCapture_CopyFilePathHint" xml:space="preserve">
+    <value>Speichert das Bild und kopiert dann den Pfad.</value>
+  </data>
+  <data name="AfterCapture_UploadThenCopyHint" xml:space="preserve">
+    <value>Lädt das Bild hoch und kopiert dann den Link.</value>
+  </data>
+  <data name="AfterCapture_Required" xml:space="preserve">
+    <value>Für dieses Ziel erforderlich</value>
+  </data>
+  <data name="AfterCapture_RequiredHint" xml:space="preserve">
+    <value>Diese Aktionen laufen, damit das gewählte Ziel erreicht wird.</value>
+  </data>
+  <data name="AfterCapture_CopyImageAction" xml:space="preserve">
+    <value>Bild in die Zwischenablage kopieren</value>
+  </data>
+  <data name="AfterCapture_PrivacyMode" xml:space="preserve">
+    <value>Datenschutzmodus: vor dem Hochladen prüfen und schwärzen</value>
+  </data>
+  <data name="AfterCapture_Also" xml:space="preserve">
+    <value>Außerdem</value>
+  </data>
+  <data name="AfterCapture_AlsoHint" xml:space="preserve">
+    <value>Optionale Extras. OCR-Text kopieren überschreibt die Zwischenablage.</value>
+  </data>
+  <data name="AfterCapture_EffectsTip" xml:space="preserve">
+    <value>Wendet die Bildeffekte dieses Workflows auf die Aufnahme an. Deaktivieren, um sie diesmal zu überspringen.</value>
+  </data>
+  <data name="AfterCapture_Locked" xml:space="preserve">
+    <value>Pflichtschritte bleiben an Ihr Ziel gebunden.</value>
+  </data>
 </root>
