@@ -150,11 +150,11 @@ public static class HdrSelfTestRunner
                 report.Add("  * DXGI Desktop Duplication returned no frame (0x887A0027) and the service fell back to GDI.");
                 report.Add("    That happens when the display is asleep, or when the process was started from a");
                 report.Add("    non-interactive host (CI shell, WSL-spawned cmd) instead of the logged-in desktop.");
-                report.Add("  * The display reports advanced colour enabled, but Desktop Duplication still");
-                report.Add("    hands back 8-bit frames (check the 'duplication created, format=' log line).");
-                report.Add("    Windows is then compositing an SDR desktop, so no HDR frames exist to");
-                report.Add("    capture; re-apply HDR in Settings > System > Display, confirm the monitor");
-                report.Add("    is in its own HDR mode, and reboot if the toggle does not change the result.");
+                report.Add("  * The display reports advanced colour enabled but the output runs at 8 bits");
+                report.Add("    per channel, and Desktop Duplication hands back B8G8R8A8 frames (see the");
+                report.Add("    'frame source=..., format=' log line). HDR can be presented on an 8-bit");
+                report.Add("    signal, but Windows only duplicates HDR when the output carries 10 bpc;");
+                report.Add("    raise the GPU output colour depth, not the HDR toggle.");
                 report.Add("  HDR-only checks (tone curves, variants, preview LUT) are skipped, not failed;");
                 report.Add("  the encoder and Save-As checks still run against the 8-bit frame.");
                 report.Add(string.Empty);

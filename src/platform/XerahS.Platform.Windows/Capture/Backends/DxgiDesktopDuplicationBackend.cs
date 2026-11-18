@@ -205,9 +205,10 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
             {
                 _sdrFallbackWarned = true;
                 DebugHelper.WriteLine(
-                    "[HDR] Advanced colour is enabled but the desktop is composited at 8 bits per channel: " +
-                    "Desktop Duplication returns SDR frames, so captures contain no HDR range. " +
-                    "Lower the refresh rate or use a link that supports 10-bit at this mode.");
+                    "[HDR] Advanced colour is enabled but the output runs at 8 bits per channel: Desktop " +
+                    "Duplication hands back B8G8R8A8 frames, so captures carry no HDR range even though the " +
+                    "desktop is presented in HDR. Set the GPU output colour depth to 10 bpc at a refresh " +
+                    "rate the link supports (NVIDIA Control Panel > Change resolution > Output colour depth).");
             }
         }
 
