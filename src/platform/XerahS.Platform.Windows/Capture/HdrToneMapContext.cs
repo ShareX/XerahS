@@ -80,7 +80,17 @@ internal readonly record struct HdrToneMapContext(float SdrWhiteScale, float Pea
 
     public static bool IsHdrOutput(OutputDescription1 description)
     {
-        return description.AttachedToDesktop &&
-            description.ColorSpace == ColorSpaceType.RgbFullG2084NoneP2020;
+        if (!description.AttachedToDesktop ||
+            description.ColorSpace != ColorSpaceType.RgbFullG2084NoneP2020)
+        {
+            return false;
+        }
+
+        // DXGI keeps reporting the PQ colour space while Windows actually composites the desktop in
+        // SDR encoding (advanced colour stays enabled, the output just is not presenting HDR10).
+        // That state is common: DuplicateOutput then delivers B8G8R8A8 frames and the fp16 overload
+        // is rejected, so treating the output as HDR would only buy an empty fp16 surface.
+        DisplayConfigHelper.AdvancedColorState? state = DisplayConfigHelper.GetAdvancedColorState(description.DeviceName);
+        return state is null || state.Value.Encoding == DisplayConfigHelper.AdvancedColorEncoding.Hdr10;
     }
 }
