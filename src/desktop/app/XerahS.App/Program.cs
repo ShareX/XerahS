@@ -888,6 +888,14 @@ namespace XerahS.App
                 return;
             }
 
+            // External capture front end (GNOME Shell extension): run a workflow's after-capture
+            // tasks on an image it already captured. Never raises the main window.
+            if (AppContracts.Cli.TryGetProcessImageArgs(args, out string processImagePath, out string processWorkflowId, out string? processMonitorRect))
+            {
+                _ = Task.Run(() => ProcessImageFromAutomationAsync(processImagePath, processWorkflowId, processMonitorRect));
+                return;
+            }
+
             // Process the arguments on the UI thread to handle any UI-related actions
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
@@ -968,6 +976,55 @@ namespace XerahS.App
             }
         }
 
+        /// <summary>
+        /// Runs a workflow's after-capture tasks (editor, save, copy, ...) on an image captured by an
+        /// external front end. The task keeps the workflow's own job, so it is not an upload job unless
+        /// the workflow itself uploads.
+        /// </summary>
+        private static async Task ProcessImageFromAutomationAsync(string imagePath, string workflowId, string? monitorRect)
+        {
+            try
+            {
+                if (!File.Exists(imagePath))
+                {
+                    XerahS.Common.DebugHelper.WriteLine($"Process image rejected: file not found: {imagePath}");
+                    return;
+                }
+
+                XerahS.Core.Hotkeys.WorkflowSettings workflow = XerahS.Core.Automation.WorkflowAutomation.FindWorkflow(workflowId);
+                var taskManager = (Application.Current as XerahS.UI.App)?.ServiceProvider?.GetService<ITaskManager>();
+                if (taskManager == null)
+                {
+                    XerahS.Common.DebugHelper.WriteLine("Process image ignored: task manager unavailable.");
+                    return;
+                }
+
+                SkiaSharp.SKBitmap? image = SkiaSharp.SKBitmap.Decode(imagePath);
+                if (image == null)
+                {
+                    XerahS.Common.DebugHelper.WriteLine($"Process image rejected: cannot decode {imagePath}");
+                    return;
+                }
+
+                TaskSettings settings = CloneTaskSettings(workflow.TaskSettings ?? SettingsManager.DefaultTaskSettings ?? new TaskSettings());
+                settings.WorkflowId = workflow.Id;
+                settings.Job = workflow.Job;
+
+                XerahS.UI.Services.EditorPlacement.SetNextTaskEditorMonitor(monitorRect);
+                XerahS.Common.DebugHelper.WriteLine(
+                    $"Process image: {image.Width}x{image.Height} from {imagePath} with workflow '{workflow.Id}' ({workflow.Job}), monitor={monitorRect ?? "none"}");
+                await taskManager.StartTask(settings, image);
+            }
+            catch (XerahS.Core.Automation.AutomationException ex)
+            {
+                XerahS.Common.DebugHelper.WriteLine($"Process image with workflow '{workflowId}' rejected: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                XerahS.Common.DebugHelper.WriteException(ex, "Process image failed");
+            }
+        }
+
         private static void ProcessIncomingArguments(string[]? args, string source)
         {
             if (args == null || args.Length == 0)
@@ -979,6 +1036,12 @@ namespace XerahS.App
             {
                 // XerahS was started by "omaxerahs workflow run" because it was not running.
                 RunWorkflowFromAutomation(runWorkflowId);
+                return;
+            }
+
+            if (AppContracts.Cli.TryGetProcessImageArgs(args, out string processImagePath, out string processWorkflowId, out string? processMonitorRect))
+            {
+                _ = Task.Run(() => ProcessImageFromAutomationAsync(processImagePath, processWorkflowId, processMonitorRect));
                 return;
             }
 

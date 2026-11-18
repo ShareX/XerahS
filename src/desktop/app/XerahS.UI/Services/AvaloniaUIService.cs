@@ -264,6 +264,13 @@ namespace XerahS.UI.Services
                     }
                 };
 
+                // External capture front ends (--process-image) open the task editor full screen
+                // on the monitor the capture came from.
+                if (taskMode && !privacyReview)
+                {
+                    EditorPlacement.TryApplyToTaskEditor(editorWindow);
+                }
+
                 // Show the window
                 editorWindow.Show();
             });

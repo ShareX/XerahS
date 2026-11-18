@@ -93,6 +93,33 @@ public static class AppContracts
             return true;
         }
 
+        /// <summary>
+        /// Relayed by an external capture front end (e.g. a GNOME Shell extension that does its own
+        /// region selection) as <c>--process-image &lt;png&gt; &lt;workflow-id&gt; [x,y,w,h]</c>. Runs the
+        /// workflow's after-capture tasks on that image instead of capturing. The optional rectangle is
+        /// the monitor (logical desktop coordinates) where a task-mode editor should open.
+        /// </summary>
+        public const string ProcessImageFlag = "--process-image";
+
+        public static bool TryGetProcessImageArgs(IReadOnlyList<string>? args, out string imagePath, out string workflowId, out string? monitorRect)
+        {
+            imagePath = string.Empty;
+            workflowId = string.Empty;
+            monitorRect = null;
+            if (args is not { Count: 3 or 4 } ||
+                !args[0].Equals(ProcessImageFlag, StringComparison.OrdinalIgnoreCase) ||
+                string.IsNullOrWhiteSpace(args[1]) ||
+                string.IsNullOrWhiteSpace(args[2]))
+            {
+                return false;
+            }
+
+            imagePath = args[1].Trim();
+            workflowId = args[2].Trim();
+            monitorRect = args.Count == 4 ? args[3].Trim() : null;
+            return true;
+        }
+
         /// <summary>Flag used by helper processes (e.g. screen capture helpers) to forward a capture back to the running instance.</summary>
         public const string SendToFlag = "--send-to";
 
