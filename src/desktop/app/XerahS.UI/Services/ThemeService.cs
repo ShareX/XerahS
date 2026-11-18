@@ -57,6 +57,33 @@ namespace XerahS.UI.Services
             return options;
         }
 
+        /// <summary>
+        /// Editor options that remember the user's tool settings (colours, sizes, fonts...) between
+        /// editor sessions, like ShareX's AnnotationOptions in its default task settings. The editor
+        /// changes this object in place; call <see cref="PersistImageEditorOptionsAsync"/> when it
+        /// closes. Theme fields still follow the app theme.
+        /// </summary>
+        public static ImageEditorOptions GetPersistedImageEditorOptions(bool showExitConfirmation = true)
+        {
+            ImageEditorOptions options = RegionCaptureAnnotationOptionsStore.GetEditorOptions();
+            options.ShowExitConfirmation = showExitConfirmation;
+            ApplyImageEditorThemeOptions(options, SettingsManager.Settings?.ThemeMode ?? AppThemeMode.System);
+            return options;
+        }
+
+        public static async Task PersistImageEditorOptionsAsync()
+        {
+            try
+            {
+                bool saved = await RegionCaptureAnnotationOptionsStore.PersistAsync();
+                DebugHelper.WriteLine($"Editor tool options {(saved ? "saved" : "NOT saved")} to workflow settings.");
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.WriteException(ex, "Failed to save editor tool options");
+            }
+        }
+
         public static void ApplyImageEditorThemeOptions(ImageEditorOptions options, AppThemeMode mode)
         {
             ArgumentNullException.ThrowIfNull(options);
