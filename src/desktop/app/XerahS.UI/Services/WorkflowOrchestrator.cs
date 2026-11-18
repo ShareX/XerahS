@@ -326,6 +326,8 @@ public sealed class WorkflowOrchestrator : IWorkflowOrchestrator
 
     private void OnTaskCompleted(object? sender, EventArgs e)
     {
+        Helpers.SilentRunMainWindowGuard.ScheduleCheck("task completed");
+
         if (sender is not Core.Tasks.WorkerTask task ||
             task.Info?.Metadata?.Image is not { } image ||
             _desktop?.MainWindow?.DataContext is not MainViewModel viewModel)

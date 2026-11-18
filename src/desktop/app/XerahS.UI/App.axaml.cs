@@ -446,6 +446,7 @@ public partial class App : Application
 
         bool wasVisible = window.IsVisible;
         Helpers.SilentRunStartupPolicy.ApplyHiddenToTray(window);
+        Helpers.SilentRunMainWindowGuard.ScheduleCheck("startup hide");
         if (wasVisible)
         {
             Common.DebugHelper.WriteLine("SilentRun startup: main window hidden to tray.");
