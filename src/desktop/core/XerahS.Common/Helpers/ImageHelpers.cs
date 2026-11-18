@@ -70,16 +70,31 @@ public static class ImageHelpers
         // display white, so write an Ultra HDR JPEG instead — base SDR image + gain map, which
         // Windows Photos, Chrome and Android render with the HDR highlights intact.
         if (bitmap.ColorType == SKColorType.RgbaF16 &&
-            pngBitDepth == PNGBitDepth.Bit16 &&
+            pngBitDepth is PNGBitDepth.Bit16 or PNGBitDepth.Bit16Hdr &&
             IsJpegPath(filePath) &&
             UltraHdrJpegWriter.TrySave(bitmap, filePath))
         {
             return;
         }
 
+        // "HDR10 PNG": PQ-encoded 16-bit samples plus a cICP chunk, so the extended range survives
+        // in a PNG. A PNG cannot hold values above 1.0, so HDR is carried the way video carries it.
+        if (pngBitDepth == PNGBitDepth.Bit16Hdr && bitmap.ColorType == SKColorType.RgbaF16)
+        {
+            if (PngHdrWriter.TrySave(bitmap, filePath, out float hdrPeakRatio))
+            {
+                DebugHelper.WriteLine(
+                    $"[HDR] SaveBitmap(HDR10 PNG): peak/white={hdrPeakRatio:F3} -> PQ 16-bit with cICP: {filePath}");
+                return;
+            }
+
+            DebugHelper.WriteLine("[HDR] SaveBitmap(HDR10 PNG): PQ encoding failed; using display-referred 16-bit sRGB.");
+        }
+
         // RgbaF16 (HDR) input and explicit Bit16 must be written as 16-bit PNG:
         // the other encoders are 8-bit and would clamp the extended-range values.
-        bool write16BitPng = bitmap.ColorType == SKColorType.RgbaF16 || pngBitDepth == PNGBitDepth.Bit16;
+        bool write16BitPng = bitmap.ColorType == SKColorType.RgbaF16 ||
+            pngBitDepth is PNGBitDepth.Bit16 or PNGBitDepth.Bit16Hdr;
         SKEncodedImageFormat format = write16BitPng ? SKEncodedImageFormat.Png : GetEncodedFormat(filePath);
 
         SKBitmap? converted = null;
@@ -89,7 +104,7 @@ public static class ImageHelpers
             {
                 if (bitmap.ColorType == SKColorType.RgbaF16)
                 {
-                    if (pngBitDepth == PNGBitDepth.Bit16)
+                    if (pngBitDepth is PNGBitDepth.Bit16 or PNGBitDepth.Bit16Hdr)
                     {
                         // 16-bit output is always display-referred sRGB. Raw linear samples plus a
                         // linear iCCP profile are only correct in a color-managed viewer; Windows

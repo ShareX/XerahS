@@ -4381,4 +4381,7 @@ Dadurch wird die Datei dauerhaft aus dem Remote-Speicher entfernt. Dies kann nic
   <data name="VideoConv_Stop" xml:space="preserve">
     <value>Stoppen</value>
   </data>
+  <data name="PNGBitDepth_Bit16Hdr" xml:space="preserve">
+    <value>SDR+HDR (HDR10-PNG)</value>
+  </data>
 </root>

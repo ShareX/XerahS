@@ -65,7 +65,7 @@ namespace XerahS.UI.ViewModels
         }
 
         public IReadOnlyList<PNGBitDepth> PngBitDepthOptions { get; } =
-            new[] { PNGBitDepth.Default, PNGBitDepth.Bit16 };
+            new[] { PNGBitDepth.Default, PNGBitDepth.Bit16, PNGBitDepth.Bit16Hdr };
 
         public PNGBitDepth ImagePNGBitDepth
         {
@@ -87,7 +87,7 @@ namespace XerahS.UI.ViewModels
         /// False when the selected PNG depth ("SDR+HDR" = 16-bit) makes the file tone curve
         /// irrelevant: the encoder writes display-referred sRGB samples without applying it.
         /// </summary>
-        public bool IsHdrSaveToneMappingEnabled => ImagePNGBitDepth != PNGBitDepth.Bit16;
+        public bool IsHdrSaveToneMappingEnabled => ImagePNGBitDepth is not (PNGBitDepth.Bit16 or PNGBitDepth.Bit16Hdr);
 
         public int ThumbnailWidth
         {

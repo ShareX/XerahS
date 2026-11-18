@@ -4381,4 +4381,7 @@ Esto eliminar√° permanentemente el archivo del almacenamiento remoto. Esta acci√
   <data name="VideoConv_Stop" xml:space="preserve">
     <value>Detener</value>
   </data>
+  <data name="PNGBitDepth_Bit16Hdr" xml:space="preserve">
+    <value>SDR+HDR (PNG HDR10)</value>
+  </data>
 </root>

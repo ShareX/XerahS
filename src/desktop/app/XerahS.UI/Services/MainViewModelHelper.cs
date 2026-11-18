@@ -200,11 +200,13 @@ public static class MainViewModelHelper
         // - "SDR" (Default): force an HDR→SDR conversion using the selected tone-mapping method
         //   (None = save "as is", i.e. clamp at SDR white with no tone curve).
         // - "SDR+HDR" (Bit16): keep the HDR data and write the 16-bit sRGB PNG as-is.
+        // - "SDR+HDR (HDR10 PNG)" (Bit16Hdr): keep the HDR data and write a PQ-encoded 16-bit PNG
+        //   with a cICP chunk, so the range above SDR white survives in the file.
         // Settings come from the workflow that produced the capture (LastCaptureTaskSettings),
         // falling back to the global defaults — NOT from global-only defaults, which diverge
         // from what the user sees in the workflow editor.
         var imageSettings = (LastCaptureTaskSettings ?? SettingsManager.DefaultTaskSettings)?.ImageSettings;
-        bool sdrOnlyOutput = imageSettings?.ImagePNGBitDepth != PNGBitDepth.Bit16;
+        bool sdrOnlyOutput = imageSettings?.ImagePNGBitDepth is not (PNGBitDepth.Bit16 or PNGBitDepth.Bit16Hdr);
         HdrToneMappingMode hdrSaveMode = imageSettings?.ImageHdrSaveToneMapping ?? HdrToneMappingMode.TonemapHable;
         DebugHelper.WriteLine($"MainViewModelHelper: SaveToPath depth={imageSettings?.ImagePNGBitDepth}, hdrSaveMode={hdrSaveMode}");
 

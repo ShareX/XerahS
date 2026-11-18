@@ -435,6 +435,12 @@ public static class HdrSelfTestRunner
             DumpCapture(capture, outputDir);
 
             // Real production encoders, exactly as the pipeline calls them.
+            // HDR10 PNG: PQ-encoded 16-bit samples plus a cICP chunk. Readers that understand
+            // cICP show the extended range; the Windows built-in decoders ignore the chunk.
+            string hdr10Path = Path.Combine(outputDir, "saved-hdr10.png");
+            ImageHelpers.SaveBitmap(capture, hdr10Path, PNGBitDepth.Bit16Hdr);
+            report.Add($"saved-hdr10.png: {new FileInfo(hdr10Path).Length / 1024} KiB (PQ + cICP)");
+
             string hdrPath = Path.Combine(outputDir, "saved-hdr-16bit.png");
             ImageHelpers.SaveBitmap(capture, hdrPath, PNGBitDepth.Bit16);
             CheckPng(hdrPath, expect16Bit: true, (ok, name, detail) => Note(ok, name, detail), "saved-hdr-16bit");
@@ -477,6 +483,7 @@ public static class HdrSelfTestRunner
 
             report.Add("visual check: compare saved-sdr-8bit.png / variants/*.png with the live screen;");
             report.Add("compare saved-hdr-16bit.png with the original content in an HDR-capable viewer.");
+            report.Add("saved-hdr10.png holds the same range as PQ data (HDR10 PNG, needs a cICP-aware reader).");
         }
         catch (Exception ex)
         {

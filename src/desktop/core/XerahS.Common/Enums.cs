@@ -42,7 +42,14 @@ namespace XerahS.Common
         Automatic,
         Bit32,
         Bit24,
-        Bit16
+        Bit16,
+
+        /// <summary>
+        /// 16-bit PNG that keeps the HDR range: samples are PQ (ST 2084) encoded with BT.2020
+        /// primaries and the file carries a cICP chunk. Only readers that understand cICP show it
+        /// as HDR; Windows' own decoders ignore the chunk and render it through sRGB.
+        /// </summary>
+        Bit16Hdr
     }
 
     public enum GIFQuality // Localized
