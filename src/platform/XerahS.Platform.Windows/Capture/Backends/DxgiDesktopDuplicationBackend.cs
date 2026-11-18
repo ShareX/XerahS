@@ -121,7 +121,7 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
         // An HDR output contributes values above 1.0, so the combined surface must be fp16 scRGB.
         // SDR outputs drawn onto it are converted by Skia and still land on 1.0 == SDR white.
         bool hdrSurface = targetOutputs.Any(output => HdrToneMapContext.IsHdrOutput(output.Output));
-        SKBitmap bitmap = CreateDestinationBitmap(targetBounds, hdrSurface);
+        SKBitmap bitmap = CaptureSurfaceHelper.Create(targetBounds, hdrSurface);
         using (var canvas = new SKCanvas(bitmap))
         {
             canvas.Clear(SKColors.Black);
@@ -400,17 +400,6 @@ internal sealed class DxgiDesktopDuplicationBackend : IScreenCaptureBackend
             device.ImmediateContext.Unmap(staging, 0);
         }
     }
-
-    /// <summary>
-    /// fp16 scRGB is the only surface that can carry values above 1.0 (HDR highlights), so it is
-    /// used as soon as one captured output is HDR. Everything else stays 8-bit sRGB.
-    /// </summary>
-    private static SKBitmap CreateDestinationBitmap(Rectangle bounds, bool hdrSurface) =>
-        hdrSurface
-            ? new SKBitmap(new SKImageInfo(bounds.Width, bounds.Height, SKColorType.RgbaF16, SKAlphaType.Premul,
-                SKColorSpace.CreateSrgbLinear()))
-            : new SKBitmap(new SKImageInfo(bounds.Width, bounds.Height, SKColorType.Bgra8888, SKAlphaType.Premul,
-                SKColorSpace.CreateSrgb()));
 
     /// <summary>
     /// Copies an fp16 scRGB frame and rescales it so that 1.0 means SDR white. Desktop Duplication

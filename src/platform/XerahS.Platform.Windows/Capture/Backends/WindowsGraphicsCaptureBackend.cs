@@ -29,6 +29,7 @@ using SkiaSharp;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using XerahS.Common;
+using XerahS.Common.Helpers;
 using XerahS.Platform.Abstractions;
 using XerahS.Platform.Windows.Capture.Engine;
 using XerahS.Platform.Windows.Capture.Wgc;
@@ -69,11 +70,6 @@ internal sealed class WindowsGraphicsCaptureBackend : IScreenCaptureBackend
 
     public SKBitmap? TryCapture(ScreenCaptureRequest request)
     {
-        if (!BorderlessAccessGranted.Value)
-        {
-            return null;
-        }
-
         if (!CaptureRectResolver.TryResolve(request, _screenService.GetVirtualScreenBounds(), out Rectangle captureRect))
         {
             return null;
@@ -87,7 +83,15 @@ internal sealed class WindowsGraphicsCaptureBackend : IScreenCaptureBackend
             return null;
         }
 
-        var bitmap = new SKBitmap(captureRect.Width, captureRect.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+        bool hdrRequested = monitors.Any(IsHdrMonitor);
+        bool borderless = BorderlessAccessGranted.Value;
+        if (!borderless)
+        {
+            // The yellow capture border is not acceptable for an ordinary screenshot.
+            return null;
+        }
+
+        SKBitmap bitmap = CaptureSurfaceHelper.Create(captureRect, hdrRequested);
         using (var canvas = new SKCanvas(bitmap))
         {
             canvas.Clear(SKColors.Black);
@@ -99,7 +103,8 @@ internal sealed class WindowsGraphicsCaptureBackend : IScreenCaptureBackend
             try
             {
                 EnsureDevice();
-                captured = monitors.All(monitor => TryCaptureMonitor(monitor, captureRect, request.DrawCursor, bitmap));
+                captured = monitors.All(monitor =>
+                    TryCaptureMonitor(monitor, captureRect, request.DrawCursor, bitmap, hdrRequested, borderless));
             }
             catch
             {
@@ -117,16 +122,26 @@ internal sealed class WindowsGraphicsCaptureBackend : IScreenCaptureBackend
         }
 
         bitmap.NotifyPixelsChanged();
-        DebugHelper.WriteLine($"Screen capture: Windows.Graphics.Capture succeeded ({bitmap.Width}x{bitmap.Height}, {monitors.Count} monitors)");
+        DebugHelper.WriteLine(
+            $"Screen capture: Windows.Graphics.Capture succeeded ({bitmap.Width}x{bitmap.Height}, " +
+            $"{monitors.Count} monitors, {bitmap.ColorType}{(hdrRequested ? ", HDR requested" : string.Empty)})");
 
-        return HdrScreenshotColorCorrector.ApplyIfEnabled(bitmap, captureRect, request.HdrColorCorrection);
+        // The colour corrector works on 8-bit bitmaps; an fp16 surface already carries the real values.
+        return bitmap.ColorType == SKColorType.RgbaF16
+            ? bitmap
+            : HdrScreenshotColorCorrector.ApplyIfEnabled(bitmap, captureRect, request.HdrColorCorrection);
     }
+
+    private static bool IsHdrMonitor(WindowsDisplayEnumeration.MonitorData monitor) =>
+        DisplayConfigHelper.GetAdvancedColorState(monitor.DeviceName) is { Enabled: true };
 
     private bool TryCaptureMonitor(
         WindowsDisplayEnumeration.MonitorData monitor,
         Rectangle captureRect,
         bool drawCursor,
-        SKBitmap destination)
+        SKBitmap destination,
+        bool hdrRequested,
+        bool borderless)
     {
         WGC.GraphicsCaptureItem? item = CaptureHelper.CreateItemForMonitor(monitor.Handle);
         if (item == null)
@@ -145,13 +160,19 @@ internal sealed class WindowsGraphicsCaptureBackend : IScreenCaptureBackend
 
         // Declared first so it is disposed last: the pool can raise FrameArrived until it is closed.
         using var frameArrived = new ManualResetEventSlim(false);
+        var poolFormat = hdrRequested
+            ? global::Windows.Graphics.DirectX.DirectXPixelFormat.R16G16B16A16Float
+            : global::Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized;
+
         using var framePool = WGC.Direct3D11CaptureFramePool.CreateFreeThreaded(
             _winRTDevice!,
-            global::Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
+            poolFormat,
             1,
             itemSize);
         using var session = framePool.CreateCaptureSession(item);
-        session.IsBorderRequired = false;
+        // Borderless capture needs an access grant; without it the session shows the capture border,
+        // which is an acceptable price for HDR pixels.
+        session.IsBorderRequired = !borderless;
         session.IsCursorCaptureEnabled = drawCursor;
 
         framePool.FrameArrived += (_, _) => frameArrived.Set();
@@ -170,8 +191,93 @@ internal sealed class WindowsGraphicsCaptureBackend : IScreenCaptureBackend
         }
 
         using ID3D11Texture2D texture = Direct3D11Interop.GetTexture(frame.Surface);
-        CopyVisibleRegion(texture, monitor.Bounds, captureRect, destination);
+        if (destination.ColorType == SKColorType.RgbaF16)
+        {
+            DrawHdrFrame(texture, monitor.DeviceName, monitor.Bounds, captureRect, destination);
+        }
+        else
+        {
+            CopyVisibleRegion(texture, monitor.Bounds, captureRect, destination);
+        }
+
         return true;
+    }
+
+    /// <summary>
+    /// Reads an fp16 scRGB frame back and rescales it so 1.0 means SDR white, then draws the part of
+    /// the monitor the request covers. Desktop Duplication uses the same convention; see
+    /// <see cref="HdrSdrWhiteNormalizer"/> for why the rescale is required.
+    /// </summary>
+    private void DrawHdrFrame(
+        ID3D11Texture2D texture,
+        string deviceName,
+        Rectangle monitorBounds,
+        Rectangle captureRect,
+        SKBitmap destination)
+    {
+        Texture2DDescription desc = texture.Description;
+        var stagingDesc = new Texture2DDescription
+        {
+            Width = desc.Width,
+            Height = desc.Height,
+            MipLevels = 1,
+            ArraySize = 1,
+            Format = desc.Format,
+            SampleDescription = new SampleDescription(1, 0),
+            Usage = ResourceUsage.Staging,
+            BindFlags = BindFlags.None,
+            CPUAccessFlags = CpuAccessFlags.Read,
+            MiscFlags = ResourceOptionFlags.None
+        };
+
+        using var staging = _device!.CreateTexture2D(stagingDesc);
+        _device.ImmediateContext.CopyResource(staging, texture);
+
+        MappedSubresource mapped = _device.ImmediateContext.Map(staging, 0, MapMode.Read);
+        try
+        {
+            var source = new SKBitmap(new SKImageInfo((int)desc.Width, (int)desc.Height, SKColorType.RgbaF16,
+                SKAlphaType.Premul, SKColorSpace.CreateSrgbLinear()));
+
+            BgraRowCopyHelper.CopyRows(
+                mapped.DataPointer,
+                (int)mapped.RowPitch,
+                source.GetPixels(),
+                source.RowBytes,
+                (int)desc.Width * 8,
+                (int)desc.Height);
+
+            float sdrWhite = DisplayConfigHelper.GetSdrWhiteScale(deviceName);
+            HdrSdrWhiteNormalizer.NormalizeToSdrWhite(source, sdrWhite);
+            source.NotifyPixelsChanged();
+
+            using (source)
+            {
+                Rectangle visible = Rectangle.Intersect(monitorBounds, captureRect);
+                if (visible.Width <= 0 || visible.Height <= 0)
+                {
+                    return;
+                }
+
+                var sourceRect = new SKRect(
+                    visible.X - monitorBounds.X,
+                    visible.Y - monitorBounds.Y,
+                    visible.Right - monitorBounds.X,
+                    visible.Bottom - monitorBounds.Y);
+                var destinationRect = new SKRect(
+                    visible.X - captureRect.X,
+                    visible.Y - captureRect.Y,
+                    visible.Right - captureRect.X,
+                    visible.Bottom - captureRect.Y);
+
+                using var canvas = new SKCanvas(destination);
+                canvas.DrawBitmap(source, sourceRect, destinationRect, SKSamplingOptions.Default);
+            }
+        }
+        finally
+        {
+            _device.ImmediateContext.Unmap(staging, 0);
+        }
     }
 
     private void CopyVisibleRegion(ID3D11Texture2D texture, Rectangle monitorBounds, Rectangle captureRect, SKBitmap destination)
