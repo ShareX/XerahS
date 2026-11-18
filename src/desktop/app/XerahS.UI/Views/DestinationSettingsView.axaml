@@ -354,7 +354,7 @@
                             <TextBox Grid.Column="0" Text="{Binding Overrides.NewExtension}" PlaceholderText="md"
                                      AutomationProperties.Name="Extension"/>
                             <ComboBox Grid.Column="2" HorizontalAlignment="Stretch"
-                                      ItemsSource="{Binding Overrides.Targets}"
+                                      ItemsSource="{Binding Overrides.NewTargets}"
                                       SelectedItem="{Binding Overrides.NewTarget}"
                                       AutomationProperties.Name="Uploader for the new extension"/>
                             <Button Grid.Column="4" Content="Add" Classes="accent" Command="{Binding Overrides.AddCommand}"

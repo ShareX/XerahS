@@ -10,6 +10,15 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
+## v0.35.1
+
+### Fixes
+
+- **File type overrides list only uploaders that fit**: Typing an extension in Destinations > File type overrides now lists only the uploaders that can take it: `md` offers Text and File uploaders, not Image ones. `xerahscli route set` refuses an uploader that cannot take the extension and says why.
+- **Uploader names no longer repeat their category**: The overrides page and `xerahscli route` showed names such as "KovaForge Docs (File) (File)". The category is now added only when the name does not already include it.
+
+---
+
 ## v0.35.0
 
 ### Features

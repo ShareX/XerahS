@@ -81,7 +81,7 @@ public static class RouteCommand
         foreach (var o in overrides)
         {
             var instance = manager.GetInstance(o.InstanceId);
-            string target = instance == null ? $"(removed instance {o.InstanceId})" : $"{instance.DisplayName} [{instance.Category}] ({instance.InstanceId})";
+            string target = instance == null ? $"(removed instance {o.InstanceId})" : $"{InstanceManager.DescribeInstance(instance)} ({instance.InstanceId})";
             Console.WriteLine($".{o.Extension,-10} -> {target}{(instance is { IsAvailable: false } ? " (unavailable)" : "")}");
         }
 
@@ -113,8 +113,14 @@ public static class RouteCommand
             return 1;
         }
 
+        if (!InstanceManager.CanTakeExtension(instance, ext, out var reason))
+        {
+            Console.Error.WriteLine(reason);
+            return 1;
+        }
+
         manager.SetFileTypeOverride(ext, instance.InstanceId);
-        Console.WriteLine($".{ext} -> {instance.DisplayName} [{instance.Category}] ({instance.InstanceId})");
+        Console.WriteLine($".{ext} -> {InstanceManager.DescribeInstance(instance)} ({instance.InstanceId})");
         return 0;
     }
 
@@ -132,7 +138,7 @@ public static class RouteCommand
         var match = manager.FindFileTypeOverride(name);
         if (match is { } m && !InstanceManager.IsAutoProvider(m.Instance.ProviderId))
         {
-            Console.WriteLine($"{name} -> {m.Instance.DisplayName} [{m.Instance.Category}] ({m.Instance.InstanceId})");
+            Console.WriteLine($"{name} -> {InstanceManager.DescribeInstance(m.Instance)} ({m.Instance.InstanceId})");
             Console.WriteLine($"Rule: file type override for .{m.Override.Extension} (applies to text and file uploads alike).");
             return 0;
         }
@@ -170,7 +176,7 @@ public static class RouteCommand
             return 1;
         }
 
-        Console.WriteLine($"{name} -> {target.DisplayName} [{target.Category}] ({target.InstanceId})");
+        Console.WriteLine($"{name} -> {InstanceManager.DescribeInstance(target)} ({target.InstanceId})");
         Console.WriteLine($"Rule: {rule} No override for {(string.IsNullOrEmpty(Path.GetExtension(name)) ? "files without an extension" : Path.GetExtension(name))}.");
         if (!target.IsAvailable || InstanceManager.IsAutoProvider(target.ProviderId))
         {

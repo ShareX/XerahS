@@ -203,6 +203,76 @@ public partial class InstanceManager
         }
     }
 
+    /// <summary>Image extensions an Image uploader can take: the common list plus newer formats.</summary>
+    private static readonly HashSet<string> OverrideImageExtensions = new(
+        FileHelpers.ImageFileExtensions.Concat(["webp", "avif", "heic", "heif", "jxl", "svg"]), StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Whether <paramref name="instance"/> can take files with <paramref name="extension"/>, by category: File
+    /// uploaders take anything; Image uploaders take image types and Text uploaders text types, plus any type
+    /// their provider explicitly lists for that category (Imgur lists videos, for example). A provider's list only
+    /// widens what fits, never narrows it: those lists are suggestions for the settings picker, and nothing
+    /// enforces them at upload time ("*" in FTP and custom uploaders means anything).
+    /// </summary>
+    public static bool CanTakeExtension(UploaderInstance instance, string? extension, out string? reason)
+    {
+        reason = null;
+        var ext = NormalizeOverrideExtension(extension);
+        if (ext == null) return true;
+        if (IsAutoProvider(instance.ProviderId))
+        {
+            reason = $"{DescribeInstance(instance)} is an Auto uploader, which picks an uploader itself.";
+            return false;
+        }
+
+        if (instance.Category == UploaderCategory.File) return true;
+
+        string last = ext.Contains('.') ? ext[(ext.LastIndexOf('.') + 1)..] : ext;
+        bool fits = instance.Category switch
+        {
+            UploaderCategory.Image => OverrideImageExtensions.Contains(last),
+            UploaderCategory.Text => FileTypeScope.IsTextFileExtension(last) || FileHelpers.TextFileExtensions.Contains(last, StringComparer.OrdinalIgnoreCase),
+            _ => false
+        };
+
+        if (!fits && ProviderListsExtension(instance, ext, last))
+        {
+            fits = true;
+        }
+
+        if (!fits)
+        {
+            reason = $"{DescribeInstance(instance)} is {(instance.Category == UploaderCategory.Image ? "an Image" : $"a {instance.Category}")} uploader and cannot take .{ext} files.";
+        }
+
+        return fits;
+    }
+
+    private static bool ProviderListsExtension(UploaderInstance instance, string ext, string last)
+    {
+        try
+        {
+            var supported = ProviderCatalog.GetProvider(instance.ProviderId)?.GetSupportedFileTypes();
+            if (supported == null || !supported.TryGetValue(instance.Category, out var types) || types == null) return false;
+            return types.Select(t => t?.Trim().TrimStart('.')).Any(t =>
+                t == "*" || string.Equals(t, ext, StringComparison.OrdinalIgnoreCase) || string.Equals(t, last, StringComparison.OrdinalIgnoreCase));
+        }
+        catch (Exception ex)
+        {
+            DebugHelper.WriteLine($"Could not read supported file types of {instance.ProviderId}: {ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// The instance's name with its category, unless the name already says it ("KovaForge Docs (File)"
+    /// stays as it is; "Amazon S3" becomes "Amazon S3 (File)").
+    /// </summary>
+    public static string DescribeInstance(UploaderInstance instance) => DescribeInstance(instance.DisplayName, instance.Category);
+
+    public static string DescribeInstance(string displayName, UploaderCategory category) =>
+        displayName.Contains($"({category})", StringComparison.OrdinalIgnoreCase) ? displayName : $"{displayName} ({category})";
+
     private void RemoveFileTypeOverridesFor(string instanceId)
     {
         int removed = _configuration.FileTypeOverrides.RemoveAll(o => InstanceIdsEqual(o.InstanceId, instanceId));
