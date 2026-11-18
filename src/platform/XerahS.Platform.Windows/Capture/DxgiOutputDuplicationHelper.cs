@@ -12,7 +12,6 @@
 
 #endregion License Information (GPL v3)
 
-using System.Runtime.InteropServices;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
 using XerahS.Common;
@@ -21,37 +20,28 @@ namespace XerahS.Platform.Windows.Capture;
 
 internal static class DxgiOutputDuplicationHelper
 {
-    private static readonly Format[] PreferredFormats =
-    [
-        Format.R16G16B16A16_Float,
-        Format.R10G10B10A2_UNorm,
-        Format.B8G8R8A8_UNorm
-    ];
-
-    private static volatile bool _duplicateOutput1Failed;
-
+    /// <summary>
+    /// Creates the output duplication through <see cref="IDXGIOutput1.DuplicateOutput"/>.
+    /// <para>
+    /// The fp16 overload (<see cref="IDXGIOutput5.DuplicateOutput1"/>) is deliberately not used.
+    /// On an HDR desktop Windows composites in scRGB and already hands back
+    /// R16G16B16A16_Float frames, so asking for the format buys nothing; on real drivers the call
+    /// instead fails with DXGI_ERROR_UNSUPPORTED / E_INVALIDARG, and sometimes access-violates
+    /// inside native code. That access violation cannot be caught and terminates the process
+    /// (XerahS-20261118.log: 07:32 and 08:10 died in DuplicateOutput1_; the same build captured
+    /// fp16 frames through DuplicateOutput right after the 07:35 failure).
+    /// </para>
+    /// </summary>
     public static IDXGIOutputDuplication Create(IDXGIOutput output, ID3D11Device device)
     {
-        if (DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(
-            RuntimeInformation.ProcessArchitecture,
-            HdrToneMapContext.IsHdrOutput(output),
-            _duplicateOutput1Failed))
-        {
-            try
-            {
-                using var output5 = output.QueryInterface<IDXGIOutput5>();
-                return output5.DuplicateOutput1(device, 0, PreferredFormats);
-            }
-            catch (Exception ex)
-            {
-                // A failure here tends to repeat, and a repeat can be an uncatchable AV. Stop trying.
-                _duplicateOutput1Failed = true;
-                DebugHelper.WriteLine(
-                    $"DxgiOutputDuplicationHelper: DuplicateOutput1 failed, using DuplicateOutput for the rest of this session. {ex.Message}");
-            }
-        }
-
         using var output1 = output.QueryInterface<IDXGIOutput1>();
-        return output1.DuplicateOutput(device);
+        IDXGIOutputDuplication duplication = output1.DuplicateOutput(device);
+
+        Format format = duplication.Description.ModeDescription.Format;
+        DebugHelper.WriteLine(
+            $"DxgiOutputDuplicationHelper: duplication created, format={format}" +
+            (DxgiHdrToneMapper.IsHdrFormat(format) ? " (HDR)" : string.Empty));
+
+        return duplication;
     }
 }

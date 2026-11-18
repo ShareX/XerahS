@@ -96,8 +96,6 @@
              Link="Platform\Windows\WindowsSources\DxgiFrameAcquisitionHelper.cs" />
     <Compile Include="..\..\src\platform\XerahS.Platform.Windows\Capture\DxgiOutputEnumerationCleanupHelper.cs"
              Link="Platform\Windows\WindowsSources\DxgiOutputEnumerationCleanupHelper.cs" />
-    <Compile Include="..\..\src\platform\XerahS.Platform.Windows\Capture\DxgiOutputDuplicationPolicy.cs"
-             Link="Platform\Windows\WindowsSources\DxgiOutputDuplicationPolicy.cs" />
     <Compile Include="..\..\src\platform\XerahS.Platform.Windows\Capture\SystemCursorGuard.cs"
              Link="Platform\Windows\WindowsSources\SystemCursorGuard.cs" />
     <Compile Include="..\..\src\platform\XerahS.Platform.Windows\Capture\GdiCaptureRectHelper.cs"
