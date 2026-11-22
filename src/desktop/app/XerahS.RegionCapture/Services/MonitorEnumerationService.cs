@@ -112,9 +112,9 @@ public static class MonitorEnumerationService
                 workArea = PhysicalToLogicalRect(ToPixelRect(screen.WorkingArea), scaleFactor);
             }
 
-            DebugHelper.WriteLine($"[MonitorEnum] Screen[{i}]: useLogicalAsIs={useLogicalAsIs} logicalBounds=({bounds.X:F1},{bounds.Y:F1},{bounds.Width:F1},{bounds.Height:F1})");
+            DebugHelper.WriteLine($"[MonitorEnum] Screen[{i}]: DisplayName={screen.DisplayName ?? "<null>"} useLogicalAsIs={useLogicalAsIs} logicalBounds=({bounds.X:F1},{bounds.Y:F1},{bounds.Width:F1},{bounds.Height:F1})");
             logicalScreens.Add(new AvaloniaScreenLayout(
-                DeviceName: $"Display {i + 1}",
+                DeviceName: !string.IsNullOrWhiteSpace(screen.DisplayName) ? screen.DisplayName : $"Display {i + 1}",
                 ScaleFactor: scaleFactor,
                 Bounds: bounds,
                 WorkingArea: workArea,
@@ -213,7 +213,7 @@ public static class MonitorEnumerationService
         if (mainWindow == null)
             return IsWaylandSession(); // best-effort fallback during startup
 
-        return mainWindow.TryGetPlatformHandle()?.HandleDescriptor == "WAYLAND";
+        return WaylandProperties.IsWaylandBackend(mainWindow);
     }
 
 #if WINDOWS

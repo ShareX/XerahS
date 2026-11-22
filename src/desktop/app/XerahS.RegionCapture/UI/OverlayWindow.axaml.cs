@@ -157,6 +157,26 @@ public partial class OverlayWindow : Window
         bool isWindows = OperatingSystem.IsWindows();
         bool isLinux = OperatingSystem.IsLinux();
         bool isAvaloniaWayland = MonitorEnumerationService.IsAvaloniaWaylandBackend();
+
+        if (isWindows)
+        {
+            Win32Properties.SetIgnoreDpiChangeResize(this, true);
+        }
+
+        if (isLinux && WaylandProperties.IsWaylandBackend(this) && WaylandProperties.IsLayerShellSupported(this))
+        {
+            WaylandProperties.SetLayer(this, WaylandLayer.Overlay);
+            WaylandProperties.SetLayerAnchor(this, WaylandLayerAnchor.All);
+            WaylandProperties.SetLayerExclusiveZone(this, -1);
+            WaylandProperties.SetLayerKeyboardInteractivity(this, WaylandLayerKeyboardInteractivity.Exclusive);
+            WaylandProperties.SetLayerNamespace(this, "xerahs-region-capture");
+            if (!string.IsNullOrWhiteSpace(monitor.DeviceName) &&
+                !monitor.DeviceName.StartsWith("Display ", StringComparison.Ordinal))
+            {
+                WaylandProperties.SetLayerOutputName(this, monitor.DeviceName);
+            }
+        }
+
         var windowLayout = OverlayWindowLayoutCalculator.Calculate(monitor, isWindows, isLinux, isAvaloniaWayland);
 
         // Window origin and size do not share one coordinate space on every backend:
