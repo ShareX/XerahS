@@ -25,7 +25,77 @@
                            Theme="{StaticResource CaptionTextBlockStyle}"
                            HorizontalAlignment="Center"
                            Opacity="0.6" />
+                <TextBlock Text="{Binding AvaloniaSummary}"
+                           Theme="{StaticResource CaptionTextBlockStyle}"
+                           HorizontalAlignment="Center"
+                           Opacity="0.75" />
             </StackPanel>
+
+            <Border Theme="{StaticResource CardBorderTheme}" Padding="16" HorizontalAlignment="Stretch">
+                <Expander Header="Runtime" IsExpanded="True" HorizontalAlignment="Stretch">
+                    <Expander.Header>
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <TextBlock Classes="IconGlyph"
+                                       FontSize="16"
+                                       Text="{x:Static theming:HostIcons.NavigationAbout}" />
+                            <TextBlock Grid.Column="1"
+                                       Text="Runtime"
+                                       VerticalAlignment="Center" />
+                        </Grid>
+                    </Expander.Header>
+
+                    <StackPanel Margin="0,16,0,0" Spacing="8">
+                        <Button Classes="SettingsRow" Click="OnLinkClick" Tag="{Binding AvaloniaRepositoryUrl}">
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
+                                <TextBlock Text="UI Framework" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding AvaloniaDisplayText}"
+                                           VerticalAlignment="Center"
+                                           TextAlignment="Right"
+                                           FontWeight="SemiBold"
+                                           Opacity="0.85" />
+                                <TextBlock Grid.Column="2"
+                                           Classes="IconGlyph"
+                                           FontSize="14"
+                                           Text="{x:Static theming:HostIcons.ActionOpenLink}" />
+                            </Grid>
+                        </Button>
+
+                        <Border Padding="12,10">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                                <TextBlock Text="Windowing Backend" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding WindowingBackend}"
+                                           VerticalAlignment="Center"
+                                           FontWeight="SemiBold"
+                                           Opacity="0.8" />
+                            </Grid>
+                        </Border>
+
+                        <Border Padding="12,10">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                                <TextBlock Text="SkiaSharp" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding SkiaSharpVersion}"
+                                           VerticalAlignment="Center"
+                                           FontWeight="SemiBold"
+                                           Opacity="0.8" />
+                            </Grid>
+                        </Border>
+
+                        <Border Padding="12,10">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                                <TextBlock Text=".NET Runtime" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding DotNetRuntime}"
+                                           VerticalAlignment="Center"
+                                           FontWeight="SemiBold"
+                                           Opacity="0.8" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Expander>
+            </Border>
 
             <Border Theme="{StaticResource CardBorderTheme}" Padding="16" HorizontalAlignment="Stretch">
                 <Expander Header="Links" IsExpanded="True" HorizontalAlignment="Stretch">
