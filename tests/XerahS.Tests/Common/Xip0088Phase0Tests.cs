@@ -136,6 +136,42 @@ public class Xip0088Phase0Tests
         Assert.That(LinuxDisplayBootstrap.GetX11SocketPath("host:0"), Is.Null);
     }
 
+    [Test]
+    public void DisplayBootstrap_WaylandSocketWithoutXWayland_IsUsable()
+    {
+        var result = LinuxDisplayBootstrap.Resolve(
+            k => k switch
+            {
+                "WAYLAND_DISPLAY" => "wayland-1",
+                "XDG_RUNTIME_DIR" => "/run/user/1000",
+                _ => null
+            },
+            () => [],
+            path => path == "/run/user/1000/wayland-1");
+
+        Assert.That(result.Usable, Is.True);
+        Assert.That(result.Display, Is.EqualTo("wayland-1"));
+        Assert.That(result.DisplayAdopted, Is.False);
+    }
+
+    [Test]
+    public void DisplayBootstrap_WaylandDisabledWithoutXWayland_RequiresX11()
+    {
+        var result = LinuxDisplayBootstrap.Resolve(
+            k => k switch
+            {
+                "XERAHS_DISABLE_WAYLAND" => "1",
+                "WAYLAND_DISPLAY" => "wayland-1",
+                "XDG_RUNTIME_DIR" => "/run/user/1000",
+                _ => null
+            },
+            () => [],
+            path => path == "/run/user/1000/wayland-1");
+
+        Assert.That(result.Usable, Is.False);
+        Assert.That(LinuxDisplayBootstrap.BuildUserMessage(result), Does.Contain("XWayland").And.Contain("xwayland { enabled = true }"));
+    }
+
     // Item 7: Media Browser S3 PermanentRedirect.
     [Test]
     public void S3Redirect_PermanentRedirectBody_YieldsRegionFromEndpoint()

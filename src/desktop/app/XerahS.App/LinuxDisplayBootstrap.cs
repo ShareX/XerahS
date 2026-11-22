@@ -28,11 +28,11 @@ using System.Diagnostics;
 namespace XerahS.App;
 
 /// <summary>
-/// Avalonia on Linux renders through X11 (XWayland on Wayland sessions). On a pure Wayland
-/// session started from autostart, XWayland may not be up yet, or <c>DISPLAY</c> may be unset,
-/// and Avalonia fails with <c>XOpenDisplay failed</c>. This class waits briefly for an X server
-/// socket, adopts it when <c>DISPLAY</c> is unset, and turns a final failure into a readable
-/// message and desktop notification instead of a stack trace (XIP0088 Phase 0 item 6).
+/// Resolves a usable Linux display socket (native Wayland via <c>WAYLAND_DISPLAY</c> or X11 /
+/// XWayland via <c>DISPLAY</c>). On Wayland sessions started from autostart, neither socket may be
+/// ready immediately; this class waits briefly for a usable socket, adopts an XWayland socket when
+/// <c>DISPLAY</c> is unset, and turns a final failure into a readable message and desktop
+/// notification instead of a stack trace (XIP0088 Phase 0 item 6).
 /// </summary>
 public static class LinuxDisplayBootstrap
 {
@@ -42,14 +42,33 @@ public static class LinuxDisplayBootstrap
     public sealed record Result(bool Usable, string? Display, bool DisplayAdopted, string Message);
 
     /// <summary>
-    /// Resolves a usable X display. Pure function over injected environment/file-system access so
-    /// every branch is unit tested.
+    /// Resolves a usable Wayland or X11 display. Pure function over injected environment/file-system
+    /// access so every branch is unit tested.
     /// </summary>
     public static Result Resolve(
         Func<string, string?> getEnvironment,
         Func<IEnumerable<string>> listX11Sockets,
         Func<string, bool> socketExists)
     {
+        if (!IsWaylandDisabled(getEnvironment))
+        {
+            string? waylandDisplay = getEnvironment("WAYLAND_DISPLAY");
+            if (!string.IsNullOrWhiteSpace(waylandDisplay))
+            {
+                string trimmedWayland = waylandDisplay.Trim();
+                string? xdgRuntimeDir = getEnvironment("XDG_RUNTIME_DIR");
+                string? waylandSocketPath = Path.IsPathRooted(trimmedWayland)
+                    ? trimmedWayland
+                    : (!string.IsNullOrWhiteSpace(xdgRuntimeDir)
+                        ? Path.Combine(xdgRuntimeDir, trimmedWayland)
+                        : null);
+                if (waylandSocketPath != null && socketExists(waylandSocketPath))
+                {
+                    return new Result(true, trimmedWayland, false, $"Using Wayland display {trimmedWayland} ({waylandSocketPath}).");
+                }
+            }
+        }
+
         string? display = getEnvironment("DISPLAY");
         if (!string.IsNullOrWhiteSpace(display))
         {
@@ -74,7 +93,20 @@ public static class LinuxDisplayBootstrap
             return new Result(true, adopted, true, $"DISPLAY was unset; using X server socket {adopted}.");
         }
 
-        return new Result(false, null, false, "DISPLAY is unset and no X server (XWayland) socket was found.");
+        return new Result(false, null, false, "DISPLAY and WAYLAND_DISPLAY are unset (or unavailable) and no X server (XWayland) socket was found.");
+    }
+
+    private static bool IsWaylandDisabled(Func<string, string?> getEnvironment)
+    {
+        string? value = getEnvironment("XERAHS_DISABLE_WAYLAND");
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        string trimmed = value.Trim();
+        return string.Equals(trimmed, "1", StringComparison.Ordinal) ||
+               string.Equals(trimmed, "true", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -105,9 +137,9 @@ public static class LinuxDisplayBootstrap
 
     public static string BuildUserMessage(Result result)
     {
-        return "XerahS needs an X11 display (XWayland on Wayland sessions) and none is available. " +
+        return "XerahS needs a Wayland compositor socket or an X11 display (XWayland on Wayland sessions) and none is available. " +
             result.Message +
-            " Enable XWayland in your compositor (Hyprland: xwayland { enabled = true }) and start XerahS again.";
+            " Enable XWayland in your compositor (Hyprland: xwayland { enabled = true }) or verify WAYLAND_DISPLAY / DISPLAY and start XerahS again.";
     }
 
     /// <summary>Best-effort desktop notification; the tray does not exist yet at this point.</summary>

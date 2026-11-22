@@ -145,8 +145,9 @@ namespace XerahS.App
                     ValidateLinuxDisplayEnvironment();
                     ClearX11SessionManagement();
 
-                    // Avalonia renders through X11/XWayland. On pure Wayland autostart, wait briefly for
-                    // XWayland and adopt its socket when DISPLAY is unset (XIP0088 Phase 0 item 6).
+                    // Prefer native Wayland when available and fall back to X11/XWayland when needed.
+                    // On pure Wayland autostart without a Wayland socket or XWayland DISPLAY, wait briefly
+                    // for a usable display socket (XIP0088 Phase 0 item 6).
                     var displayResult = LinuxDisplayBootstrap.EnsureDisplay();
                     XerahS.Common.DebugHelper.WriteLine($"Linux display: {displayResult.Message}");
                     if (!displayResult.Usable)
@@ -842,14 +843,43 @@ namespace XerahS.App
 
         public static AppBuilder BuildAvaloniaApp()
         {
-            return AppBuilder.Configure<XerahS.UI.App>()
+            var builder = AppBuilder.Configure<XerahS.UI.App>()
                 .UsePlatformDetect()
                 // Avalonia defaults the X11 WM_CLASS to the entry assembly name ("XerahS"),
                 // which does not match StartupWMClass=xerahs in our .desktop files.
-                .With(CreateX11PlatformOptions())
+                .With(CreateX11PlatformOptions());
+
+#if LINUX
+            if (ShouldUseWaylandBackend())
+            {
+                builder = builder
+                    .With(new WaylandPlatformOptions
+                    {
+                        AppId = "xerahs"
+                    })
+                    .UseWaylandWithFallback();
+            }
+#endif
+
+            return builder
                 .WithInterFont()
                 .LogToTrace();
         }
+
+#if LINUX
+        private static bool ShouldUseWaylandBackend()
+        {
+            string? disableWayland = Environment.GetEnvironmentVariable("XERAHS_DISABLE_WAYLAND");
+            if (string.IsNullOrWhiteSpace(disableWayland))
+            {
+                return true;
+            }
+
+            string trimmed = disableWayland.Trim();
+            return !string.Equals(trimmed, "1", StringComparison.Ordinal) &&
+                   !string.Equals(trimmed, "true", StringComparison.OrdinalIgnoreCase);
+        }
+#endif
 
         /// <summary>
         /// Runs once after the Avalonia UI completes initialization.
