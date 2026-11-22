@@ -5,18 +5,19 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Avalonia" Version="12.1.6" />
+    <PackageVersion Include="Avalonia" Version="12.1.7-sharex.1" />
     <PackageVersion Include="AWSSDK.S3" Version="4.0.104.11" />
     <PackageVersion Include="Avalonia.Android" Version="12.1.6" />
-    <PackageVersion Include="Avalonia.Controls.ColorPicker" Version="12.1.6" />
+    <PackageVersion Include="Avalonia.Controls.ColorPicker" Version="12.1.7-sharex.1" />
     <PackageVersion Include="Avalonia.Controls.DataGrid" Version="12.1.2" />
-    <PackageVersion Include="Avalonia.Desktop" Version="12.1.6" />
-    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.6" />
-    <PackageVersion Include="Avalonia.HarfBuzz" Version="12.1.6" />
-    <PackageVersion Include="Avalonia.Headless.NUnit" Version="12.1.6" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.1.7-sharex.1" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.7-sharex.1" />
+    <PackageVersion Include="Avalonia.HarfBuzz" Version="12.1.7-sharex.1" />
+    <PackageVersion Include="Avalonia.Headless.NUnit" Version="12.1.7-sharex.1" />
     <PackageVersion Include="Avalonia.iOS" Version="12.1.6" />
-    <PackageVersion Include="Avalonia.Skia" Version="12.1.6" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.6" />
+    <PackageVersion Include="Avalonia.Skia" Version="12.1.7-sharex.1" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.7-sharex.1" />
+    <PackageVersion Include="Avalonia.Wayland" Version="12.1.7-sharex.1" />
     <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
     <PackageVersion Include="CommunityToolkit.Maui" Version="14.2.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
@@ -41,7 +42,7 @@
     <PackageVersion Include="ReactiveUI" Version="26.0.1" />
     <PackageVersion Include="SharpCompress" Version="1.0.0" />
     <PackageVersion Include="SharpHook" Version="8.0.1" />
-    <!-- SkiaSharp 4.x migration (XIP-0081): 3.x is EOL; 4.x is the stable line. Avalonia 12.1.6 keeps SkiaSharp 3.119.4 native-only references, but the host projects use 4.x directly. We must also pin SkiaSharp.NativeAssets.Linux to 4.155.0 here so the matching native lib (libSkiaSharp.so version 155.x) is bundled instead of Avalonia's transitive 3.119.4 (which ships native 119.x and causes a managed/native version mismatch at startup: SkiaSharp 4.155.0 expects [155.0, 156.0)). -->
+    <!-- SkiaSharp 4.x migration (XIP-0081): 3.x is EOL; 4.x is the stable line. Avalonia.Skia 12.1.7-sharex.1 from ShareX/Avalonia now targets SkiaSharp 4.155.0 directly, and we also keep SkiaSharp and SkiaSharp.NativeAssets.* pinned to 4.155.0 here for consistent native assets across host projects. -->
     <PackageVersion Include="SkiaSharp" Version="4.155.0" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="4.155.0" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Win32" Version="4.155.0" />

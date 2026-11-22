@@ -63,6 +63,7 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Wayland" Condition="'$(IsLinuxDesktopBuild)' == 'true'" />
   </ItemGroup>
   <ItemGroup>
     <!-- Audits tool is only needed for Debug builds (development/auditing) -->
