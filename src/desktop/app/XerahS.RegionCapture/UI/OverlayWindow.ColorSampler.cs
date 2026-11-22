@@ -78,15 +78,16 @@ public partial class OverlayWindow
             return false;
         }
 
-        int physX = (int)Math.Round(logicalPoint.X * _monitor.ScaleFactor);
-        int physY = (int)Math.Round(logicalPoint.Y * _monitor.ScaleFactor);
-
         var coordService = new CoordinateTranslationService();
         var virtualBounds = coordService.GetVirtualScreenBounds();
-        int bmpX = (int)Math.Round(_monitor.PhysicalBounds.X - virtualBounds.X) + physX;
-        int bmpY = (int)Math.Round(_monitor.PhysicalBounds.Y - virtualBounds.Y) + physY;
-        bmpX = Math.Clamp(bmpX, 0, _backgroundBitmap.Width - 1);
-        bmpY = Math.Clamp(bmpY, 0, _backgroundBitmap.Height - 1);
+        var physicalPoint = new Models.PixelPoint(
+            _monitor.PhysicalBounds.X + logicalPoint.X * _monitor.ScaleFactor,
+            _monitor.PhysicalBounds.Y + logicalPoint.Y * _monitor.ScaleFactor);
+        var (bmpX, bmpY) = BackgroundBitmapMapper.MapPointToBitmap(
+            physicalPoint,
+            virtualBounds,
+            _backgroundBitmap.Width,
+            _backgroundBitmap.Height);
 
         var pixel = _backgroundBitmap.GetPixel(bmpX, bmpY);
         color = ToRgbHex(pixel);

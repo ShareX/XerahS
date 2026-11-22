@@ -30,6 +30,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using SkiaSharp;
+using XerahS.RegionCapture.Services;
 using PixelPoint = XerahS.RegionCapture.Models.PixelPoint;
 using PixelRect = XerahS.RegionCapture.Models.PixelRect;
 
@@ -245,8 +246,6 @@ public sealed class MagnifierControl : StackPanel
 
         int count = _bitmap.PixelSize.Width;
         int radius = count / 2;
-        int centerX = (int)Math.Round(physicalCursor.X - virtualBounds.X);
-        int centerY = (int)Math.Round(physicalCursor.Y - virtualBounds.Y);
 
         using ILockedFramebuffer framebuffer = _bitmap.Lock();
         byte* destination = (byte*)framebuffer.Address;
@@ -263,6 +262,11 @@ public sealed class MagnifierControl : StackPanel
 
         int sourceWidth = background.Width;
         int sourceHeight = background.Height;
+        var (centerX, centerY) = BackgroundBitmapMapper.MapPointToBitmap(
+            physicalCursor,
+            virtualBounds,
+            sourceWidth,
+            sourceHeight);
 
         for (int y = 0; y < count; y++)
         {

@@ -770,8 +770,9 @@ public sealed class RegionCaptureControl : UserControl
         if (_backgroundAvBitmap == null) return;
 
         // Calculate the portion of the background bitmap that corresponds to the actual
-        // overlay viewport. On macOS this can differ from the monitor origin after NSWindow
-        // creation, and drawing from monitor origin would visibly shift the frozen desktop.
+        // overlay viewport. Map through BackgroundBitmapMapper so even when Compositor/Portal
+        // capture dimensions differ from virtualBounds (for example, Wayland fractional scaling),
+        // the full screen image stays aligned 1:1 instead of cropping top-left or zooming.
         var virtualBounds = _coordinateService.GetVirtualScreenBounds();
         var visibleViewport = _physicalViewportBounds.Intersect(_monitor.PhysicalBounds);
         if (visibleViewport.IsEmpty)
@@ -779,15 +780,15 @@ public sealed class RegionCaptureControl : UserControl
             visibleViewport = _physicalViewportBounds;
         }
 
-        var srcX = visibleViewport.X - virtualBounds.X;
-        var srcY = visibleViewport.Y - virtualBounds.Y;
-
-        // Source rect in the full screenshot (physical pixels)
-        var sourceRect = new Rect(
-            srcX,
-            srcY,
-            visibleViewport.Width,
-            visibleViewport.Height);
+        var sourceRect = BackgroundBitmapMapper.MapRectToBitmap(
+            visibleViewport,
+            virtualBounds,
+            _backgroundAvBitmap.PixelSize.Width,
+            _backgroundAvBitmap.PixelSize.Height);
+        if (sourceRect.Width <= 0 || sourceRect.Height <= 0)
+        {
+            return;
+        }
 
         var destinationRect = new Rect(
             (visibleViewport.X - _physicalViewportBounds.X) / _monitor.ScaleFactor,

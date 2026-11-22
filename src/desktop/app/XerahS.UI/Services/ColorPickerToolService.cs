@@ -213,19 +213,26 @@ public static class ColorPickerToolService
             if (fullScreenBitmap != null && fullScreenBitmap.Width > 0 && fullScreenBitmap.Height > 0)
             {
                 Console.WriteLine("[ColorPicker] Using pre-captured bitmap for color extraction.");
-                // Ensure coordinates are within bounds
-                int bmpX = Math.Clamp(x, 0, fullScreenBitmap.Width - 1);
-                int bmpY = Math.Clamp(y, 0, fullScreenBitmap.Height - 1);
-                
-                // Account for potential virtual screen offsets if the bitmap covers multiple monitors
-                // (The RegionSelectionResult coordinates are absolute virtual screen coordinates)
-                var virtualBounds = PlatformServices.Screen.GetVirtualScreenBounds();
-                if (!virtualBounds.IsEmpty)
+                var virtualBounds = new XerahS.RegionCapture.Services.CoordinateTranslationService().GetVirtualScreenBounds();
+                if (virtualBounds.IsEmpty)
                 {
-                    bmpX = Math.Clamp(x - virtualBounds.X, 0, fullScreenBitmap.Width - 1);
-                    bmpY = Math.Clamp(y - virtualBounds.Y, 0, fullScreenBitmap.Height - 1);
-                    Console.WriteLine($"[ColorPicker] Adjusted for virtual bounds ({virtualBounds.X}, {virtualBounds.Y}): {bmpX}, {bmpY}");
+                    var platformBounds = PlatformServices.Screen.GetVirtualScreenBounds();
+                    if (!platformBounds.IsEmpty)
+                    {
+                        virtualBounds = new XerahS.RegionCapture.Models.PixelRect(
+                            platformBounds.X,
+                            platformBounds.Y,
+                            platformBounds.Width,
+                            platformBounds.Height);
+                    }
                 }
+
+                var (bmpX, bmpY) = XerahS.RegionCapture.Services.BackgroundBitmapMapper.MapPointToBitmap(
+                    new XerahS.RegionCapture.Models.PixelPoint(x, y),
+                    virtualBounds,
+                    fullScreenBitmap.Width,
+                    fullScreenBitmap.Height);
+                Console.WriteLine($"[ColorPicker] Mapped bitmap coordinates ({virtualBounds.X:F0}, {virtualBounds.Y:F0}): {bmpX}, {bmpY}");
 
                 var skColor = fullScreenBitmap.GetPixel(bmpX, bmpY);
                 color = System.Drawing.Color.FromArgb(skColor.Alpha, skColor.Red, skColor.Green, skColor.Blue);

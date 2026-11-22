@@ -495,23 +495,44 @@ namespace XerahS.UI.Services
             var cropRect = selection;
             try
             {
-                var virtualBounds = PlatformServices.Screen.GetVirtualScreenBounds();
-                DebugHelper.WriteLine($"[RegionCapture] Pre-capture crop: fullBitmap={fullScreenBitmap.Width}x{fullScreenBitmap.Height} virtualBounds=({virtualBounds.X},{virtualBounds.Y},{virtualBounds.Width}x{virtualBounds.Height}) selection=({selection.Left},{selection.Top},{selection.Right},{selection.Bottom})");
+                var virtualBounds = new CoordinateTranslationService().GetVirtualScreenBounds();
+                if (virtualBounds.IsEmpty)
+                {
+                    var platformBounds = PlatformServices.Screen.GetVirtualScreenBounds();
+                    if (!platformBounds.IsEmpty)
+                    {
+                        virtualBounds = new XerahS.RegionCapture.Models.PixelRect(
+                            platformBounds.X,
+                            platformBounds.Y,
+                            platformBounds.Width,
+                            platformBounds.Height);
+                    }
+                }
+
+                DebugHelper.WriteLine($"[RegionCapture] Pre-capture crop: fullBitmap={fullScreenBitmap.Width}x{fullScreenBitmap.Height} virtualBounds=({virtualBounds.X:F0},{virtualBounds.Y:F0},{virtualBounds.Width:F0}x{virtualBounds.Height:F0}) selection=({selection.Left},{selection.Top},{selection.Right},{selection.Bottom})");
                 if (!virtualBounds.IsEmpty)
                 {
-                    var offsetX = virtualBounds.X;
-                    var offsetY = virtualBounds.Y;
-                    cropRect = new SKRectI(
-                        selection.Left - offsetX,
-                        selection.Top - offsetY,
-                        selection.Right - offsetX,
-                        selection.Bottom - offsetY);
-                    DebugHelper.WriteLine($"[RegionCapture] Pre-capture crop: offset=({offsetX},{offsetY}) cropRect=({cropRect.Left},{cropRect.Top},{cropRect.Right},{cropRect.Bottom}) size={cropRect.Width}x{cropRect.Height}");
+                    var selectionRect = new XerahS.RegionCapture.Models.PixelRect(
+                        selection.Left,
+                        selection.Top,
+                        selection.Width,
+                        selection.Height);
+                    cropRect = BackgroundBitmapMapper.MapRectToBitmapInt(
+                        selectionRect,
+                        virtualBounds,
+                        fullScreenBitmap.Width,
+                        fullScreenBitmap.Height);
+                    DebugHelper.WriteLine($"[RegionCapture] Pre-capture crop: mapped cropRect=({cropRect.Left},{cropRect.Top},{cropRect.Right},{cropRect.Bottom}) size={cropRect.Width}x{cropRect.Height}");
                 }
             }
             catch
             {
                 // Ignore virtual screen lookup failures
+            }
+
+            if (cropRect.Width <= 0 || cropRect.Height <= 0)
+            {
+                return null;
             }
 
             SKBitmap cropped = ImageHelpers.Crop(fullScreenBitmap, cropRect);

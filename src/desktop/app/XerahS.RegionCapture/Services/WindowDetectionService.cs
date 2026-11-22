@@ -78,10 +78,12 @@ public sealed class WindowDetectionService
     private DateTime _lastDirectQueryAt = DateTime.MinValue;
     private WindowInfo? _lastDirectQueryWindow;
     private PixelPoint _lastDirectQueryPoint;
+    private IReadOnlyList<MonitorInfo>? _cachedDirectQueryMonitors;
 
     public WindowDetectionService(bool detectControls = true)
-        : this(() => EnumerateVisibleWindows(detectControls), TryGetDirectWindowAtPoint)
     {
+        _enumerateVisibleWindows = () => EnumerateVisibleWindows(detectControls);
+        _tryGetWindowAtPointDirect = TryGetDirectWindowAtPointCached;
     }
 
     internal WindowDetectionService(
@@ -445,6 +447,22 @@ public sealed class WindowDetectionService
         return false;
     }
 
+    private WindowPointQueryResult TryGetDirectWindowAtPointCached(PixelPoint physicalPoint)
+    {
+        if (!OperatingSystem.IsLinux() || !MonitorEnumerationService.IsAvaloniaWaylandBackend())
+            return default;
+
+        if (!PlatformServices.IsWindowServiceInitialized ||
+            PlatformServices.Window is not PlatformLogicalWindowPointQueryService logicalPointQueryService)
+            return default;
+
+        if (!logicalPointQueryService.GetLogicalWindowPointQueryCapability().IsEnabled)
+            return default;
+
+        _cachedDirectQueryMonitors ??= MonitorEnumerationService.GetAllMonitors();
+        return TryGetDirectWindowAtPointWithMonitors(physicalPoint, _cachedDirectQueryMonitors, logicalPointQueryService);
+    }
+
     internal static WindowPointQueryResult TryGetDirectWindowAtPoint(PixelPoint physicalPoint)
     {
         if (!OperatingSystem.IsLinux() || !MonitorEnumerationService.IsAvaloniaWaylandBackend())
@@ -459,7 +477,34 @@ public sealed class WindowDetectionService
         if (!logicalPointQueryService.GetLogicalWindowPointQueryCapability().IsEnabled)
             return default;
 
-        var monitors = MonitorEnumerationService.GetAllMonitors();
+        return TryGetDirectWindowAtPointWithMonitors(
+            physicalPoint,
+            MonitorEnumerationService.GetAllMonitors(),
+            logicalPointQueryService);
+    }
+
+    internal static WindowPointQueryResult TryGetDirectWindowAtPoint(
+        PixelPoint physicalPoint,
+        IReadOnlyList<MonitorInfo> monitors)
+    {
+        if (!OperatingSystem.IsLinux() || !MonitorEnumerationService.IsAvaloniaWaylandBackend())
+            return default;
+
+        if (!PlatformServices.IsWindowServiceInitialized ||
+            PlatformServices.Window is not PlatformLogicalWindowPointQueryService logicalPointQueryService)
+            return default;
+
+        if (!logicalPointQueryService.GetLogicalWindowPointQueryCapability().IsEnabled)
+            return default;
+
+        return TryGetDirectWindowAtPointWithMonitors(physicalPoint, monitors, logicalPointQueryService);
+    }
+
+    private static WindowPointQueryResult TryGetDirectWindowAtPointWithMonitors(
+        PixelPoint physicalPoint,
+        IReadOnlyList<MonitorInfo> monitors,
+        PlatformLogicalWindowPointQueryService logicalPointQueryService)
+    {
         if (!TryConvertPhysicalToLogicalPoint(physicalPoint, monitors, out Point logicalPoint))
             return new WindowPointQueryResult(Handled: true, Window: null);
 

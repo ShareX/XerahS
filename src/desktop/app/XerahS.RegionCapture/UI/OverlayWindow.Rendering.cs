@@ -255,15 +255,12 @@ public partial class OverlayWindow
 
         DebugHelper.WriteLine($"[BackgroundBitmap] {monitor.DeviceName}: fullBitmap={fullBackground.Width}x{fullBackground.Height} virtualBounds=({virtualBounds.X:F0},{virtualBounds.Y:F0},{virtualBounds.Width:F0},{virtualBounds.Height:F0}) PhysicalBounds=({monitor.PhysicalBounds.X:F0},{monitor.PhysicalBounds.Y:F0},{monitor.PhysicalBounds.Width:F0},{monitor.PhysicalBounds.Height:F0}) Scale={monitor.ScaleFactor:F4}");
 
-        int sourceX = (int)Math.Round(monitor.PhysicalBounds.X - virtualBounds.X);
-        int sourceY = (int)Math.Round(monitor.PhysicalBounds.Y - virtualBounds.Y);
-        int sourceWidth = Math.Max(1, (int)Math.Round(monitor.PhysicalBounds.Width));
-        int sourceHeight = Math.Max(1, (int)Math.Round(monitor.PhysicalBounds.Height));
-
-        var sourceRect = new SKRectI(sourceX, sourceY, sourceX + sourceWidth, sourceY + sourceHeight);
-        DebugHelper.WriteLine($"[BackgroundBitmap] {monitor.DeviceName}: physicalSourceRect=({sourceRect.Left},{sourceRect.Top},{sourceRect.Width}x{sourceRect.Height}) before clamp");
-        sourceRect.Intersect(new SKRectI(0, 0, fullBackground.Width, fullBackground.Height));
-        DebugHelper.WriteLine($"[BackgroundBitmap] {monitor.DeviceName}: clampedSourceRect=({sourceRect.Left},{sourceRect.Top},{sourceRect.Width}x{sourceRect.Height}) valid={sourceRect.Width > 0 && sourceRect.Height > 0}");
+        var sourceRect = BackgroundBitmapMapper.MapRectToBitmapInt(
+            monitor.PhysicalBounds,
+            virtualBounds,
+            fullBackground.Width,
+            fullBackground.Height);
+        DebugHelper.WriteLine($"[BackgroundBitmap] {monitor.DeviceName}: mappedSourceRect=({sourceRect.Left},{sourceRect.Top},{sourceRect.Width}x{sourceRect.Height}) valid={sourceRect.Width > 0 && sourceRect.Height > 0}");
         if (sourceRect.Width <= 0 || sourceRect.Height <= 0)
         {
             DebugHelper.WriteLine($"[BackgroundBitmap] {monitor.DeviceName}: sourceRect empty after clamp — returning null");

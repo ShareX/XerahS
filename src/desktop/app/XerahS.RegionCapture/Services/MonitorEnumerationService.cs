@@ -27,6 +27,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
 using XerahS.Common;
+using XerahS.Platform.Abstractions;
 using XerahS.RegionCapture.Models;
 using PixelRect = XerahS.RegionCapture.Models.PixelRect;
 
@@ -52,12 +53,8 @@ public static class MonitorEnumerationService
 
     private static IReadOnlyList<MonitorInfo> GetAvaloniaMonitors()
     {
-        var screens = Application.Current?.ApplicationLifetime switch
-        {
-            IClassicDesktopStyleApplicationLifetime desktop
-                => desktop.MainWindow?.Screens,
-            _ => null
-        };
+        var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        var screens = mainWindow?.Screens;
 
         if (screens is null)
             return [];
@@ -76,6 +73,16 @@ public static class MonitorEnumerationService
         bool isAvaloniaWayland = IsAvaloniaWaylandBackend();
         DebugHelper.WriteLine($"[MonitorEnum] isAvaloniaWayland={isAvaloniaWayland} (XDG_SESSION_TYPE={Environment.GetEnvironmentVariable("XDG_SESSION_TYPE") ?? "unset"})");
 
+        IReadOnlyList<ScreenInfo> platformScreens = isAvaloniaWayland && PlatformServices.IsInitialized
+            ? PlatformServices.Screen.GetAllScreens()
+            : [];
+        Screen? mainWindowScreen = isAvaloniaWayland && mainWindow != null
+            ? screens.ScreenFromWindow(mainWindow)
+            : null;
+        double? mainWindowRenderScaling = isAvaloniaWayland && mainWindow != null
+            ? mainWindow.RenderScaling
+            : null;
+
         var logicalScreens = new List<AvaloniaScreenLayout>(allScreens.Count);
 
         for (int i = 0; i < allScreens.Count; i++)
@@ -92,6 +99,7 @@ public static class MonitorEnumerationService
             // for mixed-DPI setups.
             PixelRect bounds;
             PixelRect workArea;
+            bool isPrimary = screen.IsPrimary;
             bool useLogicalAsIs = isAvaloniaWayland;
             if (useLogicalAsIs)
             {
@@ -105,6 +113,19 @@ public static class MonitorEnumerationService
                     screen.WorkingArea.Y,
                     screen.WorkingArea.Width,
                     screen.WorkingArea.Height);
+
+                double? fallbackRenderScaling = (allScreens.Count == 1 || ReferenceEquals(screen, mainWindowScreen))
+                    ? mainWindowRenderScaling
+                    : null;
+
+                (scaleFactor, workArea, isPrimary) = ResolveWaylandScreenMetrics(
+                    screen.DisplayName,
+                    bounds,
+                    workArea,
+                    scaleFactor,
+                    isPrimary,
+                    platformScreens,
+                    fallbackRenderScaling);
             }
             else
             {
@@ -112,13 +133,18 @@ public static class MonitorEnumerationService
                 workArea = PhysicalToLogicalRect(ToPixelRect(screen.WorkingArea), scaleFactor);
             }
 
-            DebugHelper.WriteLine($"[MonitorEnum] Screen[{i}]: DisplayName={screen.DisplayName ?? "<null>"} useLogicalAsIs={useLogicalAsIs} logicalBounds=({bounds.X:F1},{bounds.Y:F1},{bounds.Width:F1},{bounds.Height:F1})");
+            DebugHelper.WriteLine($"[MonitorEnum] Screen[{i}]: DisplayName={screen.DisplayName ?? "<null>"} useLogicalAsIs={useLogicalAsIs} resolvedScale={scaleFactor:F4} isPrimary={isPrimary} logicalBounds=({bounds.X:F1},{bounds.Y:F1},{bounds.Width:F1},{bounds.Height:F1})");
             logicalScreens.Add(new AvaloniaScreenLayout(
                 DeviceName: !string.IsNullOrWhiteSpace(screen.DisplayName) ? screen.DisplayName : $"Display {i + 1}",
                 ScaleFactor: scaleFactor,
                 Bounds: bounds,
                 WorkingArea: workArea,
-                IsPrimary: screen.IsPrimary));
+                IsPrimary: isPrimary));
+        }
+
+        if (isAvaloniaWayland && logicalScreens.Count > 0 && !logicalScreens.Any(s => s.IsPrimary))
+        {
+            logicalScreens[0] = logicalScreens[0] with { IsPrimary = true };
         }
 
         // Use the normalizer on Linux/non-macOS so overlay windows get logical bounds
@@ -183,6 +209,88 @@ public static class MonitorEnumerationService
             physical.Y / scaleFactor,
             Math.Max(1, physical.Width / scaleFactor),
             Math.Max(1, physical.Height / scaleFactor));
+    }
+
+    internal static (double ScaleFactor, PixelRect LogicalWorkArea, bool IsPrimary) ResolveWaylandScreenMetrics(
+        string? displayName,
+        PixelRect logicalBounds,
+        PixelRect logicalWorkArea,
+        double avaloniaScaling,
+        bool avaloniaIsPrimary,
+        IReadOnlyList<ScreenInfo> platformScreens,
+        double? fallbackWindowRenderScaling)
+    {
+        double resolvedScale = avaloniaScaling > 0 ? avaloniaScaling : 1.0;
+        PixelRect resolvedWorkArea = logicalWorkArea;
+        bool resolvedPrimary = avaloniaIsPrimary;
+
+        ScreenInfo? matched = null;
+        if (!string.IsNullOrWhiteSpace(displayName))
+        {
+            matched = platformScreens.FirstOrDefault(s =>
+                string.Equals(s.DeviceName, displayName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (matched == null && platformScreens.Count == 1)
+        {
+            matched = platformScreens[0];
+        }
+
+        if (matched != null)
+        {
+            if (Math.Abs(resolvedScale - 1.0) <= 0.001)
+            {
+                if (matched.ScaleFactor > 0 && Math.Abs(matched.ScaleFactor - 1.0) > 0.001)
+                {
+                    resolvedScale = matched.ScaleFactor;
+                }
+                else if (matched.Bounds.Width > 0 && matched.Bounds.Height > 0 &&
+                         logicalBounds.Width > 0 && logicalBounds.Height > 0)
+                {
+                    double ratioX = matched.Bounds.Width / logicalBounds.Width;
+                    double ratioY = matched.Bounds.Height / logicalBounds.Height;
+                    if (ratioX > 1.01 && Math.Abs(ratioX - ratioY) < 0.05)
+                    {
+                        // Wayland wp_fractional_scale_v1 quantizes scales in steps of 1/120.
+                        resolvedScale = Math.Round(ratioX * 120.0) / 120.0;
+                    }
+                }
+            }
+
+            if (matched.Bounds.Width > 0 && matched.Bounds.Height > 0 && matched.WorkingArea != matched.Bounds)
+            {
+                double insetScale = resolvedScale > 0 ? resolvedScale : 1.0;
+                double leftInset = Math.Round((matched.WorkingArea.Left - matched.Bounds.Left) / insetScale);
+                double topInset = Math.Round((matched.WorkingArea.Top - matched.Bounds.Top) / insetScale);
+                double rightInset = Math.Round((matched.Bounds.Right - matched.WorkingArea.Right) / insetScale);
+                double bottomInset = Math.Round((matched.Bounds.Bottom - matched.WorkingArea.Bottom) / insetScale);
+
+                if (leftInset >= 0 && topInset >= 0 && rightInset >= 0 && bottomInset >= 0)
+                {
+                    resolvedWorkArea = new PixelRect(
+                        logicalBounds.X + leftInset,
+                        logicalBounds.Y + topInset,
+                        Math.Max(1, logicalBounds.Width - leftInset - rightInset),
+                        Math.Max(1, logicalBounds.Height - topInset - bottomInset));
+                }
+            }
+
+            if (!resolvedPrimary && matched.IsPrimary)
+            {
+                resolvedPrimary = true;
+            }
+        }
+
+        if (Math.Abs(resolvedScale - 1.0) <= 0.001 &&
+            fallbackWindowRenderScaling is double windowScale &&
+            double.IsFinite(windowScale) &&
+            windowScale > 0 &&
+            Math.Abs(windowScale - 1.0) > 0.001)
+        {
+            resolvedScale = windowScale;
+        }
+
+        return (resolvedScale, resolvedWorkArea, resolvedPrimary);
     }
 
     internal static bool IsWaylandSession()
