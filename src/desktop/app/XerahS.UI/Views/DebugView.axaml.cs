@@ -33,14 +33,33 @@ namespace XerahS.UI.Views
     public partial class DebugView : PageView
     {
         public DebugView()
+            : this(0)
+        {
+        }
+
+        public DebugView(int initialTabIndex)
         {
             InitializeComponent();
             DataContext = new DebugViewModel();
+
+            var tabs = this.FindControl<TabControl>("DebugTabs");
+            if (tabs != null && initialTabIndex >= 0 && initialTabIndex < tabs.Items.Count)
+            {
+                tabs.SelectedIndex = initialTabIndex;
+            }
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        private void OnDebugTabSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (sender is TabControl { SelectedIndex: 1 })
+            {
+                this.FindControl<DisplayDiagnosticsView>("DisplayDiagnosticsPanel")?.RefreshReport();
+            }
         }
 
         private async void OnShareLogsClick(object? sender, RoutedEventArgs e)

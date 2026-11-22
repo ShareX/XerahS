@@ -60,7 +60,7 @@ internal static class NavigationSearchKeywords
         ["Editor"] = "image editor annotate",
         ["History"] = "history recent tasks",
         ["Workflows"] = "workflow hotkey automation",
-        ["Debug"] = "debug log diagnostics",
+        ["Debug"] = "debug log diagnostics display monitor scaling dpi",
         ["About"] = "about version license"
     };
 

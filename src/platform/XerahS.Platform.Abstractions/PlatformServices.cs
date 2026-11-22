@@ -194,6 +194,13 @@ namespace XerahS.Platform.Abstractions
             set => _diagnosticService = value;
         }
 
+        private static IDisplayDiagnosticsService _displayDiagnosticsService = DisplayDiagnosticsUnsupported.Instance;
+        public static IDisplayDiagnosticsService DisplayDiagnostics
+        {
+            get => _displayDiagnosticsService;
+            set => _displayDiagnosticsService = value ?? DisplayDiagnosticsUnsupported.Instance;
+        }
+
         private static IThemeService? _themeService;
         public static IThemeService Theme
         {
@@ -379,6 +386,7 @@ namespace XerahS.Platform.Abstractions
             _startupService = null;
             _watchFolderDaemonService = null;
             _diagnosticService = null;
+            _displayDiagnosticsService = DisplayDiagnosticsUnsupported.Instance;
             _shellIntegrationService = null;
             _themeService = null;
             _scrollingCaptureService = null;

@@ -1,0 +1,133 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewcontrols="using:XerahS.UI.Views.Controls"
+             xmlns:icons="clr-namespace:ShareX.ImageEditor.Presentation.Theming;assembly=ShareX.ImageEditor"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="680"
+             x:Class="XerahS.UI.Views.DisplayDiagnosticsView">
+
+    <Grid Margin="16" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="10">
+        <!-- Toolbar -->
+        <Border Grid.Row="0" Theme="{StaticResource CardBorderTheme}" Padding="12,10">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
+                <Button Grid.Column="0" Click="OnCopyClick" AutomationProperties.Name="Copy Display Diagnostics">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <TextBlock Classes="IconGlyph" FontSize="14" Text="{x:Static icons:LucideIcons.clipboard_copy}"/>
+                        <TextBlock Text="Copy to Clipboard"/>
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="1" Click="OnSaveClick" AutomationProperties.Name="Save Display Diagnostics">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <TextBlock Classes="IconGlyph" FontSize="14" Text="{x:Static icons:LucideIcons.save}"/>
+                        <TextBlock Text="Save As…"/>
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="3" Click="OnRefreshClick" AutomationProperties.Name="Refresh Display Diagnostics">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <TextBlock Classes="IconGlyph" FontSize="14" Text="{x:Static icons:LucideIcons.refresh_cw}"/>
+                        <TextBlock Text="Refresh"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Display layout map -->
+        <Border Grid.Row="1" Theme="{StaticResource CardBorderTheme}" Padding="16,14">
+            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <TextBlock Classes="IconGlyph"
+                               FontSize="20"
+                               VerticalAlignment="Top"
+                               Margin="0,1,0,0"
+                               Foreground="{DynamicResource AccentFillColorDefaultBrush}"
+                               Text="{x:Static icons:LucideIcons.monitor}"/>
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock Classes="section-title" Text="Display layout"/>
+                        <TextBlock Classes="caption"
+                                   Text="Physical monitor layout as seen by XerahS, including compositor/OS scale factors, reserved panel areas, and cursor position. Start a region capture, close it, and press Refresh to record overlay window measurements."/>
+                    </StackPanel>
+                </Grid>
+
+                <viewcontrols:MonitorLayoutView x:Name="LayoutView" Grid.Row="1" Height="180"/>
+
+                <WrapPanel Grid.Row="2" HorizontalAlignment="Center" ItemSpacing="18" LineSpacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <Border Width="16"
+                                Height="11"
+                                CornerRadius="2"
+                                BorderThickness="2"
+                                VerticalAlignment="Center"
+                                BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"
+                                Background="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                        <TextBlock Classes="caption" VerticalAlignment="Center" Text="Primary monitor"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <Panel Width="16" Height="11" VerticalAlignment="Center">
+                            <Border CornerRadius="2"
+                                    ClipToBounds="True"
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                                <Border Height="3"
+                                        VerticalAlignment="Bottom"
+                                        Opacity="0.3"
+                                        Background="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            </Border>
+                            <Border CornerRadius="2"
+                                    BorderThickness="1"
+                                    Opacity="0.28"
+                                    BorderBrush="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        </Panel>
+                        <TextBlock Classes="caption" VerticalAlignment="Center" Text="Reserved area"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="7">
+                        <Ellipse Width="8"
+                                 Height="8"
+                                 VerticalAlignment="Center"
+                                 Fill="{DynamicResource AccentFillColorDefaultBrush}"/>
+                        <TextBlock Classes="caption" VerticalAlignment="Center" Text="Mouse cursor"/>
+                    </StackPanel>
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <!-- Report text -->
+        <Border Grid.Row="2" Theme="{StaticResource CardBorderTheme}" Padding="1">
+            <TextBox x:Name="ReportTextBox"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="NoWrap"
+                     FontFamily="Cascadia Mono, Consolas, JetBrains Mono, monospace"
+                     FontSize="12"
+                     BorderThickness="0"
+                     Background="Transparent"
+                     Padding="10"
+                     VerticalContentAlignment="Top"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     AutomationProperties.Name="Display Diagnostics Report"/>
+        </Border>
+
+        <!-- Status -->
+        <Grid x:Name="StatusPanel"
+              Grid.Row="3"
+              ColumnDefinitions="Auto,*"
+              ColumnSpacing="7"
+              Opacity="0">
+            <Grid.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.15"/>
+                </Transitions>
+            </Grid.Transitions>
+            <TextBlock Classes="IconGlyph"
+                       FontSize="14"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource StatusSuccessForegroundBrush}"
+                       Text="{x:Static icons:LucideIcons.circle_check}"/>
+            <TextBlock x:Name="StatusText"
+                       Grid.Column="1"
+                       Classes="caption"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"/>
+        </Grid>
+    </Grid>
+</UserControl>

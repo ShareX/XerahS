@@ -263,6 +263,12 @@ public partial class OverlayWindow : Window
         ScheduleDelayedFocusRetries();
 
         LogActualWindowGeometry("OnOpened");
+        OverlayWindowGeometryLog.Record(
+            this,
+            "Region capture overlay",
+            _monitor,
+            _backgroundBitmap,
+            MonitorEnumerationService.IsAvaloniaWaylandBackend());
     }
 
     /// <summary>
@@ -319,7 +325,7 @@ public partial class OverlayWindow : Window
                 ? $"ScreenAt={screenAtWindow.Bounds.Width}x{screenAtWindow.Bounds.Height} Scale={screenAtWindow.Scaling:F4} IsPrimary={screenAtWindow.IsPrimary}"
                 : "ScreenAt=null";
 
-            DebugHelper.WriteLine($"[OverlayWindow.{source}] {_monitor.DeviceName}: Logical=({Width:F1}x{Height:F1}) Position={Position} PhysicalTopLeft=({topLeftPhysical.X},{topLeftPhysical.Y}) PhysicalSize=({physicalWindowW}x{physicalWindowH}) MonitorPhysical=({_monitor.PhysicalBounds.Width:F0}x{_monitor.PhysicalBounds.Height:F0}) {screenInfo}");
+            DebugHelper.WriteLine($"[OverlayWindow.{source}] {_monitor.DeviceName}: Logical=({Width:F1}x{Height:F1}) ClientSize=({ClientSize.Width:F1}x{ClientSize.Height:F1}) RenderScaling={RenderScaling:F4} Position={Position} PhysicalTopLeft=({topLeftPhysical.X},{topLeftPhysical.Y}) PhysicalSize=({physicalWindowW}x{physicalWindowH}) MonitorPhysical=({_monitor.PhysicalBounds.Width:F0}x{_monitor.PhysicalBounds.Height:F0}) {screenInfo}");
             DebugHelper.WriteLine($"[OverlayWindow.{source}] {_monitor.DeviceName}: FillsMonitor={physicalWindowW >= (int)_monitor.PhysicalBounds.Width && physicalWindowH >= (int)_monitor.PhysicalBounds.Height} (physW={physicalWindowW} >= monW={(int)_monitor.PhysicalBounds.Width}, physH={physicalWindowH} >= monH={(int)_monitor.PhysicalBounds.Height})");
         }
         catch (Exception ex)

@@ -7,48 +7,61 @@
                 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
                 x:Class="XerahS.UI.Views.DebugView"
                 x:DataType="vm:DebugViewModel">
-    
+
     <Design.DataContext>
         <vm:DebugViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,Auto,*">
-        <!-- Toolbar -->
-        <Border Grid.Row="0" Padding="16" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
-                BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-            <StackPanel Orientation="Horizontal" Spacing="16">
-                <Button Command="{Binding OpenLogsFolderCommand}" Content="Open Logs Folder" AutomationProperties.Name="Open Logs Folder"/>
-                <Button Command="{Binding OpenSettingsFolderCommand}" Content="Open Settings Folder" AutomationProperties.Name="Open Settings Folder"/>
-                <Button Command="{Binding CopyCommand}" Content="Copy" AutomationProperties.Name="Copy Log"/>
-                <Button Command="{Binding ClearCommand}" Content="Clear" AutomationProperties.Name="Clear Log"/>
-                <Button Content="Share logs…" Click="OnShareLogsClick"
-                        ToolTip.Tip="Send scrubbed logs and system details to the XerahS developers"
-                        AutomationProperties.Name="Share logs with the XerahS developers"/>
-            </StackPanel>
-        </Border>
+    <TabControl x:Name="DebugTabs"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                SelectionChanged="OnDebugTabSelectionChanged">
+        <TabItem Header="Debug Log">
+            <Grid RowDefinitions="Auto,Auto,*">
+                <!-- Toolbar -->
+                <Border Grid.Row="0" Padding="16" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                        BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <Button Command="{Binding OpenLogsFolderCommand}" Content="Open Logs Folder" AutomationProperties.Name="Open Logs Folder"/>
+                        <Button Command="{Binding OpenSettingsFolderCommand}" Content="Open Settings Folder" AutomationProperties.Name="Open Settings Folder"/>
+                        <Button Command="{Binding CopyCommand}" Content="Copy" AutomationProperties.Name="Copy Log"/>
+                        <Button Command="{Binding ClearCommand}" Content="Clear" AutomationProperties.Name="Clear Log"/>
+                        <Button Content="Share logs…" Click="OnShareLogsClick"
+                                ToolTip.Tip="Send scrubbed logs and system details to the XerahS developers"
+                                AutomationProperties.Name="Share logs with the XerahS developers"/>
+                    </StackPanel>
+                </Border>
 
-        <!-- Diagnostics -->
-        <Border Grid.Row="1" Padding="16" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
-                BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-            <StackPanel Spacing="4">
-                <TextBlock Text="Secret Store Diagnostics" FontWeight="SemiBold"/>
-                <TextBlock Text="{Binding SecretStoreBackendName, StringFormat=Backend: {0}}"/>
-                <TextBlock Text="{Binding SecretStoreBackendStatus, StringFormat=Status: {0}}"/>
-                <TextBlock Text="{Binding SecretStoreBackendDetails, StringFormat=Details: {0}}"/>
-            </StackPanel>
-        </Border>
+                <!-- Diagnostics -->
+                <Border Grid.Row="1" Padding="16" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                        BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Secret Store Diagnostics" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding SecretStoreBackendName, StringFormat=Backend: {0}}"/>
+                        <TextBlock Text="{Binding SecretStoreBackendStatus, StringFormat=Status: {0}}"/>
+                        <TextBlock Text="{Binding SecretStoreBackendDetails, StringFormat=Details: {0}}"/>
+                    </StackPanel>
+                </Border>
 
-        <!-- Log Output -->
-        <TextBox Grid.Row="2" 
-                 Text="{Binding LogText}"
-                 IsReadOnly="True"
-                 TextWrapping="Wrap"
-                 AcceptsReturn="True"
-                 ScrollViewer.VerticalScrollBarVisibility="Auto"
-                 BorderThickness="0"
-                 Background="Transparent"
-                 Padding="16"
-                 AutomationProperties.Name="Log Output"
-                 SelectionBrush="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
-    </Grid>
+                <!-- Log Output -->
+                <TextBox Grid.Row="2"
+                         Text="{Binding LogText}"
+                         IsReadOnly="True"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         Padding="16"
+                         AutomationProperties.Name="Log Output"
+                         SelectionBrush="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="Display Diagnostics">
+            <views:DisplayDiagnosticsView x:Name="DisplayDiagnosticsPanel"/>
+        </TabItem>
+    </TabControl>
 </views:PageView>

@@ -65,6 +65,8 @@ namespace XerahS.Platform.Windows
                 clipboardMonitorService: clipboardMonitorService
             );
 
+            PlatformServices.DisplayDiagnostics = new Services.WindowsDisplayDiagnosticsService();
+
             // Register optional scrolling capture service
             PlatformServices.ScrollingCapture = new WindowsScrollingCaptureService();
 

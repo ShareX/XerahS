@@ -263,6 +263,9 @@ namespace XerahS.UI.Views
                 case "Debug":
                     contentFrame.Content = new DebugView();
                     return true;
+                case "Debug_DisplayDiagnostics":
+                    contentFrame.Content = new DebugView(initialTabIndex: 1);
+                    return true;
                 case "About":
                     contentFrame.Content = new AboutView();
                     return true;
