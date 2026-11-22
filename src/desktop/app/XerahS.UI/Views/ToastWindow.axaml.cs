@@ -85,16 +85,23 @@ public partial class ToastWindow : OverlayWindow
     {
         _config = config;
 
-        // Set window size
+        // Set fixed window size bounds so tiling/Wayland compositors and layer-shell keep exact toast dimensions
         Width = config.Size.Width;
         Height = config.Size.Height;
+        MinWidth = config.Size.Width;
+        MaxWidth = config.Size.Width;
+        MinHeight = config.Size.Height;
+        MaxHeight = config.Size.Height;
 
-        // Position window based on placement
-        PositionWindow(config.Placement, config.Offset, config.Size);
+        if (!TryConfigureWaylandLayerShell(config))
+        {
+            // Position window based on placement
+            PositionWindow(config.Placement, config.Offset, config.Size);
 
-        // Adjust position to use the screen that actually contains the window (for multi-monitor correctness).
-        // On multi-monitor setups the primary screen working area may not match the screen the toast lands on.
-        AdjustPositionToScreenBounds();
+            // Adjust position to use the screen that actually contains the window (for multi-monitor correctness).
+            // On multi-monitor setups the primary screen working area may not match the screen the toast lands on.
+            AdjustPositionToScreenBounds();
+        }
 
         // Bind Cloud actions to the exact durable history row. Never infer identity from a URL:
         // the same destination may appear in multiple rows or accounts.
@@ -127,6 +134,22 @@ public partial class ToastWindow : OverlayWindow
         _viewModel.CloseRequested += OnCloseRequested;
         _viewModel.OpacityChanged += OnOpacityChanged;
         _viewModel.HoverChanged += OnHoverChanged;
+    }
+
+    private bool TryConfigureWaylandLayerShell(ToastConfig config)
+    {
+        if (!OperatingSystem.IsLinux() ||
+            !WaylandProperties.IsWaylandBackend(this) ||
+            !WaylandProperties.IsLayerShellSupported(this))
+        {
+            return false;
+        }
+
+        var layout = ToastWaylandLayerLayout.Create(config.Placement, config.Offset);
+        ToastWaylandLayerLayout.Apply(this, layout);
+        DebugHelper.WriteLine(
+            $"[ToastWindow] Configured Wayland layer-shell: layer={layout.Layer}, anchor={layout.Anchor}, margin={layout.Margin}, size={config.Size.Width}x{config.Size.Height}, namespace={layout.Namespace}");
+        return true;
     }
 
     private void AdjustPositionToScreenBounds()
@@ -416,5 +439,51 @@ public partial class ToastWindow : OverlayWindow
         }
 
         base.OnClosed(e);
+    }
+}
+
+internal readonly record struct ToastWaylandLayerLayout(
+    WaylandLayer Layer,
+    WaylandLayerAnchor Anchor,
+    Thickness Margin,
+    int ExclusiveZone,
+    WaylandLayerKeyboardInteractivity KeyboardInteractivity,
+    string Namespace)
+{
+    public const string DefaultNamespace = "xerahs-toast";
+
+    public static ToastWaylandLayerLayout Create(ContentPlacement placement, int offset)
+    {
+        int clampedOffset = Math.Max(0, offset);
+        (WaylandLayerAnchor anchor, Thickness margin) = placement switch
+        {
+            ContentPlacement.TopLeft => (WaylandLayerAnchor.Top | WaylandLayerAnchor.Left, new Thickness(clampedOffset, clampedOffset, 0, 0)),
+            ContentPlacement.TopCenter => (WaylandLayerAnchor.Top, new Thickness(0, clampedOffset, 0, 0)),
+            ContentPlacement.TopRight => (WaylandLayerAnchor.Top | WaylandLayerAnchor.Right, new Thickness(0, clampedOffset, clampedOffset, 0)),
+            ContentPlacement.MiddleLeft => (WaylandLayerAnchor.Left, new Thickness(clampedOffset, 0, 0, 0)),
+            ContentPlacement.MiddleCenter => (WaylandLayerAnchor.None, default(Thickness)),
+            ContentPlacement.MiddleRight => (WaylandLayerAnchor.Right, new Thickness(0, 0, clampedOffset, 0)),
+            ContentPlacement.BottomLeft => (WaylandLayerAnchor.Bottom | WaylandLayerAnchor.Left, new Thickness(clampedOffset, 0, 0, clampedOffset)),
+            ContentPlacement.BottomCenter => (WaylandLayerAnchor.Bottom, new Thickness(0, 0, 0, clampedOffset)),
+            ContentPlacement.BottomRight or _ => (WaylandLayerAnchor.Bottom | WaylandLayerAnchor.Right, new Thickness(0, 0, clampedOffset, clampedOffset)),
+        };
+
+        return new ToastWaylandLayerLayout(
+            WaylandLayer.Overlay,
+            anchor,
+            margin,
+            ExclusiveZone: 0,
+            WaylandLayerKeyboardInteractivity.None,
+            DefaultNamespace);
+    }
+
+    public static void Apply(Window window, ToastWaylandLayerLayout layout)
+    {
+        WaylandProperties.SetLayer(window, layout.Layer);
+        WaylandProperties.SetLayerAnchor(window, layout.Anchor);
+        WaylandProperties.SetLayerExclusiveZone(window, layout.ExclusiveZone);
+        WaylandProperties.SetLayerMargin(window, layout.Margin);
+        WaylandProperties.SetLayerKeyboardInteractivity(window, layout.KeyboardInteractivity);
+        WaylandProperties.SetLayerNamespace(window, layout.Namespace);
     }
 }

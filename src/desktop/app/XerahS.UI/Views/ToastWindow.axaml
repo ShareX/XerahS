@@ -9,6 +9,7 @@
         x:DataType="vm:ToastViewModel"
         Title="Toast"
         Topmost="True"
+        ShowActivated="False"
         ShowInTaskbar="False"
         CanResize="False"
         WindowDecorations="None"
