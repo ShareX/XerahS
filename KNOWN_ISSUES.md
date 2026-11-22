@@ -3,7 +3,7 @@
 ## Windows
 
 ### Region Capture
-- **DPI Scaling Issue on Region Capture Background:** The dark background behind the region capture tool is not rendering correctly when any monitor connected to the system is set to a DPI scale greater than 100%. The background overlay appears shifted or misaligned in these high-DPI scenarios.
+- **DPI Scaling Issue on Region Capture Background:** The `WM_DPICHANGED` fix (`Win32Properties.SetIgnoreDpiChangeResize(this, true)` via `ShareX/Avalonia` `12.1.7-sharex.1`) is implemented and compiled so `OverlayWindow` ignores Avalonia's automatic `WM_DPICHANGED` resize/reposition when crossing DPI boundaries on >100% / mixed-DPI setups. Live Windows >100% / mixed-DPI runtime verification is still pending.
 
 ## Linux
 
@@ -11,7 +11,7 @@
 > [docs/proposals/xip/XIP0079-linux-improvement-plan.md](docs/proposals/xip/XIP0079-linux-improvement-plan.md).
 
 ### Region Capture / Screenshot
-- **XDG Portal vs in-app overlay:** Region capture defaults to the in-app overlay with crosshair. The overlay can be sluggish on Wayland (pointer-event delay) or misaligned on mixed-DPI setups. **Option:** enable **Use modern capture** for the XDG Portal / system dialog path, or pick a Linux region selector in application settings.
+- **Native Wayland + `zwlr_layer_shell_v1` overlay:** XerahS on Linux now enables `Avalonia.Wayland` via `.UseWaylandWithFallback()` (`AppId = "xerahs"`), with `XERAHS_DISABLE_WAYLAND=1` available to force X11/XWayland. When the compositor supports `zwlr_layer_shell_v1` (verified live on Hyprland), `OverlayWindow` maps onto `WaylandLayer.Overlay` (`"xerahs-region-capture"`) anchored across its target output with exclusive keyboard interactivity. Compositors without `zwlr_layer_shell_v1` (such as GNOME Mutter) still fall back to regular toplevel surfaces, where **Use modern capture** (XDG Portal) or an external Linux region selector remains available.
 - **Mixed-DPI vertical stacks (XIP0079 P4, v0.23.129):** Vertically stacked monitors with different scale factors are normalized with cumulative physical layout. Set `XERAHS_LEGACY_MONITOR_NORMALIZER=1` to revert to the pre-v0.23.129 formula if a regression appears.
 - **Fedora GNOME mixed-DPI routing:** On Fedora GNOME mixed-DPI setups, region selection/capture may misalign unless `UseTransparentOverlay` is enabled. Runtime forces transparent overlay on this platform combination.
 

@@ -38,7 +38,7 @@ When a question about Avalonia (layout, rendering, input, windowing, DPI, the XA
 
 | Fork | Upstream | Shipped commit | What XerahS gets from it |
 | --- | --- | --- | --- |
-| [ShareX/Avalonia](https://github.com/ShareX/Avalonia) | AvaloniaUI/Avalonia | tag `12.1.6` (`cf8e56467`) | Every `Avalonia.*` 12.1.6 package: core, controls, ColorPicker, Fluent theme, Inter font, Skia and HarfBuzz backends, Desktop (Win32, X11, FreeDesktop, Native for macOS), Android, iOS, Headless.NUnit |
+| [ShareX/Avalonia](https://github.com/ShareX/Avalonia) | AvaloniaUI/Avalonia | `12.1.7-sharex.1` on branch `xerahs/12.1.6` (based on `12.1.6` `cf8e56467`) | Every `Avalonia.*` `12.1.7-sharex.1` desktop package: core, controls (`WaylandLayer*`, `Win32Properties.IgnoreDpiChangeResize`), ColorPicker, Fluent theme, Inter font, Skia (`SkiaSharp 4.155.0`), HarfBuzz, Desktop (Win32, X11, FreeDesktop, Native), Wayland (`zwlr_layer_shell_v1`), Headless.NUnit; Android/iOS stay on `12.1.6` |
 | [ShareX/Avalonia.Controls.DataGrid](https://github.com/ShareX/Avalonia.Controls.DataGrid) | AvaloniaUI/Avalonia.Controls.DataGrid | tag `12.1.2` (`1e12211`) | `Avalonia.Controls.DataGrid` 12.1.2 |
 | [ShareX/XamlX](https://github.com/ShareX/XamlX) | kekekeks/XamlX | `d7e37ca` | The XAML compiler that compiles `.axaml` at build time (Avalonia's `external/XamlX` submodule) |
 | [ShareX/Avalonia.DBus](https://github.com/ShareX/Avalonia.DBus) | AvaloniaUI/Avalonia.DBus | `cada3ec` | D-Bus inside `Avalonia.FreeDesktop` on Linux (Avalonia's `external/Avalonia.DBus` submodule) |
@@ -46,9 +46,9 @@ When a question about Avalonia (layout, rendering, input, windowing, DPI, the XA
 | [ShareX/angle](https://github.com/ShareX/angle) | AvaloniaUI/angle | `1c8980590` | `Avalonia.Angle.Windows.Natives`, the OpenGL ES over Direct3D layer Avalonia renders through on Windows |
 | [ShareX/Avalonia.BuildServices](https://github.com/ShareX/Avalonia.BuildServices) | AvaloniaUI/Avalonia.BuildServices | `777f975` (11.3.2) | A build-time MSBuild task that every Avalonia package pulls in |
 
-`AvaloniaUI.DiagnosticsSupport` (the developer tools hook) has no public source. SkiaSharp and HarfBuzzSharp come from mono/SkiaSharp, not from Avalonia. The `Omacut` submodule pins its own Avalonia version (12.1.1); check its project file before reading the 12.1.6 source for it.
+`AvaloniaUI.DiagnosticsSupport` (the developer tools hook) has no public source. SkiaSharp and HarfBuzzSharp come from mono/SkiaSharp, not from Avalonia. The `Omacut` submodule pins its own Avalonia version (12.1.1); `ShareX.ImageEditor` pins `12.1.6`.
 
-On Mike's machine the forks are cloned next to this repository (`../Avalonia`, `../Avalonia.Controls.DataGrid`, `../XamlX`, …) with `shipped` checked out and an `upstream` remote. They are read-only references. Propose Avalonia fixes upstream; XerahS never builds against a fork.
+On Mike's machine the forks are cloned next to this repository (`../Avalonia`, `../Avalonia.Controls.DataGrid`, `../XamlX`, …). `ShareX/Avalonia` (`../Avalonia`, branch `xerahs/12.1.6`) packs custom desktop packages into `../Avalonia/artifacts/nuget` wired via [NuGet.config](NuGet.config); the other forks (`Avalonia.Controls.DataGrid`, `XamlX`, …) remain read-only `shipped` references.
 
 ## Scope and completion
 
