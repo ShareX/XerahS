@@ -95,4 +95,47 @@ public class LinuxWindowServiceTests
                 Is.False);
         });
     }
+
+    [Test]
+    public void IsInvalidWindowHandle_RejectsZeroAndPointerRoot()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(NativeMethods.IsInvalidWindowHandle(IntPtr.Zero), Is.True);
+            Assert.That(NativeMethods.IsInvalidWindowHandle(NativeMethods.PointerRoot), Is.True);
+            Assert.That(NativeMethods.IsInvalidWindowHandle(new IntPtr(0x200001)), Is.False);
+        });
+    }
+
+    [Test]
+    public void X11WindowQueries_HandlePointerRootAndInvalidWindowIdsWithoutCrashing()
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            Assert.Ignore("Linux-only X11 safety check.");
+        }
+
+        using var service = new LinuxWindowService();
+
+        IntPtr foreground = service.GetForegroundWindow();
+        IntPtr bogusHandle = new(0x7FFFFFFF);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(foreground, Is.Not.EqualTo(NativeMethods.PointerRoot));
+
+            Assert.That(service.GetWindowText(NativeMethods.PointerRoot), Is.Empty);
+            Assert.That(service.GetWindowBounds(NativeMethods.PointerRoot), Is.EqualTo(Rectangle.Empty));
+            Assert.That(service.IsWindowVisible(NativeMethods.PointerRoot), Is.False);
+            Assert.That(service.SetForegroundWindow(NativeMethods.PointerRoot), Is.False);
+            Assert.That(service.ShowWindow(NativeMethods.PointerRoot, 1), Is.False);
+            Assert.That(service.SetWindowPos(NativeMethods.PointerRoot, IntPtr.Zero, 0, 0, 100, 100, 0), Is.False);
+
+            // Forces real X11 BadWindow replies if XWayland/X11 is active; must not abort via _XDefaultError.
+            Assert.That(service.GetWindowText(bogusHandle), Is.Empty);
+            Assert.That(service.GetWindowClassName(bogusHandle), Is.Empty);
+            Assert.That(service.GetWindowBounds(bogusHandle), Is.EqualTo(Rectangle.Empty));
+            Assert.That(service.IsWindowVisible(bogusHandle), Is.False);
+        });
+    }
 }

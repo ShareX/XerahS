@@ -275,40 +275,43 @@ public sealed class LinuxHotkeyService : IHotkeyService
     {
         var grabbed = new List<uint>();
 
-        // Install our error handler to catch BadAccess errors
-        IntPtr previousHandler = NativeMethods.XSetErrorHandler(_errorHandler);
-
-        try
+        lock (NativeMethods.X11ErrorLock)
         {
-            foreach (var mask in registration.GrabMasks)
+            // Install our error handler to catch BadAccess errors
+            IntPtr previousHandler = NativeMethods.XSetErrorHandler(_errorHandler);
+
+            try
             {
-                _grabError = false;
-
-                _ = NativeMethods.XGrabKey(_display, registration.Keycode, mask, _rootWindow, false, NativeMethods.GrabModeAsync, NativeMethods.GrabModeAsync);
-
-                // Sync to ensure any errors are processed before we check
-                NativeMethods.XSync(_display, false);
-
-                if (_grabError)
+                foreach (var mask in registration.GrabMasks)
                 {
-                    foreach (var rollbackMask in grabbed)
+                    _grabError = false;
+
+                    _ = NativeMethods.XGrabKey(_display, registration.Keycode, mask, _rootWindow, false, NativeMethods.GrabModeAsync, NativeMethods.GrabModeAsync);
+
+                    // Sync to ensure any errors are processed before we check
+                    NativeMethods.XSync(_display, false);
+
+                    if (_grabError)
                     {
-                        NativeMethods.XUngrabKey(_display, registration.Keycode, rollbackMask, _rootWindow);
+                        foreach (var rollbackMask in grabbed)
+                        {
+                            NativeMethods.XUngrabKey(_display, registration.Keycode, rollbackMask, _rootWindow);
+                        }
+
+                        NativeMethods.XSync(_display, false);
+                        return (false, "Key combination is already grabbed by another application");
                     }
 
-                    NativeMethods.XSync(_display, false);
-                    return (false, "Key combination is already grabbed by another application");
+                    grabbed.Add(mask);
                 }
 
-                grabbed.Add(mask);
+                return (true, null);
             }
-
-            return (true, null);
-        }
-        finally
-        {
-            // Restore the previous error handler
-            NativeMethods.XSetErrorHandlerPtr(previousHandler);
+            finally
+            {
+                // Restore the previous error handler
+                NativeMethods.XSetErrorHandlerPtr(previousHandler);
+            }
         }
     }
 

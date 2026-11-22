@@ -54,6 +54,8 @@ namespace XerahS.Platform.Linux
         ];
         private readonly IntPtr _display;
         private readonly IntPtr _rootWindow;
+        private readonly object _x11Lock = new();
+        private bool _disposed;
         private readonly Dictionary<string, IntPtr> _atomCache = new(StringComparer.Ordinal);
         private readonly IWaylandWindowPointQueryHelper _waylandWindowPointQueryHelper;
 
@@ -63,6 +65,7 @@ namespace XerahS.Platform.Linux
 
             try
             {
+                NativeMethods.EnsureX11ThreadsInitialized();
                 _display = NativeMethods.XOpenDisplay(null);
                 if (_display != IntPtr.Zero)
                 {
@@ -82,6 +85,8 @@ namespace XerahS.Platform.Linux
             }
         }
 
+        private bool IsDisplayReady => !_disposed && _display != IntPtr.Zero;
+
         public WindowPointQueryCapability GetLogicalWindowPointQueryCapability()
         {
             return _waylandWindowPointQueryHelper.Capability;
@@ -94,44 +99,65 @@ namespace XerahS.Platform.Linux
 
         public void Dispose()
         {
-            if (_display != IntPtr.Zero)
+            lock (_x11Lock)
             {
-                NativeMethods.XCloseDisplay(_display);
+                if (_disposed)
+                    return;
+
+                _disposed = true;
+                if (_display != IntPtr.Zero)
+                {
+                    NativeMethods.XCloseDisplay(_display);
+                }
             }
         }
 
         public IntPtr GetForegroundWindow()
         {
             DebugHelper.WriteLine("LinuxWindowService: GetForegroundWindow called");
-            if (_display == IntPtr.Zero)
+            lock (_x11Lock)
             {
-                DebugHelper.WriteLine("LinuxWindowService: GetForegroundWindow: Display is IntPtr.Zero");
-                return IntPtr.Zero;
+                if (!IsDisplayReady)
+                {
+                    DebugHelper.WriteLine("LinuxWindowService: GetForegroundWindow: Display is IntPtr.Zero");
+                    return IntPtr.Zero;
+                }
+
+                (IntPtr focus, int revert_to) = NativeMethods.ExecuteWithX11ErrorGuard(_display, () =>
+                {
+                    NativeMethods.XGetInputFocus(_display, out IntPtr f, out int rt);
+                    return (f, rt);
+                }, out int errorCode);
+
+                DebugHelper.WriteLine($"LinuxWindowService: XGetInputFocus returned: focus={focus} (0x{focus:X}), revert_to={revert_to}");
+
+                if (errorCode != 0 || NativeMethods.IsInvalidWindowHandle(focus) || focus == _rootWindow)
+                {
+                    DebugHelper.WriteLine($"LinuxWindowService: Ignoring non-window X11 focus handle {focus} (0x{focus:X}, error={errorCode}).");
+                    return IntPtr.Zero;
+                }
+
+                // The focused window might be a child widget (like an input field).
+                // Walk up the window tree to find the top-level window
+                IntPtr topLevelWindow = GetTopLevelWindowLocked(focus);
+                if (topLevelWindow != focus)
+                {
+                    DebugHelper.WriteLine($"LinuxWindowService: Walked up window tree: focus={focus} (0x{focus:X}) -> top-level={topLevelWindow} (0x{topLevelWindow:X})");
+                }
+
+                return topLevelWindow;
             }
-
-            NativeMethods.XGetInputFocus(_display, out IntPtr focus, out int revert_to);
-            DebugHelper.WriteLine($"LinuxWindowService: XGetInputFocus returned: focus={focus} (0x{focus:X}), revert_to={revert_to}");
-
-            // The focused window might be a child widget (like an input field).
-            // Walk up the window tree to find the top-level window
-            IntPtr topLevelWindow = GetTopLevelWindow(focus);
-            if (topLevelWindow != focus)
-            {
-                DebugHelper.WriteLine($"LinuxWindowService: Walked up window tree: focus={focus} (0x{focus:X}) -> top-level={topLevelWindow} (0x{topLevelWindow:X})");
-            }
-
-            return topLevelWindow;
         }
 
         /// <summary>
         /// Traverse up the window hierarchy to find the top-level window
         /// (the window whose parent is the root window)
         /// </summary>
-        private IntPtr GetTopLevelWindow(IntPtr window)
+        private IntPtr GetTopLevelWindowLocked(IntPtr window)
         {
-            if (_display == IntPtr.Zero || window == IntPtr.Zero)
+            if (!IsDisplayReady || NativeMethods.IsInvalidWindowHandle(window))
             {
-                return window;
+                return IntPtr.Zero;
             }
 
             // If the window is already the root window, return it
@@ -151,14 +177,18 @@ namespace XerahS.Platform.Linux
                 {
                     depth++;
 
-                    int result = NativeMethods.XQueryTree(
-                        _display,
-                        currentWindow,
-                        out IntPtr root,
-                        out IntPtr parent,
-                        out IntPtr children,
-                        out uint nchildren
-                    );
+                    (int result, IntPtr parent, IntPtr children) = NativeMethods.ExecuteWithX11ErrorGuard(_display, () =>
+                    {
+                        int r = NativeMethods.XQueryTree(
+                            _display,
+                            currentWindow,
+                            out IntPtr _,
+                            out IntPtr p,
+                            out IntPtr c,
+                            out uint _
+                        );
+                        return (r, p, c);
+                    }, out int errorCode);
 
                     // Free the children list if allocated
                     if (children != IntPtr.Zero)
@@ -173,15 +203,15 @@ namespace XerahS.Platform.Linux
                         }
                     }
 
-                    if (result == 0)
+                    if (result == 0 || errorCode != 0)
                     {
                         // XQueryTree failed
-                        DebugHelper.WriteLine($"LinuxWindowService: XQueryTree failed for window {currentWindow:X} at depth {depth}");
-                        break;
+                        DebugHelper.WriteLine($"LinuxWindowService: XQueryTree failed for window {currentWindow:X} at depth {depth} (result={result}, error={errorCode})");
+                        return depth == 1 ? IntPtr.Zero : currentWindow;
                     }
 
                     // If parent is root or zero, currentWindow is the top-level window
-                    if (parent == _rootWindow || parent == IntPtr.Zero)
+                    if (parent == _rootWindow || NativeMethods.IsInvalidWindowHandle(parent))
                     {
                         DebugHelper.WriteLine($"LinuxWindowService: GetTopLevelWindow: {window:X} -> {currentWindow:X} (depth={depth})");
                         return currentWindow;
@@ -191,68 +221,96 @@ namespace XerahS.Platform.Linux
                     currentWindow = parent;
                 }
 
-                if (depth >= maxDepth)
-                {
-                    DebugHelper.WriteLine($"LinuxWindowService: GetTopLevelWindow: Hit max depth ({maxDepth}), returning current window");
-                }
-
+                DebugHelper.WriteLine($"LinuxWindowService: GetTopLevelWindow: Hit max depth ({maxDepth}), returning current window");
                 DebugHelper.WriteLine($"LinuxWindowService: GetTopLevelWindow: {window:X} -> {currentWindow:X} (depth={depth})");
                 return currentWindow;
             }
             catch (Exception ex)
             {
-                DebugHelper.WriteLine($"LinuxWindowService: GetTopLevelWindow: Exception - {ex.Message}, returning original window");
-                return window;
+                DebugHelper.WriteLine($"LinuxWindowService: GetTopLevelWindow: Exception - {ex.Message}, returning IntPtr.Zero");
+                return IntPtr.Zero;
             }
         }
 
         public bool SetForegroundWindow(IntPtr handle)
         {
-            if (_display == IntPtr.Zero) return false;
-            NativeMethods.XSetInputFocus(_display, handle, 1 /* RevertToParent */, IntPtr.Zero /* CurrentTime */);
-            NativeMethods.XRaiseWindow(_display, handle);
-            return true;
+            lock (_x11Lock)
+            {
+                if (!IsDisplayReady || NativeMethods.IsInvalidWindowHandle(handle)) return false;
+
+                NativeMethods.ExecuteWithX11ErrorGuard(_display, () =>
+                {
+                    NativeMethods.XSetInputFocus(_display, handle, 1 /* RevertToParent */, IntPtr.Zero /* CurrentTime */);
+                    NativeMethods.XRaiseWindow(_display, handle);
+                    return true;
+                }, out int errorCode);
+
+                return errorCode == 0;
+            }
         }
 
         public string GetWindowText(IntPtr handle)
         {
-            if (_display == IntPtr.Zero) return string.Empty;
-
-            if (TryGetUtf8StringProperty(handle, "_NET_WM_VISIBLE_NAME", out string visibleName))
+            lock (_x11Lock)
             {
-                return visibleName;
-            }
+                if (!IsDisplayReady || NativeMethods.IsInvalidWindowHandle(handle)) return string.Empty;
 
-            if (TryGetUtf8StringProperty(handle, "_NET_WM_NAME", out string title))
-            {
-                return title;
-            }
-
-            if (NativeMethods.XFetchName(_display, handle, out IntPtr namePtr) != 0 && namePtr != IntPtr.Zero)
-            {
-                try
+                if (TryGetUtf8StringProperty(handle, "_NET_WM_VISIBLE_NAME", out string visibleName))
                 {
-                    return Marshal.PtrToStringAnsi(namePtr) ?? string.Empty;
+                    return visibleName;
                 }
-                finally
+
+                if (TryGetUtf8StringProperty(handle, "_NET_WM_NAME", out string title))
+                {
+                    return title;
+                }
+
+                (int fetchResult, IntPtr namePtr) = NativeMethods.ExecuteWithX11ErrorGuard(_display, () =>
+                {
+                    int r = NativeMethods.XFetchName(_display, handle, out IntPtr p);
+                    return (r, p);
+                }, out int errorCode);
+
+                if (errorCode == 0 && fetchResult != 0 && namePtr != IntPtr.Zero)
+                {
+                    try
+                    {
+                        return Marshal.PtrToStringAnsi(namePtr) ?? string.Empty;
+                    }
+                    finally
+                    {
+                        NativeMethods.XFree(namePtr);
+                    }
+                }
+                else if (namePtr != IntPtr.Zero)
                 {
                     NativeMethods.XFree(namePtr);
                 }
+                return string.Empty;
             }
-            return string.Empty;
         }
 
         public string GetWindowClassName(IntPtr handle)
         {
-            if (_display == IntPtr.Zero) return string.Empty;
-            if (NativeMethods.XGetClassHint(_display, handle, out XClassHint hint) != 0)
+            lock (_x11Lock)
             {
-                string resClass = Marshal.PtrToStringAnsi(hint.res_class) ?? string.Empty;
-                if (hint.res_class != IntPtr.Zero) NativeMethods.XFree(hint.res_class);
-                if (hint.res_name != IntPtr.Zero) NativeMethods.XFree(hint.res_name);
-                return resClass;
+                if (!IsDisplayReady || NativeMethods.IsInvalidWindowHandle(handle)) return string.Empty;
+
+                (int result, XClassHint hint) = NativeMethods.ExecuteWithX11ErrorGuard(_display, () =>
+                {
+                    int r = NativeMethods.XGetClassHint(_display, handle, out XClassHint h);
+                    return (r, h);
+                }, out int errorCode);
+
+                if (errorCode == 0 && result != 0)
+                {
+                    string resClass = Marshal.PtrToStringAnsi(hint.res_class) ?? string.Empty;
+                    if (hint.res_class != IntPtr.Zero) NativeMethods.XFree(hint.res_class);
+                    if (hint.res_name != IntPtr.Zero) NativeMethods.XFree(hint.res_name);
+                    return resClass;
+                }
+                return string.Empty;
             }
-            return string.Empty;
         }
 
         public Rectangle GetWindowBounds(IntPtr handle)
@@ -267,93 +325,118 @@ namespace XerahS.Platform.Linux
                 DebugHelper.WriteLine($"LinuxWindowService: GetWindowBounds called for handle {handle} (0x{handle:X})");
             }
 
-            if (_display == IntPtr.Zero)
+            lock (_x11Lock)
             {
+                if (!IsDisplayReady)
+                {
+                    if (logDiagnostics)
+                    {
+                        DebugHelper.WriteLine("LinuxWindowService: GetWindowBounds: Display is IntPtr.Zero");
+                    }
+
+                    return Rectangle.Empty;
+                }
+
+                if (NativeMethods.IsInvalidWindowHandle(handle))
+                {
+                    if (logDiagnostics)
+                    {
+                        DebugHelper.WriteLine($"LinuxWindowService: GetWindowBounds: Ignoring invalid window handle {handle} (0x{handle:X})");
+                    }
+
+                    return Rectangle.Empty;
+                }
+
+                (int result, XWindowAttributes attrs) = NativeMethods.ExecuteWithX11ErrorGuard(_display, () =>
+                {
+                    var a = new XWindowAttributes();
+                    int r = NativeMethods.XGetWindowAttributes(_display, handle, ref a);
+                    return (r, a);
+                }, out int attrError);
+
                 if (logDiagnostics)
                 {
-                    DebugHelper.WriteLine("LinuxWindowService: GetWindowBounds: Display is IntPtr.Zero");
+                    DebugHelper.WriteLine($"LinuxWindowService: XGetWindowAttributes returned: {result} (error={attrError})");
+                }
+
+                if (attrError == 0 && result != 0)
+                {
+                    if (logDiagnostics)
+                    {
+                        DebugHelper.WriteLine($"LinuxWindowService: XWindowAttributes (relative): x={attrs.x}, y={attrs.y}, width={attrs.width}, height={attrs.height}, map_state={attrs.map_state}, border_width={attrs.border_width}");
+                    }
+
+                    // Check if window is actually viewable
+                    if (logDiagnostics)
+                    {
+                        string mapStateStr = attrs.map_state switch
+                        {
+                            0 => "IsUnviewable",
+                            1 => "IsViewable",
+                            2 => "IsUnmapped",
+                            _ => $"Unknown({attrs.map_state})"
+                        };
+                        DebugHelper.WriteLine($"LinuxWindowService: Window map state: {mapStateStr}");
+                    }
+
+                    // Translate coordinates to root window (absolute screen coordinates)
+                    // The coordinates from XGetWindowAttributes are relative to the parent window
+                    (int translateResult, int absoluteX, int absoluteY) = NativeMethods.ExecuteWithX11ErrorGuard(_display, () =>
+                    {
+                        int t = NativeMethods.XTranslateCoordinates(
+                            _display,
+                            handle,           // source window
+                            _rootWindow,      // destination (root window)
+                            0, 0,             // source coordinates (0,0 of the window)
+                            out int ax,
+                            out int ay,
+                            out IntPtr _
+                        );
+                        return (t, ax, ay);
+                    }, out int translateError);
+
+                    if (logDiagnostics)
+                    {
+                        DebugHelper.WriteLine($"LinuxWindowService: XTranslateCoordinates returned: {translateResult} (error={translateError}), absolute: x={absoluteX}, y={absoluteY}");
+                    }
+
+                    if (translateError != 0 || translateResult == 0)
+                    {
+                        return Rectangle.Empty;
+                    }
+
+                    // Use the absolute coordinates instead of the relative ones
+                    var rect = new Rectangle(absoluteX, absoluteY, attrs.width, attrs.height);
+                    if (TryGetFrameExtents(handle, out var frameExtents))
+                    {
+                        rect = ApplyFrameExtents(rect, frameExtents.Left, frameExtents.Right, frameExtents.Top, frameExtents.Bottom);
+                    }
+
+                    if (logDiagnostics)
+                    {
+                        DebugHelper.WriteLine($"LinuxWindowService: GetWindowBounds returning: {rect}");
+                    }
+
+                    // Sanity check
+                    if (logDiagnostics && (attrs.width <= 0 || attrs.height <= 0))
+                    {
+                        DebugHelper.WriteLine("LinuxWindowService: WARNING: Window has invalid dimensions!");
+                    }
+                    if (logDiagnostics && (absoluteX < -10000 || absoluteY < -10000 || absoluteX > 10000 || absoluteY > 10000))
+                    {
+                        DebugHelper.WriteLine("LinuxWindowService: WARNING: Window coordinates seem out of reasonable range!");
+                    }
+
+                    return rect;
+                }
+
+                if (logDiagnostics)
+                {
+                    DebugHelper.WriteLine("LinuxWindowService: XGetWindowAttributes failed, returning Rectangle.Empty");
                 }
 
                 return Rectangle.Empty;
             }
-
-            var attrs = new XWindowAttributes();
-            int result = NativeMethods.XGetWindowAttributes(_display, handle, ref attrs);
-            if (logDiagnostics)
-            {
-                DebugHelper.WriteLine($"LinuxWindowService: XGetWindowAttributes returned: {result}");
-            }
-
-            if (result != 0)
-            {
-                if (logDiagnostics)
-                {
-                    DebugHelper.WriteLine($"LinuxWindowService: XWindowAttributes (relative): x={attrs.x}, y={attrs.y}, width={attrs.width}, height={attrs.height}, map_state={attrs.map_state}, border_width={attrs.border_width}");
-                }
-
-                // Check if window is actually viewable
-                if (logDiagnostics)
-                {
-                    string mapStateStr = attrs.map_state switch
-                    {
-                        0 => "IsUnviewable",
-                        1 => "IsViewable",
-                        2 => "IsUnmapped",
-                        _ => $"Unknown({attrs.map_state})"
-                    };
-                    DebugHelper.WriteLine($"LinuxWindowService: Window map state: {mapStateStr}");
-                }
-
-                // Translate coordinates to root window (absolute screen coordinates)
-                // The coordinates from XGetWindowAttributes are relative to the parent window
-                int absoluteX, absoluteY;
-                IntPtr child;
-                int translateResult = NativeMethods.XTranslateCoordinates(
-                    _display,
-                    handle,           // source window
-                    _rootWindow,      // destination (root window)
-                    0, 0,             // source coordinates (0,0 of the window)
-                    out absoluteX,
-                    out absoluteY,
-                    out child
-                );
-
-                if (logDiagnostics)
-                {
-                    DebugHelper.WriteLine($"LinuxWindowService: XTranslateCoordinates returned: {translateResult}, absolute: x={absoluteX}, y={absoluteY}");
-                }
-
-                // Use the absolute coordinates instead of the relative ones
-                var rect = new Rectangle(absoluteX, absoluteY, attrs.width, attrs.height);
-                if (TryGetFrameExtents(handle, out var frameExtents))
-                {
-                    rect = ApplyFrameExtents(rect, frameExtents.Left, frameExtents.Right, frameExtents.Top, frameExtents.Bottom);
-                }
-
-                if (logDiagnostics)
-                {
-                    DebugHelper.WriteLine($"LinuxWindowService: GetWindowBounds returning: {rect}");
-                }
-
-                // Sanity check
-                if (logDiagnostics && (attrs.width <= 0 || attrs.height <= 0))
-                {
-                    DebugHelper.WriteLine("LinuxWindowService: WARNING: Window has invalid dimensions!");
-                }
-                if (logDiagnostics && (absoluteX < -10000 || absoluteY < -10000 || absoluteX > 10000 || absoluteY > 10000))
-                {
-                    DebugHelper.WriteLine("LinuxWindowService: WARNING: Window coordinates seem out of reasonable range!");
-                }
-
-                return rect;
-            }
-
-            if (logDiagnostics)
-            {
-                DebugHelper.WriteLine("LinuxWindowService: XGetWindowAttributes failed, returning Rectangle.Empty");
-            }
-
-            return Rectangle.Empty;
         }
 
         public Rectangle GetWindowClientBounds(IntPtr handle)
@@ -363,13 +446,7 @@ namespace XerahS.Platform.Linux
 
         public bool IsWindowVisible(IntPtr handle)
         {
-            if (_display == IntPtr.Zero) return false;
-            var attrs = new XWindowAttributes();
-            if (NativeMethods.XGetWindowAttributes(_display, handle, ref attrs) != 0)
-            {
-                return attrs.map_state == NativeMethods.IsViewable;
-            }
-            return false;
+            return TryGetWindowAttributes(handle, out var attrs) && attrs.map_state == NativeMethods.IsViewable;
         }
 
         public bool IsWindowMaximized(IntPtr handle)
@@ -386,45 +463,64 @@ namespace XerahS.Platform.Linux
 
         public bool ShowWindow(IntPtr handle, int cmdShow)
         {
-            if (_display == IntPtr.Zero) return false;
+            lock (_x11Lock)
+            {
+                if (!IsDisplayReady || NativeMethods.IsInvalidWindowHandle(handle)) return false;
 
-            if (cmdShow == 0)
-                NativeMethods.XIconifyWindow(_display, handle, 0);
-            else
-                NativeMethods.XRaiseWindow(_display, handle);
+                NativeMethods.ExecuteWithX11ErrorGuard(_display, () =>
+                {
+                    if (cmdShow == 0)
+                        NativeMethods.XIconifyWindow(_display, handle, 0);
+                    else
+                        NativeMethods.XRaiseWindow(_display, handle);
+                    return true;
+                }, out int errorCode);
 
-            return true;
+                return errorCode == 0;
+            }
         }
 
         public bool SetWindowPos(IntPtr handle, IntPtr handleInsertAfter, int x, int y, int width, int height, uint flags)
         {
-            if (_display == IntPtr.Zero) return false;
-            NativeMethods.XMoveResizeWindow(_display, handle, x, y, width, height);
-            return true;
+            lock (_x11Lock)
+            {
+                if (!IsDisplayReady || NativeMethods.IsInvalidWindowHandle(handle)) return false;
+
+                NativeMethods.ExecuteWithX11ErrorGuard(_display, () =>
+                {
+                    NativeMethods.XMoveResizeWindow(_display, handle, x, y, width, height);
+                    return true;
+                }, out int errorCode);
+
+                return errorCode == 0;
+            }
         }
 
         public WindowInfo[] GetAllWindows()
         {
-            if (_display == IntPtr.Zero) return Array.Empty<WindowInfo>();
-
-            var list = new List<WindowInfo>();
-            var seenHandles = new HashSet<IntPtr>();
-
-            foreach (var handle in EnumerateCandidateWindows())
+            lock (_x11Lock)
             {
-                if (handle == IntPtr.Zero || handle == _rootWindow || !seenHandles.Add(handle))
-                    continue;
+                if (!IsDisplayReady) return Array.Empty<WindowInfo>();
 
-                if (!TryCreateWindowInfo(handle, out var windowInfo))
-                    continue;
+                var list = new List<WindowInfo>();
+                var seenHandles = new HashSet<IntPtr>();
 
-                list.Add(windowInfo);
+                foreach (var handle in EnumerateCandidateWindowsLocked())
+                {
+                    if (NativeMethods.IsInvalidWindowHandle(handle) || handle == _rootWindow || !seenHandles.Add(handle))
+                        continue;
+
+                    if (!TryCreateWindowInfo(handle, out var windowInfo))
+                        continue;
+
+                    list.Add(windowInfo);
+                }
+
+                return list.ToArray();
             }
-
-            return list.ToArray();
         }
 
-        private IEnumerable<IntPtr> EnumerateCandidateWindows()
+        private IEnumerable<IntPtr> EnumerateCandidateWindowsLocked()
         {
             if (TryGetManagedWindowHandles(out var managedWindows))
             {
@@ -436,7 +532,7 @@ namespace XerahS.Platform.Linux
                 yield break;
             }
 
-            if (!TryGetRootChildWindows(out var rootChildren))
+            if (!TryGetRootChildWindowsLocked(out var rootChildren))
                 yield break;
 
             for (int i = rootChildren.Length - 1; i >= 0; i--)
@@ -450,18 +546,21 @@ namespace XerahS.Platform.Linux
             return TryGetWindowHandleArrayProperty(_rootWindow, "_NET_CLIENT_LIST_STACKING", out handles) && handles.Length > 0;
         }
 
-        private bool TryGetRootChildWindows(out IntPtr[] handles)
+        private bool TryGetRootChildWindowsLocked(out IntPtr[] handles)
         {
             handles = Array.Empty<IntPtr>();
-
-            if (NativeMethods.XQueryTree(_display, _rootWindow, out _, out _, out IntPtr children, out uint childCount) == 0)
-            {
+            if (!IsDisplayReady || NativeMethods.IsInvalidWindowHandle(_rootWindow))
                 return false;
-            }
+
+            (int result, IntPtr children, uint childCount) = NativeMethods.ExecuteWithX11ErrorGuard(_display, () =>
+            {
+                int r = NativeMethods.XQueryTree(_display, _rootWindow, out _, out _, out IntPtr ch, out uint cnt);
+                return (r, ch, cnt);
+            }, out int errorCode);
 
             try
             {
-                if (childCount == 0 || children == IntPtr.Zero)
+                if (errorCode != 0 || result == 0 || childCount == 0 || children == IntPtr.Zero)
                 {
                     return false;
                 }
@@ -518,7 +617,24 @@ namespace XerahS.Platform.Linux
         private bool TryGetWindowAttributes(IntPtr handle, out XWindowAttributes attributes)
         {
             attributes = new XWindowAttributes();
-            return _display != IntPtr.Zero && NativeMethods.XGetWindowAttributes(_display, handle, ref attributes) != 0;
+            lock (_x11Lock)
+            {
+                if (!IsDisplayReady || NativeMethods.IsInvalidWindowHandle(handle))
+                    return false;
+
+                (int result, XWindowAttributes attrs) = NativeMethods.ExecuteWithX11ErrorGuard(_display, () =>
+                {
+                    var a = new XWindowAttributes();
+                    int r = NativeMethods.XGetWindowAttributes(_display, handle, ref a);
+                    return (r, a);
+                }, out int errorCode);
+
+                if (errorCode != 0 || result == 0)
+                    return false;
+
+                attributes = attrs;
+                return true;
+            }
         }
 
         private bool HasAnyPropertyAtom(IntPtr handle, string propertyName, IEnumerable<string> atomNames)
@@ -612,59 +728,77 @@ namespace XerahS.Platform.Linux
         {
             property = default;
 
-            if (_display == IntPtr.Zero)
-                return false;
-
-            IntPtr propertyAtom = GetAtom(propertyName);
-            if (propertyAtom == IntPtr.Zero)
-                return false;
-
-            int result = NativeMethods.XGetWindowProperty(
-                _display,
-                handle,
-                propertyAtom,
-                0,
-                MaxPropertyLongLength,
-                false,
-                IntPtr.Zero,
-                out IntPtr actualType,
-                out int actualFormat,
-                out IntPtr itemCount,
-                out _,
-                out IntPtr data);
-
-            if (result != 0 || actualType == IntPtr.Zero || data == IntPtr.Zero)
+            lock (_x11Lock)
             {
-                if (data != IntPtr.Zero)
+                if (!IsDisplayReady || NativeMethods.IsInvalidWindowHandle(handle))
+                    return false;
+
+                IntPtr propertyAtom = GetAtom(propertyName);
+                if (propertyAtom == IntPtr.Zero)
+                    return false;
+
+                (int result, IntPtr actualType, int actualFormat, IntPtr itemCount, IntPtr data) =
+                    NativeMethods.ExecuteWithX11ErrorGuard(_display, () =>
+                    {
+                        int r = NativeMethods.XGetWindowProperty(
+                            _display,
+                            handle,
+                            propertyAtom,
+                            0,
+                            MaxPropertyLongLength,
+                            false,
+                            IntPtr.Zero,
+                            out IntPtr type,
+                            out int format,
+                            out IntPtr count,
+                            out _,
+                            out IntPtr propData);
+                        return (r, type, format, count, propData);
+                    }, out int errorCode);
+
+                if (errorCode != 0 || result != 0 || actualType == IntPtr.Zero || data == IntPtr.Zero)
                 {
-                    NativeMethods.XFree(data);
+                    if (data != IntPtr.Zero)
+                    {
+                        NativeMethods.XFree(data);
+                    }
+
+                    return false;
                 }
 
-                return false;
-            }
+                long count = itemCount.ToInt64();
+                if (count <= 0)
+                {
+                    NativeMethods.XFree(data);
+                    return false;
+                }
 
-            long count = itemCount.ToInt64();
-            if (count <= 0)
-            {
-                NativeMethods.XFree(data);
-                return false;
+                property = new XProperty(data, count, actualFormat);
+                return true;
             }
-
-            property = new XProperty(data, count, actualFormat);
-            return true;
         }
 
         private IntPtr GetAtom(string atomName)
         {
-            if (_display == IntPtr.Zero)
-                return IntPtr.Zero;
+            lock (_x11Lock)
+            {
+                if (!IsDisplayReady)
+                    return IntPtr.Zero;
 
-            if (_atomCache.TryGetValue(atomName, out var atom))
+                if (_atomCache.TryGetValue(atomName, out var atom))
+                    return atom;
+
+                atom = NativeMethods.ExecuteWithX11ErrorGuard(
+                    _display,
+                    () => NativeMethods.XInternAtom(_display, atomName, only_if_exists: false),
+                    out int errorCode);
+
+                if (errorCode != 0)
+                    return IntPtr.Zero;
+
+                _atomCache[atomName] = atom;
                 return atom;
-
-            atom = NativeMethods.XInternAtom(_display, atomName, only_if_exists: false);
-            _atomCache[atomName] = atom;
-            return atom;
+            }
         }
 
         private static IntPtr[] ReadIntPtrArray(IntPtr data, long itemCount)

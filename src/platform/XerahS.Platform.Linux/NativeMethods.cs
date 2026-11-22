@@ -31,6 +31,9 @@ namespace XerahS.Platform.Linux
         private const string libX11 = "libX11.so.6";
 
         [DllImport(libX11)]
+        internal static extern int XInitThreads();
+
+        [DllImport(libX11)]
         internal static extern IntPtr XOpenDisplay(string? display);
 
         [DllImport(libX11)]
@@ -164,6 +167,66 @@ namespace XerahS.Platform.Linux
 
         // X error codes
         internal const int BadAccess = 10;
+
+        // X11 focus sentinel when no X11 client window holds input focus
+        internal static readonly IntPtr PointerRoot = new(1);
+
+        private static int _x11ThreadsInitialized;
+        internal static readonly object X11ErrorLock = new();
+        private static int _scopedLastErrorCode;
+        private static readonly XErrorHandler s_nonFatalErrorHandler = HandleNonFatalXError;
+
+        internal static bool IsInvalidWindowHandle(IntPtr handle) => handle == IntPtr.Zero || handle == PointerRoot;
+
+        internal static void EnsureX11ThreadsInitialized()
+        {
+            if (!OperatingSystem.IsLinux())
+            {
+                return;
+            }
+
+            if (System.Threading.Interlocked.CompareExchange(ref _x11ThreadsInitialized, 1, 0) == 0)
+            {
+                _ = XInitThreads();
+            }
+        }
+
+        private static int HandleNonFatalXError(IntPtr display, ref XErrorEvent error)
+        {
+            _scopedLastErrorCode = error.error_code;
+            return 0;
+        }
+
+        internal static T ExecuteWithX11ErrorGuard<T>(IntPtr display, Func<T> action)
+        {
+            return ExecuteWithX11ErrorGuard(display, action, out _);
+        }
+
+        internal static T ExecuteWithX11ErrorGuard<T>(IntPtr display, Func<T> action, out int lastErrorCode)
+        {
+            lock (X11ErrorLock)
+            {
+                _scopedLastErrorCode = 0;
+                IntPtr previousHandler = XSetErrorHandler(s_nonFatalErrorHandler);
+                T result;
+                try
+                {
+                    result = action();
+                }
+                finally
+                {
+                    if (display != IntPtr.Zero)
+                    {
+                        _ = XSync(display, false);
+                    }
+
+                    _ = XSetErrorHandlerPtr(previousHandler);
+                }
+
+                lastErrorCode = _scopedLastErrorCode;
+                return result;
+            }
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -256,8 +319,8 @@ internal struct XImage
     {
         public int type;
         public IntPtr display;
-        public uint resourceid;
-        public uint serial;
+        public UIntPtr resourceid;
+        public UIntPtr serial;
         public byte error_code;
         public byte request_code;
         public byte minor_code;

@@ -54,6 +54,7 @@ internal static class X11ScreenCapture
     /// </summary>
     public static SKBitmap? CaptureFullScreen()
     {
+        NativeMethods.EnsureX11ThreadsInitialized();
         IntPtr display = NativeMethods.XOpenDisplay(null);
         if (display == IntPtr.Zero)
         {
@@ -72,10 +73,18 @@ internal static class X11ScreenCapture
                 return null;
             }
 
-            IntPtr imagePtr = NativeMethods.XGetImage(display, root, 0, 0, (uint)width, (uint)height, ulong.MaxValue, NativeMethods.ZPixmap);
-            if (imagePtr == IntPtr.Zero)
+            IntPtr imagePtr = NativeMethods.ExecuteWithX11ErrorGuard(
+                display,
+                () => NativeMethods.XGetImage(display, root, 0, 0, (uint)width, (uint)height, ulong.MaxValue, NativeMethods.ZPixmap),
+                out int x11Error);
+            if (imagePtr == IntPtr.Zero || x11Error != 0)
             {
-                DebugHelper.WriteLine("LinuxScreenCaptureService: XGetImage returned null.");
+                if (imagePtr != IntPtr.Zero)
+                {
+                    NativeMethods.XDestroyImage(imagePtr);
+                }
+
+                DebugHelper.WriteLine($"LinuxScreenCaptureService: XGetImage failed (ptr={imagePtr}, error={x11Error}).");
                 return null;
             }
 
