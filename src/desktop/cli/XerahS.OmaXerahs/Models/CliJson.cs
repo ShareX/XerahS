@@ -127,6 +127,7 @@ internal sealed class UploadSuccessResponse
     public bool Ok { get; init; } = true;
     public string Url { get; init; } = string.Empty;
     public string Filename { get; init; } = string.Empty;
+    public string? SourceFilename { get; init; }
     public long Size { get; init; }
     public string Type { get; init; } = "application/octet-stream";
     public string DataType { get; init; } = "image";

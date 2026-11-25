@@ -24,8 +24,10 @@
 #endregion License Information (GPL v3)
 
 using System.CommandLine;
+using System.Text;
 using Newtonsoft.Json;
 using XerahS.Common;
+using XerahS.Common.Utilities;
 using XerahS.Core;
 using XerahS.Core.Tasks;
 using XerahS.Core.Tasks.Processors;
@@ -40,6 +42,12 @@ internal static class UploadCommand
 {
     internal static Func<TaskInfo, CancellationToken, Task> ProcessUploadAsync { get; set; } =
         static (taskInfo, cancellationToken) => new UploadJobProcessor().ProcessAsync(taskInfo, cancellationToken);
+
+    /// <summary>Starts XerahS services. Swappable so tests can run <see cref="UploadToDestinationAsync"/> offline.</summary>
+    internal static Func<Task> EnsureBootstrapped { get; set; } = UploadHost.EnsureBootstrappedAsync;
+
+    /// <summary>The usable File destinations. Swappable for tests.</summary>
+    internal static Func<List<UploaderInstance>> GetFileDestinations { get; set; } = UploadHost.GetUsableFileInstances;
 
     internal static Func<string, ImageDestinationInspection> InspectImage { get; set; } =
         UploadHost.InspectImageDestination;
@@ -59,20 +67,31 @@ internal static class UploadCommand
         };
         var destinationOption = new Option<string?>("--destination")
         {
-            Description = "File destination: an instance id, a unique id prefix (6+ characters), its display name, or its provider id such as kovaforge. Accepts any file type and keeps the file's name."
+            Description = "File destination: an instance id, a unique id prefix (6+ characters), its display name, or its provider id such as kovaforge. Accepts any file type. The uploaded name is the file's name with the workflow's name pattern appended before the extension (page.html becomes page_<pattern>.html), so a re-upload gets a new URL. Use --keep-name to keep the exact name."
+        };
+        var keepNameOption = new Option<bool>("--keep-name")
+        {
+            Description = "With --destination: keep the exact source file name instead of appending the name pattern. Needed when a page must keep a stable name. Not valid without --destination."
         };
         command.Add(pathArgument);
         command.Add(jsonOption);
         command.Add(urlOnlyOption);
         command.Add(destinationOption);
+        command.Add(keepNameOption);
         command.SetAction(parseResult =>
         {
             JsonStdout.UrlOnly = parseResult.GetValue(urlOnlyOption);
             JsonStdout.Enabled = !JsonStdout.UrlOnly && parseResult.GetValue(jsonOption);
             string? destination = parseResult.GetValue(destinationOption);
+            bool keepName = parseResult.GetValue(keepNameOption);
+            if (destination == null && keepName)
+            {
+                return JsonStdout.WriteFailureAndExit(CliErrorCodes.Usage, "--keep-name only applies with --destination.");
+            }
+
             return (destination == null
                 ? UploadAsync(parseResult.GetValue(pathArgument))
-                : UploadToDestinationAsync(parseResult.GetValue(pathArgument), destination)).GetAwaiter().GetResult();
+                : UploadToDestinationAsync(parseResult.GetValue(pathArgument), destination, keepName)).GetAwaiter().GetResult();
         });
         return command;
     }
@@ -206,7 +225,100 @@ internal static class UploadCommand
         }
     }
 
-    internal static async Task<int> UploadToDestinationAsync(string? path, string destination)
+    /// <summary>Longest file name most file systems and object stores accept, in UTF-8 bytes.</summary>
+    internal const int MaxFileNameBytes = 255;
+
+    /// <summary>
+    /// Evaluates the task's NameFormatPattern (same machinery as the normal upload path: time zone, max length,
+    /// invalid file name characters removed by the name parser) without an extension. Falls back to 10 random
+    /// alphanumerics when the pattern is empty or evaluates to nothing.
+    /// </summary>
+    internal static string BuildNamePatternSuffix(TaskSettings settings)
+    {
+        string text = string.Empty;
+        if (!string.IsNullOrWhiteSpace(settings.UploadSettings.NameFormatPattern))
+        {
+            text = TaskHelpers.GetFileName(settings, string.Empty, new TaskMetadata()).Trim();
+        }
+
+        return text.Length > 0 ? text : RandomGenerator.GetRandomAlphanumericString(10);
+    }
+
+    private static readonly string[] TarCompressions = [".gz", ".bz2", ".xz", ".zst", ".lz", ".lzma", ".z"];
+
+    /// <summary>
+    /// The extension to keep when renaming: ".tar.&lt;x&gt;" (gz, bz2, xz, zst, lz, lzma, Z) as one extension when
+    /// the name ends that way (case-insensitive) and has a stem, otherwise whatever
+    /// <paramref name="fallback"/> (InstanceManager.GetExtensionToKeep, which knows file type overrides) returns.
+    /// </summary>
+    internal static string GetExtensionForRename(string path, Func<string?, string> fallback)
+    {
+        string name = Path.GetFileName(path);
+        foreach (string compression in TarCompressions)
+        {
+            string tail = ".tar" + compression;
+            if (name.Length > tail.Length && name.EndsWith(tail, StringComparison.OrdinalIgnoreCase))
+            {
+                return name[^tail.Length..];
+            }
+        }
+
+        return fallback(path);
+    }
+
+    /// <summary>
+    /// <c>stem + "_" + suffix + extension</c>. <paramref name="extension"/> includes its dot (".tar.gz") and is
+    /// ignored when it is the whole name (a dot-file such as ".env" is all stem). If the result would exceed 255
+    /// bytes the stem is shortened, never the suffix or extension.
+    /// </summary>
+    internal static string WithNamePattern(string fileName, string extension, string suffix)
+    {
+        string ext = extension ?? string.Empty;
+        string stem = fileName;
+        if (ext.Length > 0 && fileName.Length > ext.Length && fileName.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+        {
+            stem = fileName[..^ext.Length];
+        }
+        else
+        {
+            ext = string.Empty;
+        }
+
+        string tail = "_" + suffix + ext;
+        int tailBytes = Encoding.UTF8.GetByteCount(tail);
+        if (tailBytes > MaxFileNameBytes)
+        {
+            // Not even an empty stem fits: keep the extension, shorten the suffix.
+            int suffixBudget = MaxFileNameBytes - 1 - Encoding.UTF8.GetByteCount(ext);
+            if (suffixBudget < 0)
+            {
+                return TrimToBytes(ext, MaxFileNameBytes);
+            }
+
+            return "_" + TrimToBytes(suffix, suffixBudget) + ext;
+        }
+
+        int budget = MaxFileNameBytes - Encoding.UTF8.GetByteCount(tail);
+        return TrimToBytes(stem, budget) + tail;
+    }
+
+    private static string TrimToBytes(string text, int maxBytes)
+    {
+        while (text.Length > 0 && Encoding.UTF8.GetByteCount(text) > maxBytes)
+        {
+            int cut = text.Length - 1;
+            if (cut > 0 && char.IsLowSurrogate(text[cut]) && char.IsHighSurrogate(text[cut - 1]))
+            {
+                cut--;
+            }
+
+            text = text[..cut];
+        }
+
+        return text;
+    }
+
+    internal static async Task<int> UploadToDestinationAsync(string? path, string destination, bool keepName = false)
     {
         if (!TryValidateFilePath(path, out string canonicalPath, out string errorCode, out string errorMessage))
         {
@@ -215,8 +327,8 @@ internal static class UploadCommand
 
         try
         {
-            await UploadHost.EnsureBootstrappedAsync();
-            var usable = UploadHost.GetUsableFileInstances();
+            await EnsureBootstrapped();
+            var usable = GetFileDestinations();
             var matches = UploadHost.MatchDestination(usable, destination);
             if (matches.Count == 0)
             {
@@ -242,6 +354,17 @@ internal static class UploadCommand
                 KeepSourceFileName = true
             };
 
+            string sourceName = Path.GetFileName(canonicalPath);
+            string uploadName = sourceName;
+            if (!keepName)
+            {
+                // KeepSourceFileName stays true so the processor does not replace the name with the bare
+                // pattern; the name is set here, the same way ApplyNamingConvention sets it.
+                string extension = GetExtensionForRename(canonicalPath, InstanceManager.Instance.GetExtensionToKeep);
+                uploadName = WithNamePattern(sourceName, extension, BuildNamePatternSuffix(workflow.TaskSettings));
+                taskInfo.SetFileName(uploadName);
+            }
+
             using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
             try
             {
@@ -265,7 +388,8 @@ internal static class UploadCommand
                 SchemaVersion = 1,
                 Ok = true,
                 Url = url!,
-                Filename = Path.GetFileName(canonicalPath),
+                Filename = string.IsNullOrEmpty(taskInfo.FileName) ? uploadName : taskInfo.FileName,
+                SourceFilename = sourceName,
                 Size = new FileInfo(canonicalPath).Length,
                 Type = MimeTypes.GetMimeTypeFromFileName(canonicalPath),
                 DataType = "file",

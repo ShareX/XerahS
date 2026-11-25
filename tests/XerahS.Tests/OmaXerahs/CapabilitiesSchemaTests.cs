@@ -52,6 +52,7 @@ public class CapabilitiesSchemaTests
         Assert.That(capabilities, Does.Contain("doctor.image"));
         Assert.That(capabilities, Does.Contain("upload.image"));
         Assert.That(capabilities, Does.Contain("upload.destination"));
+        Assert.That(capabilities, Does.Contain("upload.destination.name-pattern"));
         Assert.That(capabilities, Does.Contain("workflow.list"));
         Assert.That(capabilities, Does.Contain("effects.import"));
         Assert.That(capabilities, Does.Contain("skill.install"));

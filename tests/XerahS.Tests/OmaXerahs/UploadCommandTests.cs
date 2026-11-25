@@ -24,7 +24,10 @@
 #endregion License Information (GPL v3)
 
 using NUnit.Framework;
+using System.Text.Json;
 using XerahS.Core;
+using XerahS.Core.Tasks;
+using XerahS.Uploaders;
 using XerahS.Uploaders.PluginSystem;
 using XerahS.OmaXerahs.Commands;
 using XerahS.OmaXerahs.Models;
@@ -33,6 +36,7 @@ using XerahS.OmaXerahs.Services;
 namespace XerahS.Tests.OmaXerahs;
 
 [TestFixture]
+[NonParallelizable]
 public class UploadCommandTests
 {
     [TestCase(UploaderCategory.Image)]
@@ -176,5 +180,202 @@ public class UploadCommandTests
         {
             File.Delete(tempFile);
         }
+    }
+
+    private const string Pattern = "20261125T0745_ab12cd34ef";
+
+    [TestCase("page.html", ".html", "page_" + Pattern + ".html")]
+    [TestCase("my.report.v2.md", ".md", "my.report.v2_" + Pattern + ".md")]
+    [TestCase("backup.tar.gz", ".tar.gz", "backup_" + Pattern + ".tar.gz")]
+    [TestCase("README", "", "README_" + Pattern)]
+    [TestCase(".env", ".env", ".env_" + Pattern)]
+    public void WithNamePattern_AppendsBeforeTheExtension(string name, string extension, string expected)
+    {
+        Assert.That(UploadCommand.WithNamePattern(name, extension, Pattern), Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void WithNamePattern_ShortensTheStemNotTheSuffix()
+    {
+        string name = new string('a', 300) + ".md";
+        string result = UploadCommand.WithNamePattern(name, ".md", Pattern);
+
+        Assert.That(System.Text.Encoding.UTF8.GetByteCount(result), Is.EqualTo(255));
+        Assert.That(result, Does.EndWith("_" + Pattern + ".md"));
+        Assert.That(result, Does.StartWith("aaaa"));
+    }
+
+    [Test]
+    public void BuildNamePatternSuffix_DefaultPatternHasTimestampAndRandomText()
+    {
+        var settings = new TaskSettings();
+        settings.UploadSettings.NameFormatPattern = "%y%mo%dT%h%mi_%ra{10}";
+        string first = UploadCommand.BuildNamePatternSuffix(settings);
+        string second = UploadCommand.BuildNamePatternSuffix(settings);
+
+        Assert.That(first, Does.Match(@"^\d{8}T\d{4}_[A-Za-z0-9]{10}$"));
+        Assert.That(second, Is.Not.EqualTo(first));
+    }
+
+    [Test]
+    public void BuildNamePatternSuffix_FixedTextPatternIsUsedExactly()
+    {
+        var settings = new TaskSettings();
+        settings.UploadSettings.NameFormatPattern = "v2";
+        Assert.That(UploadCommand.BuildNamePatternSuffix(settings), Is.EqualTo("v2"));
+    }
+
+    [TestCase("")]
+    [TestCase("   ")]
+    public void BuildNamePatternSuffix_EmptyPatternFallsBackToRandomText(string pattern)
+    {
+        var settings = new TaskSettings();
+        settings.UploadSettings.NameFormatPattern = pattern;
+        Assert.That(UploadCommand.BuildNamePatternSuffix(settings), Does.Match("^[A-Za-z0-9]{10}$"));
+    }
+
+    [Test]
+    public void KeepNameOption_ParsesPresentAndAbsent()
+    {
+        var command = UploadCommand.Create();
+
+        Assert.That(command.Parse(["--destination", "kovaforge", "--keep-name", "--", "a.md"]).Errors, Is.Empty);
+        Assert.That(command.Parse(["--destination", "kovaforge", "--", "a.md"]).Errors, Is.Empty);
+        var option = command.Options.Single(o => o.Name == "--keep-name");
+        Assert.That(command.Parse(["--keep-name", "--", "a.md"]).GetValue((System.CommandLine.Option<bool>)option), Is.True);
+        Assert.That(command.Parse(["--", "a.md"]).GetValue((System.CommandLine.Option<bool>)option), Is.False);
+    }
+
+    [TestCase("backup.tar.gz", ".tar.gz")]
+    [TestCase("a.b.tar.zst", ".tar.zst")]
+    [TestCase("A.TAR.XZ", ".TAR.XZ")]
+    [TestCase("notes.gz", ".gz-fallback")]
+    [TestCase(".tar.gz", ".gz-fallback")]
+    public void GetExtensionForRename_KeepsTarCompressionWhole(string name, string expected)
+    {
+        string result = UploadCommand.GetExtensionForRename("/tmp/" + name, p => Path.GetExtension(p) + "-fallback");
+        Assert.That(result, Is.EqualTo(expected));
+        if (!expected.EndsWith("-fallback"))
+        {
+            Assert.That(UploadCommand.WithNamePattern(name, result, "S"), Does.StartWith(name[..^result.Length] + "_S"));
+        }
+    }
+
+    [Test]
+    public void WithNamePattern_ExtensionAndSuffixOverBudgetNeverExceedLimit()
+    {
+        string suffix = new string('s', 300);
+        string result = UploadCommand.WithNamePattern("page.html", ".html", suffix);
+
+        Assert.That(System.Text.Encoding.UTF8.GetByteCount(result), Is.LessThanOrEqualTo(255));
+        Assert.That(result, Does.StartWith("_s"));
+        Assert.That(result, Does.EndWith(".html"));
+    }
+
+    private sealed class UploadRun
+    {
+        public string? ProcessedName;
+        public int ProcessCalls;
+        public string Stdout = "";
+        public int ExitCode;
+    }
+
+    private static UploadRun RunUpload(string fileName, string[] extraArgs, string? pattern = "v2")
+    {
+        string dir = Path.Combine(Path.GetTempPath(), "omaxerahs-up-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        string path = Path.Combine(dir, fileName);
+        File.WriteAllText(path, "# Report");
+
+        var oldProcess = UploadCommand.ProcessUploadAsync;
+        var oldBoot = UploadCommand.EnsureBootstrapped;
+        var oldDest = UploadCommand.GetFileDestinations;
+        var oldOut = Console.Out;
+        bool oldJson = JsonStdout.Enabled, oldUrl = JsonStdout.UrlOnly;
+        var run = new UploadRun();
+        var writer = new StringWriter();
+        try
+        {
+            UploadCommand.EnsureBootstrapped = () => Task.CompletedTask;
+            UploadCommand.GetFileDestinations = () =>
+                [new UploaderInstance { InstanceId = "abcdef123456", ProviderId = "kovaforge", DisplayName = "KovaForge Docs (File)", Category = UploaderCategory.File }];
+            UploadCommand.ProcessUploadAsync = (info, _) =>
+            {
+                run.ProcessCalls++;
+                run.ProcessedName = info.FileName;
+                info.Result = new UploadResult { IsSuccess = true, URL = "https://example.test/" + info.FileName };
+                return Task.CompletedTask;
+            };
+            Console.SetOut(writer);
+            var workflow = SettingsManager.GetFirstWorkflowOrDefault(WorkflowType.FileUpload);
+            string? oldPattern = workflow.TaskSettings.UploadSettings.NameFormatPattern;
+            workflow.TaskSettings.UploadSettings.NameFormatPattern = pattern ?? "";
+            try
+            {
+                run.ExitCode = UploadCommand.Create().Parse([.. extraArgs, "--json", "--", path]).Invoke();
+            }
+            finally
+            {
+                workflow.TaskSettings.UploadSettings.NameFormatPattern = oldPattern;
+            }
+        }
+        finally
+        {
+            Console.SetOut(oldOut);
+            UploadCommand.ProcessUploadAsync = oldProcess;
+            UploadCommand.EnsureBootstrapped = oldBoot;
+            UploadCommand.GetFileDestinations = oldDest;
+            JsonStdout.Enabled = oldJson;
+            JsonStdout.UrlOnly = oldUrl;
+            Assert.That(File.Exists(path), Is.True, "source file must stay in place");
+            Directory.Delete(dir, true);
+        }
+
+        run.Stdout = writer.ToString();
+        return run;
+    }
+
+    [Test]
+    public void UploadToDestination_DefaultAppendsNamePattern()
+    {
+        var run = RunUpload("page.html", ["--destination", "kovaforge"]);
+
+        Assert.That(run.ExitCode, Is.EqualTo(0), run.Stdout);
+        Assert.That(run.ProcessedName, Is.EqualTo("page_v2.html"));
+        using var json = JsonDocument.Parse(run.Stdout);
+        Assert.That(json.RootElement.GetProperty("filename").GetString(), Is.EqualTo("page_v2.html"));
+        Assert.That(json.RootElement.GetProperty("sourceFilename").GetString(), Is.EqualTo("page.html"));
+        Assert.That(json.RootElement.GetProperty("schemaVersion").GetInt32(), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void UploadToDestination_KeepNameKeepsTheExactName()
+    {
+        var run = RunUpload("page.html", ["--destination", "kovaforge", "--keep-name"]);
+
+        Assert.That(run.ExitCode, Is.EqualTo(0), run.Stdout);
+        Assert.That(run.ProcessedName, Is.EqualTo("page.html"));
+        using var json = JsonDocument.Parse(run.Stdout);
+        Assert.That(json.RootElement.GetProperty("filename").GetString(), Is.EqualTo("page.html"));
+        Assert.That(json.RootElement.GetProperty("sourceFilename").GetString(), Is.EqualTo("page.html"));
+    }
+
+    [Test]
+    public void UploadToDestination_EmptyPatternFallsBackToRandomSuffix()
+    {
+        var run = RunUpload("page.html", ["--destination", "kovaforge"], pattern: "");
+
+        Assert.That(run.ProcessedName, Does.Match(@"^page_[A-Za-z0-9]{10}\.html$"));
+    }
+
+    [Test]
+    public void KeepNameWithoutDestination_IsAUsageErrorAndUploadsNothing()
+    {
+        var run = RunUpload("a.png", ["--keep-name"]);
+
+        Assert.That(run.ExitCode, Is.EqualTo(1));
+        Assert.That(run.ProcessCalls, Is.EqualTo(0));
+        using var json = JsonDocument.Parse(run.Stdout);
+        Assert.That(json.RootElement.GetProperty("error").GetProperty("code").GetString(), Is.EqualTo(CliErrorCodes.Usage));
     }
 }

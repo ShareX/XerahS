@@ -10,6 +10,14 @@ The format follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
 
 ---
 
+## v0.36.0
+
+### Changes
+
+- **`omaxerahs upload --destination` appends the name pattern**: The upload used to keep the file's name exactly, so re-uploading a changed file with the same name overwrote the object and a CDN kept serving the old copy. The name is now the file's name plus the workflow's name pattern before the extension (`page.html` becomes `page_20261125T0745_ab12cd34ef.html`; multi-part extensions such as `.tar.gz` stay whole). Add `--keep-name` for the old behavior. The JSON result reports the uploaded name in `filename` and the original in `sourceFilename`, and `omaxerahs capabilities` lists `upload.destination.name-pattern`.
+
+---
+
 ## v0.35.1
 
 ### Fixes
