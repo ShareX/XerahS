@@ -30,28 +30,51 @@ internal static class DxgiOutputDuplicationHelper
 
     private static volatile bool _duplicateOutput1Failed;
 
+    /// <summary>DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 as a raw context handle.</summary>
+    private static nint PerMonitorAwareV2 => -4;
+
     public static IDXGIOutputDuplication Create(IDXGIOutput output, ID3D11Device device)
     {
-        if (DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(
-            RuntimeInformation.ProcessArchitecture,
-            HdrToneMapContext.IsHdrOutput(output),
-            _duplicateOutput1Failed))
+        // DuplicateOutput1 answers only on a DPI aware thread. On an unaware one it returns
+        // DXGI_ERROR_UNSUPPORTED for every format, including formats plain DuplicateOutput accepts,
+        // even on an HDR display; a repeated rejected request can also crash inside the driver.
+        // Captures run on thread-pool threads, which can carry their own context, so set it for the
+        // call and restore whatever the thread had afterwards.
+        nint previousContext = SetThreadDpiAwarenessContext(PerMonitorAwareV2);
+
+        try
         {
-            try
+            if (DxgiOutputDuplicationPolicy.ShouldUseDuplicateOutput1(
+                RuntimeInformation.ProcessArchitecture,
+                HdrToneMapContext.IsHdrOutput(output),
+                _duplicateOutput1Failed))
             {
-                using var output5 = output.QueryInterface<IDXGIOutput5>();
-                return output5.DuplicateOutput1(device, 0, PreferredFormats);
+                try
+                {
+                    using var output5 = output.QueryInterface<IDXGIOutput5>();
+                    return output5.DuplicateOutput1(device, 0, PreferredFormats);
+                }
+                catch (Exception ex)
+                {
+                    // A failure here tends to repeat, and a repeat can be an uncatchable AV. Stop trying.
+                    _duplicateOutput1Failed = true;
+                    DebugHelper.WriteLine(
+                        $"DxgiOutputDuplicationHelper: DuplicateOutput1 failed, using DuplicateOutput for the rest of this session. {ex.Message}");
+                }
             }
-            catch (Exception ex)
+
+            using var output1 = output.QueryInterface<IDXGIOutput1>();
+            return output1.DuplicateOutput(device);
+        }
+        finally
+        {
+            if (previousContext != 0)
             {
-                // A failure here tends to repeat, and a repeat can be an uncatchable AV. Stop trying.
-                _duplicateOutput1Failed = true;
-                DebugHelper.WriteLine(
-                    $"DxgiOutputDuplicationHelper: DuplicateOutput1 failed, using DuplicateOutput for the rest of this session. {ex.Message}");
+                SetThreadDpiAwarenessContext(previousContext);
             }
         }
-
-        using var output1 = output.QueryInterface<IDXGIOutput1>();
-        return output1.DuplicateOutput(device);
     }
+
+    [DllImport("user32.dll")]
+    private static extern nint SetThreadDpiAwarenessContext(nint dpiAwarenessContext);
 }
