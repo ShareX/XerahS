@@ -264,6 +264,10 @@ namespace XerahS.UI.Services
                     }
                 };
 
+                // Closing a focused editor can let the window manager map the Silent Run-hidden
+                // main window (empty, transparent); withdraw it again.
+                editorWindow.Closed += (_, _) => Helpers.SilentRunMainWindowGuard.ScheduleCheck("editor closed");
+
                 // Show the window
                 editorWindow.Show();
             });
