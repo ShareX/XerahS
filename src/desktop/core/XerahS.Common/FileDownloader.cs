@@ -129,16 +129,8 @@ namespace XerahS.Common
         }
 
         /// <summary>
-        /// Reads bytes from <paramref name="source"/> into <paramref name="destination"/> until either:
-        /// <list type="bullet">
-        ///   <item><paramref name="declaredFileSize"/> is set and the running total reaches it, or</item>
-        ///   <item>the source stream returns 0 bytes (end-of-stream for chunked / streaming
-        ///   transfer-encoding, or the server closed the connection before reaching the declared
-        ///   Content-Length), or</item>
-        ///   <item>the cancellation token is requested / <see cref="IsCanceled"/> flips.</item>
-        /// </list>
-        /// This is the inner loop extracted from <see cref="DoWork"/> so that the unknown-length
-        /// and declared-length paths share a single code path. Returns the total bytes copied.
+        /// Copies a response body. A declared length limits reads and rejects premature EOF;
+        /// an unknown-length body completes at the stream's normal end.
         /// </summary>
         internal async Task<long> CopyToFileAsync(
             Stream source,
@@ -146,57 +138,38 @@ namespace XerahS.Common
             long? declaredFileSize,
             CancellationToken cancellationToken)
         {
-            // When declaredFileSize is null (chunked / streaming transfer-encoding or an HTTP
-            // response without Content-Length) the loop exits on stream close (bytesRead == 0).
-            // When declaredFileSize is set, the loop stops once we have received that many bytes
-            // (early EOF already covered by the bytesRead <= 0 check).
-            int bufferLength = declaredFileSize.HasValue && declaredFileSize.Value > 0
-                ? (int)Math.Min(bufferSize, declaredFileSize.Value)
-                : bufferSize;
-            byte[] buffer = new byte[bufferLength];
+            if (declaredFileSize is < 0)
+                throw new InvalidDataException("Content-Length cannot be negative.");
 
+            byte[] buffer = new byte[bufferSize];
             Stopwatch timer = new Stopwatch();
             Stopwatch progressEventTimer = new Stopwatch();
             long speedTest = 0;
-
             long totalCopied = 0;
-            bool keepReading = !IsCanceled;
-            while (keepReading)
+
+            while (!IsCanceled && (!declaredFileSize.HasValue || totalCopied < declaredFileSize.Value))
             {
                 if (!timer.IsRunning)
-                {
                     timer.Start();
-                }
-
                 if (!progressEventTimer.IsRunning)
-                {
                     progressEventTimer.Start();
-                }
 
-                int bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+                int readLength = declaredFileSize.HasValue
+                    ? (int)Math.Min(buffer.Length, declaredFileSize.Value - totalCopied)
+                    : buffer.Length;
+                int bytesRead = await source.ReadAsync(buffer.AsMemory(0, readLength), cancellationToken);
 
                 if (bytesRead <= 0)
                 {
-                    // Stream closed: end-of-stream for chunked/streaming transfer,
-                    // or the server closed the connection before reaching the declared
-                    // Content-Length. Either way the file write loop ends.
+                    if (declaredFileSize.HasValue)
+                        throw new EndOfStreamException($"Download ended after {totalCopied} of {declaredFileSize.Value} bytes.");
                     break;
                 }
 
-                await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken);
-
+                await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
                 totalCopied += bytesRead;
                 DownloadedSize += bytesRead;
                 speedTest += bytesRead;
-
-                if (declaredFileSize.HasValue && totalCopied >= declaredFileSize.Value)
-                {
-                    keepReading = false;
-                }
-                else if (IsCanceled)
-                {
-                    keepReading = false;
-                }
 
                 if (timer.ElapsedMilliseconds > 500)
                 {
@@ -213,6 +186,50 @@ namespace XerahS.Common
             }
 
             return totalCopied;
+        }
+
+        /// <summary>Publish a download only after all expected bytes have arrived.</summary>
+        internal async Task SaveCompletedDownloadAsync(Stream source, long? declaredFileSize, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (IsCanceled)
+                throw new OperationCanceledException("Download canceled.");
+
+            string destinationPath = Path.GetFullPath(DownloadLocation);
+            string temporaryPath = Path.Combine(Path.GetDirectoryName(destinationPath)!,
+                $".{Path.GetFileName(destinationPath)}.{Guid.NewGuid():N}.partial");
+
+            try
+            {
+                await using (var file = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write,
+                    FileShare.None, bufferSize, useAsync: true))
+                {
+                    await CopyToFileAsync(source, file, declaredFileSize, cancellationToken);
+                    await file.FlushAsync(cancellationToken);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                if (IsCanceled)
+                    throw new OperationCanceledException("Download canceled.");
+
+                // Staging in the destination directory allows an atomic rename on supported file systems.
+                File.Move(temporaryPath, destinationPath, overwrite: true);
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(temporaryPath);
+                }
+                catch (IOException ex)
+                {
+                    DebugHelper.WriteException(ex, "Could not remove incomplete download.");
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    DebugHelper.WriteException(ex, "Could not remove incomplete download.");
+                }
+            }
         }
 
         private async Task<bool> DoWork(CancellationToken cancellationToken)
@@ -249,9 +266,8 @@ namespace XerahS.Common
                         FileSizeReceived?.Invoke();
 
                         using (Stream responseStream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken))
-                        using (FileStream fileStream = new FileStream(DownloadLocation, FileMode.Create, FileAccess.Write, FileShare.Read))
                         {
-                            await CopyToFileAsync(responseStream, fileStream, declaredFileSize, cancellationToken);
+                            await SaveCompletedDownloadAsync(responseStream, declaredFileSize, cancellationToken);
                             ProgressChanged?.Invoke();
                         }
 
@@ -278,20 +294,8 @@ namespace XerahS.Common
             }
             finally
             {
-                if (IsCanceled)
-                {
-                    try
-                    {
-                        if (File.Exists(DownloadLocation))
-                        {
-                            File.Delete(DownloadLocation);
-                        }
-                    }
-                    catch
-                    {
-                    }
-                }
-
+                // An interrupted attempt only cleans up its staging file; a prior completed
+                // download at DownloadLocation must remain untouched.
                 IsDownloading = false;
             }
 
