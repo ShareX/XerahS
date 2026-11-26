@@ -158,6 +158,43 @@ public class WaylandRawFrameIntegrationTests
     }
 
     [Test]
+    public async Task BridgeFailure_WhenFFmpegRejectsArgs_ReportsFFmpegInsteadOfGStreamer()
+    {
+        RequireLinux();
+        await RunToolAsync("ffmpeg", "-version");
+        await RunToolAsync("gst-launch-1.0", "--version");
+        string path = Path.Combine(Path.GetTempPath(), $"xerahs-bad-ffmpeg-{Guid.NewGuid():N}.mp4");
+        using var service = new WaylandPortalRecordingService();
+        var errors = new List<Exception>();
+        service.ErrorOccurred += (_, args) => errors.Add(args.Error);
+        try
+        {
+            await service.StartFFmpegEncodingBridge(
+                FFmpegEncodingBridge.BuildCaptureArgs("videotestsrc is-live=true", 160, 120),
+                "ffmpeg",
+                $"-hide_banner -loglevel error -y -invalid_xerahs_option 1 -f rawvideo -pix_fmt yuv420p -video_size 160x120 -framerate 30 -i pipe:0 \"{path}\"",
+                path,
+                160,
+                120,
+                installPackagesHint: "gst-plugins-good gst-plugins-ugly")
+                .WaitAsync(TimeSpan.FromSeconds(15));
+            await service.StopRecordingAsync();
+
+            Assert.That(errors, Has.Count.EqualTo(1));
+            Assert.Multiple(() =>
+            {
+                Assert.That(errors[0].Message, Does.StartWith("FFmpeg encoding failed"));
+                Assert.That(errors[0].Message, Does.Not.Contain("GStreamer capture failed"));
+                Assert.That(errors[0].Message, Does.Contain("gst-plugins-good gst-plugins-ugly"));
+            });
+        }
+        finally
+        {
+            if (File.Exists(path)) File.Delete(path);
+        }
+    }
+
+    [Test]
     public async Task FragmentedGStreamerMp4_RemainsDecodableAfterForcedTermination()
     {
         RequireLinux();

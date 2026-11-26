@@ -277,7 +277,8 @@ public class FFmpegRecordingService : IRecordingService
             if (!string.IsNullOrWhiteSpace(settings.SystemAudioDeviceId) &&
                 devices?.GetDefaultSystemAudioDevice()?.Id != settings.SystemAudioDeviceId)
                 throw new NotSupportedException("FFmpeg's Stereo Mix fallback cannot select a WASAPI output endpoint. Use the default output or native recording.");
-            args.Add("-thread_queue_size 512 -f dshow -i audio=\"Stereo Mix\"");
+            // Omit -thread_queue_size before -i: FFmpeg 9+ made it output-only and rejects it as an input option.
+            args.Add("-f dshow -i audio=\"Stereo Mix\"");
         }
         if (settings.CaptureMicrophone)
         {
@@ -292,7 +293,7 @@ public class FFmpegRecordingService : IRecordingService
             name ??= "@device_cm_{33D9A762-90C8-11D0-BD43-00A0C911CE86}\\wave_{00000000-0000-0000-0000-000000000000}";
             // Names are passed inside a quoted ProcessStartInfo argument, not through a shell.
             if (name.Contains('"')) throw new ArgumentException("FFmpeg cannot use this microphone name. Select native recording.");
-            args.Add($"-thread_queue_size 512 -f dshow -i audio=\"{name}\"");
+            args.Add($"-f dshow -i audio=\"{name}\"");
         }
         if (settings.CaptureSystemAudio && settings.CaptureMicrophone)
         {

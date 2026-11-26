@@ -102,6 +102,7 @@ namespace XerahS.Core.Tasks
 
         private CancellationTokenSource _cancellationTokenSource;
         private bool _hasImageOutput;
+        private bool _failureToastShown;
         private bool _disposeRequested;
         private bool _disposed;
         private readonly Lock _lifetimeLock = new();
@@ -188,32 +189,35 @@ namespace XerahS.Core.Tasks
                 Error = ex;
                 DebugHelper.WriteException(ex, "Task failed");
 
-                // Show error toast to user for any task failure
-                try
+                // Show error toast to user for any task failure unless a specialized failure toast was already shown
+                if (!_failureToastShown)
                 {
-                    var errorMessage = ex.InnerException?.Message ?? ex.Message;
-                    if (errorMessage.Length > 150)
+                    try
                     {
-                        // Truncate at word boundary to avoid cutting mid-word
-                        int cutoff = errorMessage.LastIndexOf(' ', 147);
-                        if (cutoff <= 0) cutoff = 147; // Fallback if no space found
-                        errorMessage = errorMessage.Substring(0, cutoff) + "...";
-                    }
+                        var errorMessage = ex.InnerException?.Message ?? ex.Message;
+                        if (errorMessage.Length > 150)
+                        {
+                            // Truncate at word boundary to avoid cutting mid-word
+                            int cutoff = errorMessage.LastIndexOf(' ', 147);
+                            if (cutoff <= 0) cutoff = 147; // Fallback if no space found
+                            errorMessage = errorMessage.Substring(0, cutoff) + "...";
+                        }
 
-                    PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
+                        PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
+                        {
+                            Title = $"{Info.TaskSettings.Job} Failed",
+                            Text = errorMessage,
+                            ErrorDetails = ex.ToString(),
+                            Duration = 5f,
+                            Size = new SizeI(400, 120),
+                            AutoHide = true,
+                            LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
+                        });
+                    }
+                    catch
                     {
-                        Title = $"{Info.TaskSettings.Job} Failed",
-                        Text = errorMessage,
-                        ErrorDetails = ex.ToString(),
-                        Duration = 5f,
-                        Size = new SizeI(400, 120),
-                        AutoHide = true,
-                        LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
-                    });
-                }
-                catch
-                {
-                    // Ignore toast errors
+                        // Ignore toast errors
+                    }
                 }
             }
             finally

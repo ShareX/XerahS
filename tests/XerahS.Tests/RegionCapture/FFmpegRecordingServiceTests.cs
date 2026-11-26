@@ -83,6 +83,7 @@ public sealed class FFmpegRecordingServiceTests
             Assert.That(args, Does.Contain("Stereo Mix"));
             Assert.That(args, Does.Contain("USB Microphone"));
             Assert.That(args, Does.Not.Contain("endpoint-mic"));
+            Assert.That(args, Does.Not.Contain("-thread_queue_size"), "FFmpeg 9+ rejects -thread_queue_size on inputs.");
             Assert.That(args, Does.Contain("amix=inputs=2"));
             Assert.That(args, Does.Contain("-map \"[mixed]\""));
         });

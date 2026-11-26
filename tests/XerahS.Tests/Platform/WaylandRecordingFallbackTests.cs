@@ -158,6 +158,7 @@ public class WaylandRecordingFallbackTests
             Assert.That(args, Does.Contain("-use_wallclock_as_timestamps 1"));
             Assert.That(args, Does.Contain("-f rawvideo -pix_fmt yuv420p -video_size 1920x1080 -framerate 60 -i pipe:0"));
             Assert.That(args, Does.Contain("-f pulse -i \"alsa_output.monitor\""));
+            Assert.That(args, Does.Not.Contain("-thread_queue_size"), "FFmpeg 9+ rejects -thread_queue_size on inputs.");
             Assert.That(args, Does.Contain("-map 1:a:0 -c:a aac"));
             Assert.That(args, Does.Contain("-c:v libx264"));
             Assert.That(args, Does.Contain("-fps_mode cfr -r 60"));
@@ -166,7 +167,64 @@ public class WaylandRecordingFallbackTests
         });
 
         string silent = FFmpegEncodingBridge.BuildEncodeArgs(1920, 1080, 30, plan, null, "/tmp/out.mp4");
-        Assert.That(silent, Does.Not.Contain("pulse").And.Not.Contain("-c:a"));
+        Assert.That(silent, Does.Not.Contain("pulse").And.Not.Contain("-c:a").And.Not.Contain("-thread_queue_size"));
+    }
+
+    [Test]
+    public void BridgeFailure_WhenEncoderDiesAndKillsGStreamer_AttributesToFFmpegWithGuidance()
+    {
+        string? message = FFmpegEncodingBridge.BuildBridgeFailureMessage(
+            stopRequested: false,
+            encoderDied: true,
+            gstExitCode: 137,
+            gstOutput: string.Empty,
+            ffmpegExitCode: 234,
+            ffmpegOutput: "Option thread_queue_size cannot be applied to input url pipe:0.\nError opening input files: Invalid argument",
+            fileWritten: false,
+            installPackagesHint: "gst-plugins-good gst-plugins-ugly");
+
+        Assert.That(message, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(message, Does.StartWith("FFmpeg encoding failed (exit code 234):"));
+            Assert.That(message, Does.Not.Contain("GStreamer PipeWire capture failed"));
+            Assert.That(message, Does.Contain("thread_queue_size"));
+            Assert.That(message, Does.Contain("Recording settings"));
+            Assert.That(message, Does.Contain("gst-plugins-good gst-plugins-ugly"));
+            Assert.That(message, Does.Contain("XerahS log"));
+        });
+    }
+
+    [Test]
+    public void BridgeFailure_WhenGStreamerFails_AttributesToGStreamerWithPipeWireGuidance()
+    {
+        string? message = FFmpegEncodingBridge.BuildBridgeFailureMessage(
+            stopRequested: false,
+            encoderDied: false,
+            gstExitCode: 1,
+            gstOutput: "ERROR: from element /GstPipeline:pipeline0/GstPipeWireSrc:pipewiresrc0: stream error",
+            ffmpegExitCode: 0,
+            ffmpegOutput: string.Empty,
+            fileWritten: false);
+
+        Assert.That(message, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(message, Does.StartWith("GStreamer PipeWire capture failed (exit code 1):"));
+            Assert.That(message, Does.Contain("PipeWire"));
+            Assert.That(message, Does.Contain("xdg-desktop-portal"));
+        });
+    }
+
+    [Test]
+    public void BridgeFailure_ReturnsNullOnSuccessAndExplainsMissingFile()
+    {
+        Assert.That(
+            FFmpegEncodingBridge.BuildBridgeFailureMessage(true, false, 0, string.Empty, 0, string.Empty, fileWritten: true),
+            Is.Null);
+
+        string? missing = FFmpegEncodingBridge.BuildBridgeFailureMessage(true, false, 0, string.Empty, 0, string.Empty, fileWritten: false);
+        Assert.That(missing, Does.Contain("without producing a video file"));
     }
 
     [TestCase("arch", null, LinuxPackageFamily.Arch)]

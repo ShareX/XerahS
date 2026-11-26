@@ -303,6 +303,46 @@ public sealed class ScreenRecordingManagerLifecycleTests
         Assert.That(File.Exists(partial), Is.True);
     }
 
+    [Test]
+    public async Task FatalFailure_WithoutPartialOutput_DoesNotClaimPartialOutputKept()
+    {
+        await _manager.StartRecordingAsync(Options());
+        File.Delete(Path.Combine(_folder, "capture.part000.mp4"));
+        _native.Fail();
+
+        InvalidOperationException? ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _manager.StopRecordingAsync());
+        Assert.That(ex, Is.Not.Null);
+        Assert.That(ex!.Message, Is.EqualTo("Recording failed."));
+        Assert.That(ex.InnerException?.Message, Is.EqualTo("Encoder failed"));
+    }
+
+    [Test]
+    public async Task UserCancelledPicker_DoesNotFallBackToFFmpeg()
+    {
+        _native.StartError = new OperationCanceledException("Screen recording was cancelled in the system screen/window picker.");
+        await Assert.ThrowsAsync<OperationCanceledException>(() => _manager.StartRecordingAsync(Options()));
+        Assert.That(_fallback.Starts, Is.Zero);
+        Assert.That(_manager.IsRecording, Is.False);
+    }
+
+    [Test]
+    public void FormatRecordingErrorMessage_UnwrapsInnerCauseAndIncludesPartialNoteOnlyWhenPresent()
+    {
+        var inner = new Exception("FFmpeg encoding failed (exit code 234): invalid option.");
+        string withoutPartial = XerahS.Core.Tasks.WorkerTask.FormatRecordingErrorMessage(
+            new InvalidOperationException("Recording failed.", inner));
+        string withPartial = XerahS.Core.Tasks.WorkerTask.FormatRecordingErrorMessage(
+            new InvalidOperationException("Recording failed. Partial output has been kept for recovery.", inner));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(withoutPartial, Is.EqualTo(inner.Message));
+            Assert.That(withoutPartial, Does.Not.Contain("Partial output"));
+            Assert.That(withPartial, Does.Contain(inner.Message));
+            Assert.That(withPartial, Does.Contain("Partial output has been kept for recovery."));
+        });
+    }
+
     private sealed class FakeRecording : IRecordingService, IMovableRecordingService, IRecordingCompletionSource
     {
         public Exception? StartError;

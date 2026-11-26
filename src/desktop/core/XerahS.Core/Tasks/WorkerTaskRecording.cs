@@ -360,33 +360,33 @@ namespace XerahS.Core.Tasks
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                DebugHelper.WriteLine("Recording cancelled by user.");
+                throw;
+            }
             catch (Exception ex)
             {
                 DebugHelper.WriteException(ex, "Failed during recording workflow");
 
-                // Show user-facing error message
-                string errorMessage = ex switch
-                {
-                    FileNotFoundException => "FFmpeg not found. Please install FFmpeg to enable screen recording.",
-                    PlatformNotSupportedException => "Screen recording is not supported on this system.",
-                    InvalidOperationException when ex.Message.Contains("not available") =>
-                        "Screen recording is not available. On Linux Wayland, ensure xdg-desktop-portal with ScreenCast support is available, PipeWire is running, and either FFmpeg pipewire, GStreamer pipewiresrc, or wf-recorder is installed.",
-                    InvalidOperationException when ex.Message.Contains("initialization") =>
-                        "Screen recording initialization failed. Check that required services are running.",
-                    _ => $"Failed to start recording: {ex.Message}"
-                };
+                string errorMessage = FormatRecordingErrorMessage(ex);
 
                 try
                 {
-                    PlatformServices.Toast?.ShowToast(new Platform.Abstractions.ToastConfig
+                    if (PlatformServices.Toast != null)
                     {
-                        Title = "Recording Failed",
-                        Text = errorMessage,
-                        Duration = 8f,
-                        Size = new SizeI(450, 140),
-                        AutoHide = true,
-                        LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
-                    });
+                        PlatformServices.Toast.ShowToast(new Platform.Abstractions.ToastConfig
+                        {
+                            Title = "Recording Failed",
+                            Text = errorMessage,
+                            ErrorDetails = ex.ToString(),
+                            Duration = 10f,
+                            Size = new SizeI(500, 170),
+                            AutoHide = true,
+                            LeftClickAction = Platform.Abstractions.ToastClickAction.CloseNotification
+                        });
+                        _failureToastShown = true;
+                    }
                 }
                 catch
                 {
@@ -395,6 +395,47 @@ namespace XerahS.Core.Tasks
 
                 throw;
             }
+        }
+
+        internal static string FormatRecordingErrorMessage(Exception ex)
+        {
+            if (ex is FileNotFoundException)
+            {
+                return "FFmpeg not found. Install FFmpeg or download it in Recording settings to enable screen recording.";
+            }
+
+            if (ex is PlatformNotSupportedException)
+            {
+                return string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Screen recording is not supported on this system."
+                    : $"Screen recording is not available: {ex.Message}";
+            }
+
+            if (ex is InvalidOperationException)
+            {
+                if (ex.Message.Contains("not available", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Screen recording is not available. On Linux Wayland, ensure xdg-desktop-portal with ScreenCast support is available, PipeWire is running, and either FFmpeg pipewire, GStreamer pipewiresrc, or wf-recorder is installed.";
+                }
+
+                if (ex.Message.Contains("initialization", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Screen recording initialization failed. Check that required capture services are running and inspect the XerahS log for details.";
+                }
+
+                if (ex.InnerException != null && !string.IsNullOrWhiteSpace(ex.InnerException.Message))
+                {
+                    string cause = ex.InnerException.Message.Trim();
+                    bool hasPartial = ex.Message.Contains("Partial output", StringComparison.OrdinalIgnoreCase);
+                    return hasPartial
+                        ? $"{cause} Partial output has been kept for recovery."
+                        : cause;
+                }
+            }
+
+            return string.IsNullOrWhiteSpace(ex.Message)
+                ? "Recording failed. Check the XerahS log for details."
+                : $"Recording failed: {ex.Message}";
         }
 
         internal async Task HandleStopRecordingAsync()

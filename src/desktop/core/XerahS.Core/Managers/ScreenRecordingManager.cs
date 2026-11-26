@@ -1196,7 +1196,39 @@ public class ScreenRecordingManager : IScreenRecordingManager
         lock (_lock)
         {
             if (_recordingFailure != null)
-                throw new InvalidOperationException("Recording failed. Partial output has been kept for recovery.", _recordingFailure);
+            {
+                string message = HasPartialOutput()
+                    ? "Recording failed. Partial output has been kept for recovery."
+                    : "Recording failed.";
+                throw new InvalidOperationException(message, _recordingFailure);
+            }
+        }
+    }
+
+    private bool HasPartialOutput()
+    {
+        foreach (string segment in _segments)
+        {
+            if (HasNonEmptyFile(segment))
+            {
+                return true;
+            }
+        }
+
+        string? lastSegment = GetLastSegmentPath();
+        return !string.IsNullOrEmpty(lastSegment) && HasNonEmptyFile(lastSegment);
+    }
+
+    private static bool HasNonEmptyFile(string path)
+    {
+        try
+        {
+            var info = new FileInfo(path);
+            return info.Exists && info.Length > 0;
+        }
+        catch
+        {
+            return false;
         }
     }
 

@@ -204,6 +204,16 @@ public sealed class WaylandPortalRecordingService : IRecordingService
 
             return Task.CompletedTask;
         }
+        catch (OperationCanceledException)
+        {
+            CleanupPortalSession();
+            lock (_lock)
+            {
+                _currentOptions = null;
+                UpdateStatus(RecordingStatus.Idle);
+            }
+            throw;
+        }
         catch (DBusException ex)
         {
             CleanupPortalSession();
@@ -329,11 +339,12 @@ public sealed class WaylandPortalRecordingService : IRecordingService
         DebugHelper.WriteLine($"[WaylandPortalRecording] Encode: {ffmpegPath} {encodeArgs}");
 
         GStreamerPluginAdvisor.Notify(advice, usedFfmpegFallback: true, hasUsableFFmpegEncoder: true);
-        StartFFmpegEncodingBridge(captureArgs, ffmpegPath, encodeArgs, outputPath, width, height);
+        string? installPackagesHint = advice.MissingPackages.Count > 0 ? string.Join(' ', advice.MissingPackages) : null;
+        StartFFmpegEncodingBridge(captureArgs, ffmpegPath, encodeArgs, outputPath, width, height, installPackagesHint);
         return true;
     }
 
-    internal Task StartFFmpegEncodingBridge(string captureArgs, string ffmpegPath, string encodeArgs, string outputPath, int width, int height)
+    internal Task StartFFmpegEncodingBridge(string captureArgs, string ffmpegPath, string encodeArgs, string outputPath, int width, int height, string? installPackagesHint = null)
     {
         lock (_lock)
         {
@@ -341,7 +352,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             // both its task and its child process, even if the hotkey arrives during startup.
             _gstreamerOutputPath = outputPath;
             _usingFFmpegEncodingBridge = true;
-            _ffmpegTask = Task.Run(() => RunFFmpegEncodingBridge(captureArgs, ffmpegPath, encodeArgs, outputPath, width, height));
+            _ffmpegTask = Task.Run(() => RunFFmpegEncodingBridge(captureArgs, ffmpegPath, encodeArgs, outputPath, width, height, installPackagesHint));
             return _ffmpegTask;
         }
     }
@@ -432,7 +443,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
     }
 
     /// <summary>Pumps raw frames from GStreamer into FFmpeg until GStreamer reaches EOS (stop).</summary>
-    private void RunFFmpegEncodingBridge(string captureArgs, string ffmpegPath, string encodeArgs, string outputPath, int width, int height)
+    private void RunFFmpegEncodingBridge(string captureArgs, string ffmpegPath, string encodeArgs, string outputPath, int width, int height, string? installPackagesHint = null)
     {
         Process? gst = null;
         Process? ffmpeg = null;
@@ -471,6 +482,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             Task<string> gstErrors = gst.StandardError.ReadToEndAsync();
 
             bool encoderDied = false;
+            InvalidDataException? copyError = null;
             long framesCopied = 0;
             try
             {
@@ -480,11 +492,18 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             {
                 encoderDied = true; // ffmpeg exited and closed its stdin
             }
+            catch (InvalidDataException ex)
+            {
+                // Keep going so we still collect process exit codes and stderr before diagnosing.
+                copyError = ex;
+            }
 
             try { ffmpeg.StandardInput.Close(); } catch (IOException) { }
 
+            bool killedGstForEncoder = false;
             if (encoderDied && !gst.HasExited)
             {
+                killedGstForEncoder = true;
                 try { gst.Kill(entireProcessTree: true); } catch { }
             }
 
@@ -500,7 +519,7 @@ public sealed class WaylandPortalRecordingService : IRecordingService
             string ffmpegOutput = ffmpegErrors.GetAwaiter().GetResult().Trim();
             bool fileWritten = File.Exists(outputPath) && new FileInfo(outputPath).Length > 0;
             DebugHelper.WriteLine($"[WaylandPortalRecording] Bridge finished: gst={gst.ExitCode} ffmpeg={ffmpeg.ExitCode} frames={framesCopied} output={(fileWritten ? new FileInfo(outputPath).Length + " bytes" : "missing")}");
-            if (gst.ExitCode != 0 && !_stopRequested && gstOutput.Length > 0)
+            if (gst.ExitCode != 0 && !_stopRequested && !killedGstForEncoder && gstOutput.Length > 0)
             {
                 DebugHelper.WriteLine("[WaylandPortalRecording] GStreamer capture stderr:\n" + gstOutput);
             }
@@ -510,17 +529,23 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                 DebugHelper.WriteLine("[WaylandPortalRecording] FFmpeg stderr:\n" + ffmpegOutput);
             }
 
-            if (!_stopRequested && gst.ExitCode != 0)
+            string? failureMessage = FFmpegEncodingBridge.BuildBridgeFailureMessage(
+                _stopRequested,
+                encoderDied || killedGstForEncoder,
+                gst.ExitCode,
+                gstOutput,
+                ffmpeg.ExitCode,
+                ffmpegOutput,
+                fileWritten,
+                installPackagesHint);
+
+            if (failureMessage != null)
             {
-                HandleFatalError(new Exception($"GStreamer capture failed.\n{gstOutput}"), true);
+                HandleFatalError(new Exception(failureMessage), true);
             }
-            else if (ffmpeg.ExitCode != 0)
+            else if (copyError != null)
             {
-                HandleFatalError(new Exception($"FFmpeg encoding failed.\n{ffmpegOutput}"), true);
-            }
-            else if (!fileWritten)
-            {
-                HandleFatalError(new Exception("Recording finished without a video file."), true);
+                HandleFatalError(copyError, true);
             }
         }
         catch (Exception ex)
@@ -1003,6 +1028,10 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                 selectOptions,
                 () => _portal.SelectSourcesAsync(_sessionHandle.Value, selectOptions))
             .ConfigureAwait(false);
+        if (selectResponse == 1)
+        {
+            throw new OperationCanceledException("Screen recording was cancelled in the system screen/window picker.");
+        }
         if (selectResponse != 0)
         {
             throw new PlatformNotSupportedException($"ScreenCast SelectSources failed ({selectResponse}).");
@@ -1015,6 +1044,10 @@ public sealed class WaylandPortalRecordingService : IRecordingService
                 startOptions,
                 () => _portal.StartAsync(_sessionHandle.Value, string.Empty, startOptions))
             .ConfigureAwait(false);
+        if (startResponse == 1)
+        {
+            throw new OperationCanceledException("Screen recording was cancelled in the system screen/window picker.");
+        }
         if (startResponse != 0)
         {
             throw new PlatformNotSupportedException($"ScreenCast Start failed ({startResponse}).");

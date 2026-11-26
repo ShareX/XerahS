@@ -187,11 +187,12 @@ internal static partial class FFmpegEncodingBridge
     public static string BuildEncodeArgs(int width, int height, int fps, FFmpegEncoderPlan plan, string? pulseDevice, string outputPath)
     {
         int rate = fps is > 0 and <= 240 ? fps : 30;
+        // Do not pass -thread_queue_size before -i: FFmpeg 9+ made it output-only (muxer)
+        // and rejects it as an input option with EINVAL.
         var args = new List<string>
         {
             "-hide_banner", "-loglevel", "error", "-y",
             "-use_wallclock_as_timestamps", "1",
-            "-thread_queue_size", "1024",
             "-f", "rawvideo", "-pix_fmt", "yuv420p",
             "-video_size", string.Create(CultureInfo.InvariantCulture, $"{RawWidth(width)}x{Even(height)}"),
             "-framerate", rate.ToString(CultureInfo.InvariantCulture),
@@ -201,7 +202,7 @@ internal static partial class FFmpegEncodingBridge
         bool audio = !string.IsNullOrEmpty(pulseDevice) && !string.IsNullOrEmpty(plan.AudioEncoder);
         if (audio)
         {
-            args.AddRange(["-thread_queue_size", "1024", "-f", "pulse", "-i", Quote(pulseDevice!)]);
+            args.AddRange(["-f", "pulse", "-i", Quote(pulseDevice!)]);
         }
 
         args.AddRange(["-map", "0:v:0"]);
@@ -219,6 +220,98 @@ internal static partial class FFmpegEncodingBridge
         args.Add(Quote(outputPath));
         return string.Join(" ", args);
     }
+
+    /// <summary>
+    /// Attributes a GStreamer-to-FFmpeg bridge failure to the stage that actually failed and builds
+    /// an actionable user-facing message. When FFmpeg exits first, XerahS kills GStreamer (exit 137)
+    /// and must report the FFmpeg failure rather than blaming GStreamer.
+    /// </summary>
+    internal static string? BuildBridgeFailureMessage(
+        bool stopRequested,
+        bool encoderDied,
+        int gstExitCode,
+        string gstOutput,
+        int ffmpegExitCode,
+        string ffmpegOutput,
+        bool fileWritten,
+        string? installPackagesHint = null)
+    {
+        bool ffmpegFailed =
+            encoderDied ||
+            (ffmpegExitCode != 0 &&
+             (stopRequested ||
+              gstExitCode == 0 ||
+              (string.IsNullOrWhiteSpace(gstOutput) && !string.IsNullOrWhiteSpace(ffmpegOutput))));
+
+        if (ffmpegFailed)
+        {
+            string? detail = FirstNonEmptyLine(ffmpegOutput);
+            string head = detail != null
+                ? $"FFmpeg encoding failed (exit code {ffmpegExitCode}): {detail}"
+                : $"FFmpeg encoding failed (exit code {ffmpegExitCode}).";
+
+            string gstHint = !string.IsNullOrWhiteSpace(installPackagesHint)
+                ? $" or install GStreamer plugins ({installPackagesHint})"
+                : string.Empty;
+
+            string guidance = !string.IsNullOrWhiteSpace(ffmpegOutput) &&
+                              (ffmpegOutput.Contains("cannot be applied to input", StringComparison.OrdinalIgnoreCase) ||
+                               ffmpegOutput.Contains("Unrecognized option", StringComparison.OrdinalIgnoreCase))
+                ? $"Your installed FFmpeg version rejected a recording option. Download XerahS's bundled FFmpeg in Recording settings{gstHint}, and check the XerahS log for full details."
+                : $"Check your FFmpeg/Video recording settings (or download FFmpeg in Recording settings){gstHint}. See the XerahS log for full details.";
+
+            return $"{EnsurePeriod(head)} {guidance}";
+        }
+
+        if (!stopRequested && gstExitCode != 0)
+        {
+            string? detail = FirstNonEmptyLine(gstOutput);
+            string head = detail != null
+                ? $"GStreamer PipeWire capture failed (exit code {gstExitCode}): {detail}"
+                : $"GStreamer PipeWire capture exited unexpectedly (exit code {gstExitCode}).";
+
+            return $"{EnsurePeriod(head)} Verify PipeWire and xdg-desktop-portal are running, then retry. See the XerahS log for full details.";
+        }
+
+        if (ffmpegExitCode != 0)
+        {
+            string? detail = FirstNonEmptyLine(ffmpegOutput);
+            string head = detail != null
+                ? $"FFmpeg encoding failed (exit code {ffmpegExitCode}): {detail}"
+                : $"FFmpeg encoding failed (exit code {ffmpegExitCode}).";
+
+            return $"{EnsurePeriod(head)} Check your FFmpeg/Video recording settings and see the XerahS log for full details.";
+        }
+
+        if (!fileWritten)
+        {
+            return "Recording finished without producing a video file. Ensure the selected screen or window stays visible and check the XerahS log for details.";
+        }
+
+        return null;
+    }
+
+    private static string? FirstNonEmptyLine(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        foreach (string line in text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries))
+        {
+            string trimmed = line.Trim();
+            if (trimmed.Length > 0)
+            {
+                return trimmed;
+            }
+        }
+
+        return null;
+    }
+
+    private static string EnsurePeriod(string text) =>
+        text.EndsWith('.') || text.EndsWith('!') || text.EndsWith('?') ? text : text + ".";
 
     internal static int Even(int value) => Math.Max(2, value & ~1);
 
