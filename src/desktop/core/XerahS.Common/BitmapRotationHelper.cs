@@ -53,14 +53,17 @@ public static class BitmapRotationHelper
             targetHeight = source.Width;
         }
 
-        var result = new SKBitmap(targetWidth, targetHeight, SKColorType.Bgra8888, SKAlphaType.Premul);
+        // Preserve the source pixel format: an fp16 scRGB capture must stay fp16 through the
+        // rotation, otherwise HDR highlights are silently clipped here.
+        var result = new SKBitmap(new SKImageInfo(targetWidth, targetHeight, source.ColorType,
+            source.AlphaType, source.ColorSpace));
         using var canvas = new SKCanvas(result);
         canvas.Clear(SKColors.Black);
 
         switch (clockwiseDegrees)
         {
             case 90:
-                // 90° CW: translate right-edge to origin, then rotate CW 90°.
+                // 90 CW: translate right-edge to origin, then rotate CW 90.
                 canvas.Translate(targetWidth, 0);
                 canvas.RotateDegrees(90);
                 break;
@@ -69,7 +72,7 @@ public static class BitmapRotationHelper
                 canvas.RotateDegrees(180);
                 break;
             case 270:
-                // 270° CW (= 90° CCW): translate bottom-edge to origin, then rotate CCW 90°.
+                // 270 CW (= 90 CCW): translate bottom-edge to origin, then rotate CCW 90.
                 canvas.Translate(0, targetHeight);
                 canvas.RotateDegrees(-90);
                 break;
