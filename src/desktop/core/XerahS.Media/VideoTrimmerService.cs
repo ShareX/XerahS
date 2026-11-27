@@ -210,8 +210,10 @@ public sealed partial class VideoTrimmerService
         using CancellationTokenRegistration registration = token.Register(() =>
         {
             try { process.Kill(entireProcessTree: true); }
-            catch (InvalidOperationException) { }
-            catch (System.ComponentModel.Win32Exception) { }
+            catch (Exception ex) when (ex is InvalidOperationException
+                                          or ObjectDisposedException
+                                          or System.ComponentModel.Win32Exception
+                                          or AggregateException) { }
         });
 
         StringBuilder log = new();

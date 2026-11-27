@@ -118,9 +118,12 @@ internal static class OmaSnapProcessRunner
                 process.Kill(entireProcessTree: true);
             }
         }
-        catch (InvalidOperationException)
+        catch (Exception ex) when (ex is InvalidOperationException
+                                      or ObjectDisposedException
+                                      or System.ComponentModel.Win32Exception
+                                      or AggregateException)
         {
-            // Already exited.
+            // Already exited, disposed, or Process.Kill(entireProcessTree: true) raced with exit.
         }
     }
 

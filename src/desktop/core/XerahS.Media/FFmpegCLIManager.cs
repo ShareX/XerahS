@@ -161,7 +161,10 @@ namespace XerahS.Media
                             process.Kill(entireProcessTree: true);
                         }
                     }
-                    catch (InvalidOperationException)
+                    catch (Exception ex) when (ex is InvalidOperationException
+                                                  or ObjectDisposedException
+                                                  or System.ComponentModel.Win32Exception
+                                                  or AggregateException)
                     {
                     }
                 }

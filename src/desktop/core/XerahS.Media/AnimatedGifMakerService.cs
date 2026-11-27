@@ -157,7 +157,10 @@ public sealed class AnimatedGifMakerService
         using CancellationTokenRegistration registration = token.Register(() =>
         {
             try { process.Kill(entireProcessTree: true); }
-            catch (InvalidOperationException) { }
+            catch (Exception ex) when (ex is InvalidOperationException
+                                          or ObjectDisposedException
+                                          or System.ComponentModel.Win32Exception
+                                          or AggregateException) { }
         });
         Task<string> errors = process.StandardError.ReadToEndAsync();
         Task drain = process.StandardOutput.BaseStream.CopyToAsync(Stream.Null);
